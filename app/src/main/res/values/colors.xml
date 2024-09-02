@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="california">#FF9F0C</color>
+    <color name="japanese_laurel">#008000</color>
+    <color name="japanese_laurel_lite">#20008000</color>
+    <color name="flamingo">#EF4040</color>
+    <color name="dusty_gray">#969696</color>
+    <color name="lite_dusty_gray">#42969696</color>
+
+    <color name="color_background">#6b8698</color>
+    <color name="color_lite_text">#c0cbd2</color>
+    <color name="background_1">#5f7483</color>
+    <color name="background_2">#899fb0</color>
+    <color name="black_over">#282929</color>
+    <color name="icon_on_black">#c7c7c6</color>
+
+    <color name="color_background_1">#B2B4AA</color>
+    <color name="color_background_2">#e0e0e0</color>
+    <color name="color_lite_text_1">#666f36</color>
+    <color name="color_lite_text_2">#272629</color>
+    <color name="button_1">#e6fe54</color>
+    <color name="button_2">#e6fe54</color>
+    <color name="black_over_1">#282929</color>
+    <color name="lite_white">#66F3F3F3</color>
+    <color name="card_color">#eafc5f</color>
+</resources>
