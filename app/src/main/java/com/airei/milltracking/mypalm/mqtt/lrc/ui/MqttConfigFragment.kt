@@ -1,18 +1,19 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.ui
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.navigateUp
 import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.MqttConfig
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentMqttConfigBinding
+import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 import com.google.gson.Gson
 
 class MqttConfigFragment : Fragment() {
@@ -20,7 +21,7 @@ class MqttConfigFragment : Fragment() {
     private var _binding: FragmentMqttConfigBinding? = null
     private val binding get() = _binding!!
 
-    //private val viewModel: AppViewModel by activityViewModels()
+    private val viewModel: AppViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -35,17 +36,19 @@ class MqttConfigFragment : Fragment() {
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    requireActivity().finish()
+                    findNavController().popBackStack()
                 }
             })
 
+        binding.etClientId.setText("")
         binding.etHost.setText("")
         binding.etPort.setText("")
         binding.etUserName.setText("")
-        binding.etPassword.setText("")
+        binding.repeatField.visibility = View.GONE
 
         if (!AppPreferences.mqttConfig.isNullOrEmpty()){
             val config = Gson().fromJson(AppPreferences.mqttConfig, MqttConfig::class.java)
+            binding.etClientId.setText(AppPreferences.mqttClientId)
             binding.etHost.setText(config.host)
             binding.etPort.setText(config.port.toString())
             binding.etUserName.setText(config.username)
@@ -68,6 +71,7 @@ class MqttConfigFragment : Fragment() {
             binding.repeatField.error = null
 
             // Retrieve text from the input fields
+            val clientId = binding.etClientId.text.toString().trim()
             val host = binding.etHost.text.toString().trim()
             val port = binding.etPort.text.toString().trim()
             val user = binding.etUserName.text.toString().trim()
@@ -80,6 +84,10 @@ class MqttConfigFragment : Fragment() {
             // Check if fields are empty and set errors
             if (host.isEmpty()) {
                 binding.hostField.error = "Hostname cannot be empty"
+                isValid = false
+            }
+            if (clientId.isEmpty()) {
+                binding.clientIdField.error = "Client Id cannot be empty"
                 isValid = false
             }
 
@@ -115,16 +123,17 @@ class MqttConfigFragment : Fragment() {
                         username = user,
                         password = pass
                     )
+                    AppPreferences.mqttClientId = clientId
                     AppPreferences.mqttConfig = Gson().toJson(mqttConfig)
                     AppPreferences.repeatCnt = repeatCnt.toInt()
                     Toast.makeText(requireContext(), "Configuration saved!", Toast.LENGTH_SHORT).show()
+                    viewModel.startMqtt.postValue(true)
                     findNavController().navigate(R.id.homeFragment)
                 } else {
                     binding.postField.error = "Port must be a valid number"
                 }
             }
         }
-
     }
 
     override fun onDestroyView() {

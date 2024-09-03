@@ -14,8 +14,18 @@ data class DoorData(
     var doorId: String = "",
     var doorName: String = "",
     var openStatus: Boolean = false,
-    var selected: Boolean = false
+    var selected: Boolean = false,
+    var rtspConfig: RtspConfig? = null
 )
+
+data class RtspConfig(
+    val channel: String ,
+    val subtype: String,
+    val ip: String ,
+    val username: String,
+    val password: String
+)
+
 
 data class TagData(
     val tag: String,
@@ -28,20 +38,20 @@ data class WData(
 
 
 val doorList = listOf(
-    DoorData(doorId = "LoadingRamp:Door1_Cmd", doorName = "Door 1", openStatus = false),
-    DoorData(doorId = "LoadingRamp:Door2_Cmd", doorName = "Door 2", openStatus = false),
-    DoorData(doorId = "LoadingRamp:Door3_Cmd", doorName = "Door 3", openStatus = false),
-    DoorData(doorId = "LoadingRamp:Door4_Cmd", doorName = "Door 4", openStatus = false),
-    DoorData(doorId = "LoadingRamp:Door5_Cmd", doorName = "Door 5", openStatus = false),
-    DoorData(doorId = "LoadingRamp:Door6_Cmd", doorName = "Door 6", openStatus = false),
-    DoorData(doorId = "LoadingRamp:Door7_Cmd", doorName = "Door 7", openStatus = false),
-    DoorData(doorId = "LoadingRamp:Door8_Cmd", doorName = "Door 8", openStatus = false),
-    DoorData(doorId = "LoadingRamp:Door9_Cmd", doorName = "Door 9", openStatus = false),
-    DoorData(doorId = "LoadingRamp:Door10_Cmd", doorName = "Door 10", openStatus = false),
-    DoorData(doorId = "LoadingRamp:Door11_Cmd", doorName = "Door 11", openStatus = false),
-    DoorData(doorId = "LoadingRamp:Door12_Cmd", doorName = "Door 12", openStatus = false),
-    DoorData(doorId = "LoadingRamp:Door13_Cmd", doorName = "Door 13", openStatus = false),
-    DoorData(doorId = "LoadingRamp:Door14_Cmd", doorName = "Door 14", openStatus = false),
-    DoorData(doorId = "LoadingRamp:Door15_Cmd", doorName = "Door 15", openStatus = false),
-    DoorData(doorId = "LoadingRamp:Door16_Cmd", doorName = "Door 16", openStatus = false)
+    DoorData(doorId = "Door1", doorName = "Door\n1", openStatus = false, rtspConfig = RtspConfig(channel = "1", subtype = "0", ip = "192.168.1.51", username = "admin", password = "afg69008")),
+    DoorData(doorId = "Door2", doorName = "Door\n2", openStatus = false, rtspConfig = RtspConfig(channel = "1", subtype = "0", ip = "192.168.1.51", username = "admin", password = "afg69008")),
+    DoorData(doorId = "Door3", doorName = "Door\n3", openStatus = false, rtspConfig = RtspConfig(channel = "2", subtype = "0", ip = "192.168.1.52", username = "admin", password = "afg69008")),
+    DoorData(doorId = "Door4", doorName = "Door\n4", openStatus = false, rtspConfig = RtspConfig(channel = "2", subtype = "0", ip = "192.168.1.52", username = "admin", password = "afg69008")),
+    DoorData(doorId = "Door5", doorName = "Door\n5", openStatus = false, rtspConfig = RtspConfig(channel = "3", subtype = "0", ip = "192.168.1.53", username = "admin", password = "afg69008")),
+    DoorData(doorId = "Door6", doorName = "Door\n6", openStatus = false, rtspConfig = RtspConfig(channel = "3", subtype = "0", ip = "192.168.1.53", username = "admin", password = "afg69008")),
+    DoorData(doorId = "Door7", doorName = "Door\n7", openStatus = false, rtspConfig = RtspConfig(channel = "4", subtype = "0", ip = "192.168.1.54", username = "admin", password = "afg69008")),
+    DoorData(doorId = "Door8", doorName = "Door\n8", openStatus = false, rtspConfig = RtspConfig(channel = "4", subtype = "0", ip = "192.168.1.54", username = "admin", password = "afg69008")),
+    DoorData(doorId = "Door9", doorName = "Door\n9", openStatus = false, rtspConfig = RtspConfig(channel = "5", subtype = "0", ip = "192.168.1.55", username = "admin", password = "afg69008")),
+    DoorData(doorId = "Door10", doorName = "Door\n10", openStatus = false, rtspConfig = RtspConfig(channel = "5",subtype = "0",  ip = "192.168.1.55", username = "admin", password = "afg69008")),
+    DoorData(doorId = "Door11", doorName = "Door\n11", openStatus = false, rtspConfig = RtspConfig(channel = "6",subtype = "0",  ip = "192.168.1.156", username = "admin", password = "afg69008")),
+    DoorData(doorId = "Door12", doorName = "Door\n12", openStatus = false, rtspConfig = RtspConfig(channel = "6",subtype = "0",  ip = "192.168.1.156", username = "admin", password = "afg69008")),
+    DoorData(doorId = "Door13", doorName = "Door\n13", openStatus = false, rtspConfig = RtspConfig(channel = "7",subtype = "0",  ip = "192.168.1.57", username = "admin", password = "afg69008")),
+    DoorData(doorId = "Door14", doorName = "Door\n14", openStatus = false, rtspConfig = RtspConfig(channel = "7",subtype = "0",  ip = "192.168.1.57", username = "admin", password = "afg69008")),
+    DoorData(doorId = "Door15", doorName = "Door\n15", openStatus = false, rtspConfig = RtspConfig(channel = "8",subtype = "0",  ip = "192.168.1.58", username = "admin", password = "afg69008")),
+    DoorData(doorId = "Door16", doorName = "Door\n16", openStatus = false, rtspConfig = RtspConfig(channel = "8",subtype = "0",  ip = "192.168.1.58", username = "admin", password = "afg69008"))
 )

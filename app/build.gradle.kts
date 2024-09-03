@@ -57,6 +57,7 @@ dependencies {
     implementation(libs.androidx.security.crypto)
     // Mqtt
     implementation (libs.org.eclipse.paho.client.mqttv3)
+    implementation (libs.org.eclipse.paho.android.service)
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.android)
     // Navigate
@@ -67,5 +68,6 @@ dependencies {
     implementation(libs.hilt.android)
     // GSON
     implementation(libs.gson)
+    implementation ("org.videolan.android:libvlc-all:3.4.4")
 
 }

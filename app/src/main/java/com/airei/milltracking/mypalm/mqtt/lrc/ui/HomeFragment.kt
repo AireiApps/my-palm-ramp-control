@@ -2,8 +2,6 @@ package com.airei.milltracking.mypalm.mqtt.lrc.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -11,18 +9,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.fragment.findNavController
 import com.airei.milltracking.mypalm.iot.adapter.DoorAdapter
 import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity
 import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.TagData
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.WData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.doorList
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentHomeBinding
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
-import kotlin.math.log
+import com.google.gson.Gson
 
 
 class HomeFragment : Fragment() {
@@ -42,24 +44,6 @@ class HomeFragment : Fragment() {
 
     lateinit var adapter: DoorAdapter
 
-    private val handler = Handler(Looper.getMainLooper())
-    private val runnable = Runnable {
-        if (isHold){
-            runFunction()
-        }
-    }
-
-    private fun runFunction() {
-        if (isHold){
-            updateDoor(doorState)
-            repeat += 1
-            Log.i(TAG, "btn : $doorState -> $repeat")
-            if (selectDoor != null && repeat < AppPreferences.repeatCnt) {
-                handler.postDelayed(runnable, 500)
-            }
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -67,6 +51,8 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
+
+    @OptIn(UnstableApi::class)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         requireActivity().onBackPressedDispatcher.addCallback(
@@ -76,14 +62,18 @@ class HomeFragment : Fragment() {
                     requireActivity().finish()
                 }
             })
-        (activity as MainActivity).setMqttService()
         setConveyorList()
         doorActionbtn()
+        Log.d(TAG, "onViewCreated: ")
         binding.fabConfig.setOnClickListener {
             findNavController().navigate(R.id.mqttConfigFragment)
         }
-    }
+        binding.tgMotor.setOnClickListener {
+            updateMotor(state = binding.tgMotor.isChecked)
+        }
+        //viewModel.startMqtt.postValue(true)
 
+    }
     private fun setConveyorList(list: List<DoorData> = doorList) {
         selectDoor = null
         adapter = DoorAdapter(
@@ -113,36 +103,55 @@ class HomeFragment : Fragment() {
         )
         binding.rvConveyor.adapter = adapter
     }
-    private fun handleSingleClick(doorStateValue: Boolean) {
-        updateDoor(doorStateValue)
-    }
+
     @SuppressLint("ClickableViewAccessibility")
     private fun doorActionbtn() {
-
-        // Common function to handle touch events for both buttons
         fun handleButtonTouch(doorStateValue: Boolean) = View.OnTouchListener { _, event ->
-            Log.i(TAG, "doorActionbtn: ------------> ${event.action}")
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    Log.i(TAG, "ACTION_DOWN")
-                    isHold = true
-                    doorState = doorStateValue
-                    handler.postDelayed(runnable, 500) // 500 milliseconds for long press
-                    true
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    Log.i(TAG, "ACTION_UP")
-                    repeat = 0
-                    isHold = false
-                    handler.removeCallbacks(runnable)
-                    Log.i(TAG, "handleButtonTouch: ${event.eventTime - event.downTime}")
-                    Log.i(TAG, "handleButtonTouch: ${event.rawX} / ${ event.rawY}")
-                    if (event.eventTime - event.downTime < 100 && isWholeNumber(event.rawX) && isWholeNumber(event.rawY)) {
-                        handleSingleClick(doorStateValue)
+            val mqttConnection = (activity as MainActivity).mqttConnectionCheck()
+            if (mqttConnection) {
+                if (selectDoor != null) {
+                    when (event.action) {
+                        MotionEvent.ACTION_DOWN -> {
+                            isHold = true
+                            doorState = doorStateValue
+                            if (doorStateValue) {
+                                generateMsg(AppPreferences.doorOpenCmd, 1)
+                            } else {
+                                generateMsg(AppPreferences.doorCloseCmd, 1)
+                            }
+                            true
+                        }
+
+                        MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                            repeat = 0
+                            isHold = false
+                            if (doorStateValue) {
+                                generateMsg(AppPreferences.doorOpenCmd, 0)
+                            } else {
+                                generateMsg(AppPreferences.doorCloseCmd, 0)
+                            }
+
+                            true
+                        }
+
+                        else -> false
+                    }
+                } else {
+                    if (event.action != MotionEvent.ACTION_DOWN || event.action != MotionEvent.ACTION_CANCEL) {
+                        Toast.makeText(requireContext(), "Please select door.", Toast.LENGTH_SHORT)
+                            .show()
                     }
                     true
                 }
-                else -> false
+            } else {
+                if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_CANCEL) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Mqtt connection not available. Please check mqtt connection.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                true
             }
         }
 
@@ -151,17 +160,37 @@ class HomeFragment : Fragment() {
         binding.btnOpen.setOnTouchListener(handleButtonTouch(true))   // Open action
     }
 
-    fun isWholeNumber(value: Float): Boolean {
+    private fun isWholeNumber(value: Float): Boolean {
         return value == value.toInt().toFloat()
     }
 
+    private fun generateMsg(tag: String, value: Int) {
 
-    private fun updateDoor(state: Boolean){
-        if (selectDoor != null) {
-            viewModel.publishedMsg.postValue((state to selectDoor!!))
-        } else {
-            Toast.makeText(requireContext(), "Door not selected", Toast.LENGTH_SHORT).show()
-        }
+        val doorID = selectDoor!!.doorId
+        val modifyTag = tag.replace("[DOOR_X]", doorID)
+        val data = WData(
+            w = listOf(
+                TagData(
+                    tag = modifyTag,
+                    value = value
+                )
+            )
+        )
+        val msg = Gson().toJson(data)
+        viewModel.updateDoor.postValue(msg)
+    }
+
+    private fun updateMotor(tag: String = "LoadingRamp:LRStarter_Cmd", state: Boolean) {
+        val data = WData(
+            w = listOf(
+                TagData(
+                    tag = tag,
+                    value = if (state) 1 else 0
+                )
+            )
+        )
+        val jsonString = Gson().toJson(data)
+        viewModel.updateStarter.postValue(jsonString)
     }
 
     override fun onPause() {
@@ -174,7 +203,7 @@ class HomeFragment : Fragment() {
         if (this::adapter.isInitialized){
             selectDoor = adapter.getList().find { it.selected }
         }
-
+        Log.d(TAG, "onResume: ")
     }
 
     override fun onDestroyView() {

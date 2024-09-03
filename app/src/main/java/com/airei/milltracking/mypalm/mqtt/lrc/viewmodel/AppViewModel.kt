@@ -10,6 +10,9 @@ import javax.inject.Inject
 class AppViewModel @Inject constructor():ViewModel()
 {
 
-    val publishedMsg = MutableLiveData<Pair<Boolean,DoorData>>()
+    val updateDoor = MutableLiveData<String>()
+    val updateStarter = MutableLiveData<String>()
+
+    val startMqtt = MutableLiveData<Boolean>(false)
 
 }

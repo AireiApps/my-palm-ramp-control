@@ -8,4 +8,8 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="save">Save</string>
+    <string name="starter_motor">Starter Motor \t:\t</string>
+    <string name="door_open_cmd">door_open_cmd</string>
+    <string name="door_close_cmd">door_close_cmd</string>
+    <string name="replace_string">[DOOR_X]</string>
 </resources>

@@ -27,6 +27,22 @@
             android:padding="25dp">
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/client_id_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Client Id"
+                app:endIconMode="clear_text">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_client_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionNext"
+                    android:inputType="text"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/host_field"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -131,6 +147,7 @@
                 app:backgroundTint="@color/japanese_laurel" />
         </LinearLayout>
     </ScrollView>
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
