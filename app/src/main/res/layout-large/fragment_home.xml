@@ -7,9 +7,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.HomeFragment">
 
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -19,7 +19,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/main"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent">
 
             <ImageView
                 android:id="@+id/imageView"
@@ -162,8 +162,8 @@
                 android:id="@+id/rtsp_layout"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:orientation="vertical"
                 android:visibility="gone"
+                android:orientation="vertical"
                 app:layout_constraintBottom_toBottomOf="@+id/rv_conveyor"
                 app:layout_constraintTop_toTopOf="parent">
 
@@ -210,10 +210,8 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="0dp"
                 android:layout_marginHorizontal="18dp"
-                android:minHeight="300dp"
-                android:paddingBottom="50dp"
                 android:weightSum="1"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -246,7 +244,7 @@
             </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-    </ScrollView>
+    </LinearLayout>
 
 
 

@@ -13,15 +13,18 @@ import androidx.activity.OnBackPressedCallback
 import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlaybackException
+import androidx.media3.exoplayer.ExoPlayer
 import androidx.navigation.fragment.findNavController
 import com.airei.milltracking.mypalm.iot.adapter.DoorAdapter
 import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity
-import com.airei.milltracking.mypalm.mqtt.lrc.MyPalmApp
 import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
-import com.airei.milltracking.mypalm.mqtt.lrc.commons.RtspConfig
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.TagData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.WData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.doorList
@@ -30,9 +33,6 @@ import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorTable
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 import com.google.gson.Gson
-import org.videolan.libvlc.LibVLC
-import org.videolan.libvlc.Media
-import org.videolan.libvlc.MediaPlayer
 
 
 class HomeFragment : Fragment() {
@@ -52,8 +52,8 @@ class HomeFragment : Fragment() {
 
     lateinit var adapter: DoorAdapter
 
-    var libVlc: LibVLC? = null
-    var mediaPlayer: MediaPlayer? = null
+
+    private var player: ExoPlayer? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -76,16 +76,25 @@ class HomeFragment : Fragment() {
         observeDoorList()
         doorActionbtn()
         Log.d(TAG, "onViewCreated: ")
-        libVlc = LibVLC(MyPalmApp.instance)
         binding.rtspLayout.visibility = View.GONE
+
         binding.fabConfig.setOnClickListener {
             findNavController().navigate(R.id.mqttConfigFragment)
         }
+
+        binding.imgClose.setOnClickListener {
+
+            binding.rtspLayout.visibility = View.GONE
+            if(player!=null){
+                player?.stop()
+                player?.release()
+            }
+        }
+
         binding.tgMotor.setOnClickListener {
             updateMotor(state = binding.tgMotor.isChecked)
         }
         //viewModel.startMqtt.postValue(true)
-
     }
 
     private fun observeDoorList() {
@@ -116,7 +125,7 @@ class HomeFragment : Fragment() {
 
                     temp.map { it ->
                         if (data.doorId == it.doorId && !data.selected) {
-                            data.rtspConfig?.let { openRtspView(it, data.doorId) }
+                            playExoPlayer(data.rtspConfig, data.doorId)
                             it.selected = true
                         } else {
                             it.selected = false
@@ -228,15 +237,7 @@ class HomeFragment : Fragment() {
         super.onPause()
         selectDoor = null
         binding.rtspLayout.visibility = View.GONE
-        if (mediaPlayer != null) {
-            try {
-                mediaPlayer!!.stop()
-                mediaPlayer!!.detachViews()
-                mediaPlayer!!.release()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
+
     }
 
     override fun onResume() {
@@ -247,50 +248,66 @@ class HomeFragment : Fragment() {
         Log.d(TAG, "onResume: ")
     }
 
-    fun openRtspView(rtspConfig: String, doorId: String) {
-        val url: String = rtspConfig
-            //"rtsp://${rtspConfig.username}:${rtspConfig.password}@${rtspConfig.ip}:554/cam/realmonitor?channel=${rtspConfig.channel}&subtype=${rtspConfig.subtype}"
-        Log.i(TAG, "showPopupWindow: url = $url")
 
-        binding.rtspLayout.visibility = View.VISIBLE
+    @SuppressLint("ClickableViewAccessibility")
+    fun playExoPlayer(
+        rtspConfig: String = "rtsp://admin:L2ACBEC1@192.168.1.13:554/cam/realmonitor?channel=1&subtype=0",
+        doorId: String
+    ) {
         binding.tvDoorId.text = doorId
+        binding.rtspLayout.visibility = View.VISIBLE
         try {
-            mediaPlayer = MediaPlayer(libVlc)
-            val videoLayout = binding.surfaceView
+            // Release the old player if it exists
+            player?.release()
+            // Create the ExoPlayer instance
+            player = ExoPlayer.Builder(requireContext()).build()
 
-            if (mediaPlayer != null) {
-                mediaPlayer!!.attachViews(videoLayout, null, false, false)
+            // Bind the player to the PlayerView
+            binding.playerView.player = player
 
-                // Set video scaling mode to fit the view
-                mediaPlayer!!.videoScale = MediaPlayer.ScaleType.SURFACE_BEST_FIT
+            // Disable all UI controls
+            binding.playerView.useController = false
 
-                val media = Media(libVlc, Uri.parse(url))
-                media.setHWDecoderEnabled(true, false)
-                //media.addOption(":network-caching=600")
-
-                // Set up close button to stop the media and release resources
-                binding.imgClose.setOnClickListener {
+            player?.addListener(object : Player.Listener {
+                override fun onPlayerError(error: PlaybackException) {
+                    // Handle the error, e.g., show a message to the user
                     binding.rtspLayout.visibility = View.GONE
-                    mediaPlayer!!.stop()
-                    mediaPlayer!!.release()
+                    Toast.makeText(requireContext(), "Failed to connect to RTSP stream.", Toast.LENGTH_LONG).show()
+                    player?.release()
+                    player = null
                 }
+            })
 
-                mediaPlayer!!.media = media
-                media.release()
-                mediaPlayer!!.play()
-            }
-        } catch (e: Exception) {
-            Log.d(TAG, "showPopupWindow: ", e)
-            binding.rtspLayout.visibility = View.GONE
+            // Block any touch interaction
+            binding.playerView.setOnTouchListener { _, _ -> true }
+
+            // Parse the RTSP URL
+            val uri = Uri.parse(rtspConfig)
+
+            // Create a MediaItem from the URI
+            val mediaItem = MediaItem.fromUri(uri)
+
+            // Create an RTSP media source factory and set it on the player
+            player?.setMediaItem(mediaItem)
+
+            // Prepare the player
+            player?.prepare()
+
+            // Start playback automatically
+            player?.playWhenReady = true
+        }catch (e:Exception){
+            e.printStackTrace()
         }
-    }
 
+    }
 
 
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        player?.release()
+        player = null
     }
 
     companion object {
