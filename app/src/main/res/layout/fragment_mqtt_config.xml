@@ -197,8 +197,7 @@
                 android:paddingTop="14dp"
                 android:paddingBottom="20dp"
                 android:scrollbars="none"
-                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                app:spanCount="2"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:itemCount="16"
                 tools:listitem="@layout/item_door_ip" />
 

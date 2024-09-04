@@ -51,7 +51,7 @@ fun DoorTable.toDoorData(): DoorData {
         doorName = this.doorName,
         openStatus = this.openStatus,
         selected = false, // Set to a default value or modify as needed
-        rtspConfig = this.rtsp.toRtspConfig()
+        rtspConfig = this.rtsp
     )
 }
 
@@ -60,13 +60,7 @@ fun DoorData.toDoorTable(): DoorTable {
         doorId = this.doorId,
         doorName = this.doorName,
         openStatus = this.openStatus,
-        rtsp = this.rtspConfig?.toRtsp() ?: Rtsp(
-            channel = "0",
-            subtype = "0",
-            ip = "",
-            username = "",
-            password = ""
-        )
+        rtsp = this.rtspConfig
     )
 }
 

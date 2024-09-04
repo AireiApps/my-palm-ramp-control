@@ -80,7 +80,6 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
                 .penaltyLog()
                 .build())
         }
-        Log.d("MainActivity", "onCreate:")
         // Your initialization code here
         val orientation = resources.configuration.orientation
         navController = (supportFragmentManager.findFragmentById(binding.navHostFragment.id) as NavHostFragment).navController
@@ -119,10 +118,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
                 viewModel.startMqtt.postValue(false)
             }
         }
-
     }
-
-
 
     @OptIn(DelicateCoroutinesApi::class)
     fun setMqttService() {

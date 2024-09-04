@@ -95,7 +95,7 @@ class MqttConfigFragment : Fragment() {
             val temp = adapter.getList()
             val differentDoorsByIp = temp.filter { tempDoor ->
                 val dbDoor = dbDoorList.find { it.doorId == tempDoor.doorId }
-                dbDoor != null && tempDoor.rtspConfig?.ip != dbDoor.rtspConfig?.ip
+                dbDoor != null && tempDoor.rtspConfig != dbDoor.rtspConfig
             }
             val doorTable = temp.map { it.toDoorTable() }
             viewModel.updateAllDoors(doorTable)

@@ -186,7 +186,6 @@ class HomeFragment : Fragment() {
                 true
             }
         }
-
         // Set the touch listener for each button using the common function
         binding.btnClose.setOnTouchListener(handleButtonTouch(false)) // Close action
         binding.btnOpen.setOnTouchListener(handleButtonTouch(true))   // Open action
@@ -248,17 +247,14 @@ class HomeFragment : Fragment() {
         Log.d(TAG, "onResume: ")
     }
 
-    fun openRtspView(rtspConfig: RtspConfig, doorId: String) {
+    fun openRtspView(rtspConfig: String, doorId: String) {
+        val url: String = rtspConfig
+            //"rtsp://${rtspConfig.username}:${rtspConfig.password}@${rtspConfig.ip}:554/cam/realmonitor?channel=${rtspConfig.channel}&subtype=${rtspConfig.subtype}"
+        Log.i(TAG, "showPopupWindow: url = $url")
+
         binding.rtspLayout.visibility = View.VISIBLE
         binding.tvDoorId.text = doorId
         try {
-            val url: String =
-                "rtsp://${rtspConfig.username}:${rtspConfig.password}@${rtspConfig.ip}:554/cam/realmonitor?channel=${rtspConfig.channel}&subtype=${rtspConfig.subtype}"
-
-            Log.i(TAG, "showPopupWindow: url = $url")
-
-            // Initialize VLC components using view binding for the video layout
-
             mediaPlayer = MediaPlayer(libVlc)
             val videoLayout = binding.surfaceView
 
@@ -270,7 +266,7 @@ class HomeFragment : Fragment() {
 
                 val media = Media(libVlc, Uri.parse(url))
                 media.setHWDecoderEnabled(true, false)
-                media.addOption(":network-caching=600")
+                //media.addOption(":network-caching=600")
 
                 // Set up close button to stop the media and release resources
                 binding.imgClose.setOnClickListener {

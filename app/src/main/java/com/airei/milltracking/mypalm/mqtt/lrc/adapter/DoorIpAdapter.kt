@@ -24,7 +24,7 @@ class DoorIpAdapter(private val list: List<DoorData>) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(doorData: DoorData) {
             binding.tvDoorId.text = doorData.doorId
-            binding.etIp.setText(doorData.rtspConfig?.ip ?: "")
+            binding.etIp.setText(doorData.rtspConfig)
             // Remove any existing TextWatcher to avoid multiple triggers
             binding.etIp.removeTextChangedListener(binding.etIp.tag as? TextWatcher)
             // Create a new TextWatcher
@@ -38,7 +38,7 @@ class DoorIpAdapter(private val list: List<DoorData>) :
                 override fun afterTextChanged(s: Editable?) {
                     // No action needed after the text is changed
                     doorList.forEach { dd -> if (doorData.doorId == dd.doorId ) {
-                        dd.rtspConfig?.ip = s.toString()
+                        dd.rtspConfig = s.toString()
                     } }
                     updateDoor(doorList)
                 }
