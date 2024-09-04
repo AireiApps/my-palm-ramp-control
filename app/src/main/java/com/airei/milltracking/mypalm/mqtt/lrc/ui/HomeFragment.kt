@@ -1,6 +1,7 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.ui
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -16,15 +17,22 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.fragment.findNavController
 import com.airei.milltracking.mypalm.iot.adapter.DoorAdapter
 import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity
+import com.airei.milltracking.mypalm.mqtt.lrc.MyPalmApp
 import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.RtspConfig
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.TagData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.WData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.doorList
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentHomeBinding
+import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorData
+import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorTable
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 import com.google.gson.Gson
+import org.videolan.libvlc.LibVLC
+import org.videolan.libvlc.Media
+import org.videolan.libvlc.MediaPlayer
 
 
 class HomeFragment : Fragment() {
@@ -44,6 +52,9 @@ class HomeFragment : Fragment() {
 
     lateinit var adapter: DoorAdapter
 
+    var libVlc: LibVLC? = null
+    var mediaPlayer: MediaPlayer? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -62,9 +73,11 @@ class HomeFragment : Fragment() {
                     requireActivity().finish()
                 }
             })
-        setConveyorList()
+        observeDoorList()
         doorActionbtn()
         Log.d(TAG, "onViewCreated: ")
+        libVlc = LibVLC(MyPalmApp.instance)
+        binding.rtspLayout.visibility = View.GONE
         binding.fabConfig.setOnClickListener {
             findNavController().navigate(R.id.mqttConfigFragment)
         }
@@ -74,7 +87,24 @@ class HomeFragment : Fragment() {
         //viewModel.startMqtt.postValue(true)
 
     }
-    private fun setConveyorList(list: List<DoorData> = doorList) {
+
+    private fun observeDoorList() {
+        viewModel.doorsLiveData.observe(viewLifecycleOwner) {
+            if (!it.isNullOrEmpty()) {
+                val doorList = it.map { it.toDoorData() }
+                setConveyorList(doorList)
+            } else {
+                saveDoorList(doorList)
+            }
+        }
+    }
+
+    private fun saveDoorList(doorList: List<DoorData>) {
+        val doorTable = doorList.map { it.toDoorTable() }
+        viewModel.insertAllDoors(doorTable)
+    }
+
+    private fun setConveyorList(list: List<DoorData>) {
         selectDoor = null
         adapter = DoorAdapter(
             requireContext(),
@@ -86,6 +116,7 @@ class HomeFragment : Fragment() {
 
                     temp.map { it ->
                         if (data.doorId == it.doorId && !data.selected) {
+                            data.rtspConfig?.let { openRtspView(it, data.doorId) }
                             it.selected = true
                         } else {
                             it.selected = false
@@ -97,6 +128,7 @@ class HomeFragment : Fragment() {
                     } else {
                         selectDoor = data
                     }
+
                     adapter.updateDoor(temp)
                 }
             }
@@ -196,6 +228,16 @@ class HomeFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         selectDoor = null
+        binding.rtspLayout.visibility = View.GONE
+        if (mediaPlayer != null) {
+            try {
+                mediaPlayer!!.stop()
+                mediaPlayer!!.detachViews()
+                mediaPlayer!!.release()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     override fun onResume() {
@@ -205,6 +247,50 @@ class HomeFragment : Fragment() {
         }
         Log.d(TAG, "onResume: ")
     }
+
+    fun openRtspView(rtspConfig: RtspConfig, doorId: String) {
+        binding.rtspLayout.visibility = View.VISIBLE
+        binding.tvDoorId.text = doorId
+        try {
+            val url: String =
+                "rtsp://${rtspConfig.username}:${rtspConfig.password}@${rtspConfig.ip}:554/cam/realmonitor?channel=${rtspConfig.channel}&subtype=${rtspConfig.subtype}"
+
+            Log.i(TAG, "showPopupWindow: url = $url")
+
+            // Initialize VLC components using view binding for the video layout
+
+            mediaPlayer = MediaPlayer(libVlc)
+            val videoLayout = binding.surfaceView
+
+            if (mediaPlayer != null) {
+                mediaPlayer!!.attachViews(videoLayout, null, false, false)
+
+                // Set video scaling mode to fit the view
+                mediaPlayer!!.videoScale = MediaPlayer.ScaleType.SURFACE_BEST_FIT
+
+                val media = Media(libVlc, Uri.parse(url))
+                media.setHWDecoderEnabled(true, false)
+                media.addOption(":network-caching=600")
+
+                // Set up close button to stop the media and release resources
+                binding.imgClose.setOnClickListener {
+                    binding.rtspLayout.visibility = View.GONE
+                    mediaPlayer!!.stop()
+                    mediaPlayer!!.release()
+                }
+
+                mediaPlayer!!.media = media
+                media.release()
+                mediaPlayer!!.play()
+            }
+        } catch (e: Exception) {
+            Log.d(TAG, "showPopupWindow: ", e)
+            binding.rtspLayout.visibility = View.GONE
+        }
+    }
+
+
+
 
     override fun onDestroyView() {
         super.onDestroyView()

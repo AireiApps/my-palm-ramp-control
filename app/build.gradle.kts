@@ -68,6 +68,10 @@ dependencies {
     implementation(libs.hilt.android)
     // GSON
     implementation(libs.gson)
-    implementation ("org.videolan.android:libvlc-all:3.4.4")
+    implementation (libs.libvlc.all)
+    // RoomDb
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.runtime)
 
 }

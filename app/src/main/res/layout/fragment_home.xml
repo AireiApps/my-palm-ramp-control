@@ -158,6 +158,53 @@
                 tools:itemCount="16"
                 tools:listitem="@layout/item_button" />
 
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/rtsp_layout"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="@+id/rv_conveyor"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <org.videolan.libvlc.util.VLCVideoLayout
+                    android:id="@+id/surface_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:padding="5dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tv_door_id"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/btn_outline_white"
+                    android:backgroundTint="#8AFFFFFF"
+                    android:paddingHorizontal="30dp"
+                    android:paddingVertical="6dp"
+                    android:text="Door 12"
+                    android:layout_marginTop="30dp"
+                    android:textColor="@color/black"
+                    android:textSize="26sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/img_close"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="16dp"
+                    android:background="@drawable/btn_outline_white"
+                    android:backgroundTint="@color/lite_white"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_close"
+                    app:layout_constraintBottom_toBottomOf="@+id/tv_door_id"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/tv_door_id" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

@@ -1,6 +1,7 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.ui
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,10 +10,15 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.airei.milltracking.mypalm.iot.adapter.DoorAdapter
 import com.airei.milltracking.mypalm.mqtt.lrc.R
+import com.airei.milltracking.mypalm.mqtt.lrc.adapter.DoorIpAdapter
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.MqttConfig
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentMqttConfigBinding
+import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorData
+import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorTable
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 import com.google.gson.Gson
 
@@ -22,6 +28,10 @@ class MqttConfigFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: AppViewModel by activityViewModels()
+
+    lateinit var adapter: DoorIpAdapter
+
+    var dbDoorList =  listOf<DoorData>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -45,6 +55,8 @@ class MqttConfigFragment : Fragment() {
         binding.etPort.setText("")
         binding.etUserName.setText("")
         binding.repeatField.visibility = View.GONE
+        binding.svMqttConfig.visibility = View.VISIBLE
+        binding.svDoorIp.visibility = View.GONE
 
         if (!AppPreferences.mqttConfig.isNullOrEmpty()){
             val config = Gson().fromJson(AppPreferences.mqttConfig, MqttConfig::class.java)
@@ -61,6 +73,34 @@ class MqttConfigFragment : Fragment() {
         }
 
         binding.etRepeat.setText(AppPreferences.repeatCnt.toString())
+
+        binding.tvGoToMqtt.setOnClickListener {
+            binding.svMqttConfig.visibility = View.VISIBLE
+            binding.svDoorIp.visibility = View.GONE
+        }
+        binding.tvGoToRtsp.setOnClickListener {
+            binding.svMqttConfig.visibility = View.GONE
+            binding.svDoorIp.visibility = View.VISIBLE
+        }
+
+        viewModel.doorsLiveData.observe(viewLifecycleOwner){
+            if (!it.isNullOrEmpty()){
+                val temp = it.map { it.toDoorData() }
+                dbDoorList = temp
+                setDoorIp(dbDoorList)
+            }
+        }
+
+        binding.btnSaveIp.setOnClickListener {
+            val temp = adapter.getList()
+            val differentDoorsByIp = temp.filter { tempDoor ->
+                val dbDoor = dbDoorList.find { it.doorId == tempDoor.doorId }
+                dbDoor != null && tempDoor.rtspConfig?.ip != dbDoor.rtspConfig?.ip
+            }
+            val doorTable = temp.map { it.toDoorTable() }
+            viewModel.updateAllDoors(doorTable)
+            findNavController().navigate(R.id.homeFragment)
+        }
 
         binding.btnConfig.setOnClickListener {
             // Clear any previous errors
@@ -134,6 +174,11 @@ class MqttConfigFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun setDoorIp(temp: List<DoorData>) {
+        adapter = DoorIpAdapter(temp)
+        binding.rvRtspConfig.adapter = adapter
     }
 
     override fun onDestroyView() {

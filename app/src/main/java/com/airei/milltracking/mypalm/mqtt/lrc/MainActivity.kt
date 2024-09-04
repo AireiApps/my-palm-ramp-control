@@ -3,6 +3,7 @@ package com.airei.milltracking.mypalm.mqtt.lrc
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
+import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -81,18 +82,20 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
         }
         Log.d("MainActivity", "onCreate:")
         // Your initialization code here
-        navController =
-            (supportFragmentManager.findFragmentById(binding.navHostFragment.id) as NavHostFragment).navController
-
-        if (!AppPreferences.mqttConfig.isNullOrEmpty() && !AppPreferences.mqttClientId.isNullOrEmpty()) {
-            navController.navigate(R.id.homeFragment)
-        } else {
-            navController.navigate(R.id.mqttConfigFragment)
+        val orientation = resources.configuration.orientation
+        navController = (supportFragmentManager.findFragmentById(binding.navHostFragment.id) as NavHostFragment).navController
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            Handler(Looper.getMainLooper()).postDelayed({
+                setMqttService()
+            }, 200)
+            if (!AppPreferences.mqttConfig.isNullOrEmpty() && !AppPreferences.mqttClientId.isNullOrEmpty()) {
+                navController.navigate(R.id.homeFragment)
+            } else {
+                navController.navigate(R.id.mqttConfigFragment)
+            }
         }
         dataObserve()
-        Handler(Looper.getMainLooper()).postDelayed({
-            setMqttService()
-        }, 500)
+
     }
 
     private fun dataObserve() {
