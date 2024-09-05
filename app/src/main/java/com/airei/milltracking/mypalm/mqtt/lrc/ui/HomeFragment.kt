@@ -3,6 +3,8 @@ package com.airei.milltracking.mypalm.mqtt.lrc.ui
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -17,8 +19,10 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.LoadControl
 import androidx.navigation.fragment.findNavController
 import com.airei.milltracking.mypalm.iot.adapter.DoorAdapter
 import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity
@@ -125,7 +129,7 @@ class HomeFragment : Fragment() {
 
                     temp.map { it ->
                         if (data.doorId == it.doorId && !data.selected) {
-                            playExoPlayer(data.rtspConfig, data.doorId)
+                            playExoPlayer(data.rtspConfig,doorId =  data.doorId)
                             it.selected = true
                         } else {
                             it.selected = false
@@ -249,6 +253,7 @@ class HomeFragment : Fragment() {
     }
 
 
+    @OptIn(UnstableApi::class)
     @SuppressLint("ClickableViewAccessibility")
     fun playExoPlayer(
         rtspConfig: String = "rtsp://admin:L2ACBEC1@192.168.1.13:554/cam/realmonitor?channel=1&subtype=0",
@@ -256,51 +261,105 @@ class HomeFragment : Fragment() {
     ) {
         binding.tvDoorId.text = doorId
         binding.rtspLayout.visibility = View.VISIBLE
+
+
+
         try {
-            // Release the old player if it exists
             player?.release()
-            // Create the ExoPlayer instance
-            player = ExoPlayer.Builder(requireContext()).build()
+            val loadControl: LoadControl = DefaultLoadControl.Builder()
+                .setBufferDurationsMs(
+                    10000,  // Minimum buffer before playback starts (10 seconds)
+                    30000,  // Maximum buffer during playback (30 seconds)
+                    1500,   // Minimum buffer for a smooth start (1.5 seconds)
+                    3000    // Minimum buffer after a rebuffer (3 seconds)
+                )
+                .build()
+            val tabLoadControl: LoadControl = DefaultLoadControl.Builder()
+                .setBufferDurationsMs(
+                    0,  // Minimum buffer before playback starts (10 seconds)
+                    1000,  // Maximum buffer during playback (30 seconds)
+                    0,   // Minimum buffer for a smooth start (1.5 seconds)
+                    0    // Minimum buffer after a rebuffer (3 seconds)
+                ).setPrioritizeTimeOverSizeThresholds(true)
+                .build()
 
-            // Bind the player to the PlayerView
+            player = ExoPlayer.Builder(requireContext())
+                .setLoadControl(tabLoadControl)
+                .build()
+
             binding.playerView.player = player
-
-            // Disable all UI controls
             binding.playerView.useController = false
 
             player?.addListener(object : Player.Listener {
                 override fun onPlayerError(error: PlaybackException) {
-                    // Handle the error, e.g., show a message to the user
-                    binding.rtspLayout.visibility = View.GONE
                     Toast.makeText(requireContext(), "Failed to connect to RTSP stream.", Toast.LENGTH_LONG).show()
-                    player?.release()
-                    player = null
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        Toast.makeText(requireContext(), "Attempting to reconnect...", Toast.LENGTH_SHORT).show()
+                        playExoPlayer(rtspConfig, doorId = doorId)
+                    }, 1000)
+
+                }
+
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    when (playbackState) {
+                        Player.STATE_READY -> {
+                            // The player is connected and ready to stream
+                            binding.rtspLayout.visibility = View.VISIBLE
+                            Toast.makeText(requireContext(), "Connected to RTSP stream.", Toast.LENGTH_SHORT).show()
+                         }
+                        Player.STATE_BUFFERING -> {
+                            Toast.makeText(requireContext(), "Buffering...", Toast.LENGTH_SHORT).show()
+                        }
+                        Player.STATE_ENDED -> {
+                            Toast.makeText(requireContext(), "Stream ended.", Toast.LENGTH_SHORT).show()
+                        }
+                        Player.STATE_IDLE -> {
+                            Toast.makeText(requireContext(), "Player idle, no stream.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    if (isPlaying) {
+                        Toast.makeText(requireContext(), "RTSP stream is playing.", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(requireContext(), "RTSP stream is paused.", Toast.LENGTH_SHORT).show()
+                        // Delay reconnection attempt
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            Toast.makeText(requireContext(), "Attempting to reconnect...", Toast.LENGTH_SHORT).show()
+                            playExoPlayer(rtspConfig, doorId = doorId)
+                        }, 1000)
+                    }
                 }
             })
 
-            // Block any touch interaction
             binding.playerView.setOnTouchListener { _, _ -> true }
 
-            // Parse the RTSP URL
             val uri = Uri.parse(rtspConfig)
-
-            // Create a MediaItem from the URI
             val mediaItem = MediaItem.fromUri(uri)
-
-            // Create an RTSP media source factory and set it on the player
             player?.setMediaItem(mediaItem)
-
-            // Prepare the player
             player?.prepare()
-
-            // Start playback automatically
             player?.playWhenReady = true
-        }catch (e:Exception){
+
+        } catch (e: Exception) {
             e.printStackTrace()
         }
-
     }
 
+    // Reconnection logic function
+    private fun reconnectToRtspStream(rtspConfig: String) {
+        try {
+            player?.release() // Release the current player before reconnecting
+            player = ExoPlayer.Builder(requireContext()).build()
+            val uri = Uri.parse(rtspConfig)
+            val mediaItem = MediaItem.fromUri(uri)
+            player?.setMediaItem(mediaItem)
+            player?.prepare()
+            player?.playWhenReady = true
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 
 
     override fun onDestroyView() {

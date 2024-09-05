@@ -16,6 +16,7 @@ import com.airei.milltracking.mypalm.mqtt.lrc.adapter.DoorIpAdapter
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.MqttConfig
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.doorList
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentMqttConfigBinding
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorTable
@@ -88,6 +89,8 @@ class MqttConfigFragment : Fragment() {
                 val temp = it.map { it.toDoorData() }
                 dbDoorList = temp
                 setDoorIp(dbDoorList)
+            }else{
+                saveDoorList(doorList)
             }
         }
 
@@ -174,6 +177,11 @@ class MqttConfigFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun saveDoorList(doorList: List<DoorData>) {
+        val doorTable = doorList.map { it.toDoorTable() }
+        viewModel.insertAllDoors(doorTable)
     }
 
     private fun setDoorIp(temp: List<DoorData>) {
