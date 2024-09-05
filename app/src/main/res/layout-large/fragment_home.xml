@@ -162,20 +162,35 @@
                 android:id="@+id/rtsp_layout"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:visibility="gone"
                 android:orientation="vertical"
+                android:background="@color/black"
+                android:backgroundTint="@color/black"
                 app:layout_constraintBottom_toBottomOf="@+id/rv_conveyor"
                 app:layout_constraintTop_toTopOf="parent">
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/black"
+                    android:backgroundTint="@color/black"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    />
                 <androidx.media3.ui.PlayerView
                     android:id="@+id/player_view"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:background="@color/black"
+                    android:backgroundTint="@color/black"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
+                    app:resize_mode="fit"
                     app:show_buffering="when_playing"
-                    app:show_shuffle_button="false" />
-
+                    app:show_shuffle_button="false"/>
 
 
                 <TextView
@@ -207,7 +222,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="@+id/tv_door_id" />
             </androidx.constraintlayout.widget.ConstraintLayout>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"

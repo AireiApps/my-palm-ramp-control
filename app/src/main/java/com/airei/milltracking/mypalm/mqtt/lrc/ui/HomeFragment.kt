@@ -52,12 +52,14 @@ class HomeFragment : Fragment() {
 
     private val viewModel: AppViewModel by activityViewModels()
 
-    private var repeat : Int = 0
-
     lateinit var adapter: DoorAdapter
 
-
     private var player: ExoPlayer? = null
+
+    private var playView : Boolean = false
+
+    private lateinit var handler: Handler
+    private val retryDelayMillis: Long = 1000
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -85,14 +87,15 @@ class HomeFragment : Fragment() {
         binding.fabConfig.setOnClickListener {
             findNavController().navigate(R.id.mqttConfigFragment)
         }
-
+        handler = Handler(Looper.getMainLooper())
         binding.imgClose.setOnClickListener {
-
+            playView = false
             binding.rtspLayout.visibility = View.GONE
             if(player!=null){
                 player?.stop()
                 player?.release()
             }
+            handler.removeCallbacksAndMessages(null)
         }
 
         binding.tgMotor.setOnClickListener {
@@ -126,22 +129,20 @@ class HomeFragment : Fragment() {
                 @SuppressLint("NotifyDataSetChanged")
                 override fun onActionClick(data: DoorData) {
                     val temp = adapter.getList()
-
                     temp.map { it ->
                         if (data.doorId == it.doorId && !data.selected) {
-                            playExoPlayer(data.rtspConfig,doorId =  data.doorId)
+                            playView = true
+                            playExoPlayer(data.rtspConfig, doorId = data.doorId)
                             it.selected = true
                         } else {
                             it.selected = false
                         }
                     }
-
-                    if (selectDoor == data) {
-                        selectDoor = null
+                    selectDoor = if (selectDoor == data) {
+                        null
                     } else {
-                        selectDoor = data
+                        data
                     }
-
                     adapter.updateDoor(temp)
                 }
             }
@@ -168,7 +169,6 @@ class HomeFragment : Fragment() {
                         }
 
                         MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                            repeat = 0
                             isHold = false
                             if (doorStateValue) {
                                 generateMsg(AppPreferences.doorOpenCmd, 0)
@@ -259,10 +259,11 @@ class HomeFragment : Fragment() {
         rtspConfig: String = "rtsp://admin:L2ACBEC1@192.168.1.13:554/cam/realmonitor?channel=1&subtype=0",
         doorId: String
     ) {
+        if(!playView){
+            return
+        }
         binding.tvDoorId.text = doorId
         binding.rtspLayout.visibility = View.VISIBLE
-
-
 
         try {
             player?.release()
@@ -293,29 +294,23 @@ class HomeFragment : Fragment() {
             player?.addListener(object : Player.Listener {
                 override fun onPlayerError(error: PlaybackException) {
                     Toast.makeText(requireContext(), "Failed to connect to RTSP stream.", Toast.LENGTH_LONG).show()
-                    Handler(Looper.getMainLooper()).postDelayed({
+                    handler.postDelayed({
                         Toast.makeText(requireContext(), "Attempting to reconnect...", Toast.LENGTH_SHORT).show()
-                        playExoPlayer(rtspConfig, doorId = doorId)
-                    }, 1000)
-
+                        playExoPlayer(rtspConfig, doorId)
+                    }, retryDelayMillis)
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
+
                     when (playbackState) {
-                        Player.STATE_READY -> {
-                            // The player is connected and ready to stream
-                            binding.rtspLayout.visibility = View.VISIBLE
-                            Toast.makeText(requireContext(), "Connected to RTSP stream.", Toast.LENGTH_SHORT).show()
-                         }
+
                         Player.STATE_BUFFERING -> {
                             Toast.makeText(requireContext(), "Buffering...", Toast.LENGTH_SHORT).show()
                         }
                         Player.STATE_ENDED -> {
                             Toast.makeText(requireContext(), "Stream ended.", Toast.LENGTH_SHORT).show()
                         }
-                        Player.STATE_IDLE -> {
-                            Toast.makeText(requireContext(), "Player idle, no stream.", Toast.LENGTH_SHORT).show()
-                        }
+
                     }
                 }
 
@@ -325,10 +320,10 @@ class HomeFragment : Fragment() {
                     } else {
                         Toast.makeText(requireContext(), "RTSP stream is paused.", Toast.LENGTH_SHORT).show()
                         // Delay reconnection attempt
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            Toast.makeText(requireContext(), "Attempting to reconnect...", Toast.LENGTH_SHORT).show()
-                            playExoPlayer(rtspConfig, doorId = doorId)
-                        }, 1000)
+                            handler.postDelayed({
+                                Toast.makeText(requireContext(), "Attempting to reconnect...", Toast.LENGTH_SHORT).show()
+                                playExoPlayer(rtspConfig, doorId)
+                            }, retryDelayMillis)
                     }
                 }
             })
@@ -360,7 +355,6 @@ class HomeFragment : Fragment() {
             e.printStackTrace()
         }
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()
