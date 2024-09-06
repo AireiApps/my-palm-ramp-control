@@ -38,25 +38,20 @@ import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorTable
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 import com.google.gson.Gson
 
-
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
     private var selectDoor: DoorData? = null
-
-    private var doorState : Boolean = false
-
-    private var isHold : Boolean = false
+    private var doorState: Boolean = false
+    private var isHold: Boolean = false
 
     private val viewModel: AppViewModel by activityViewModels()
-
     lateinit var adapter: DoorAdapter
 
     private var player: ExoPlayer? = null
-
-    private var playView : Boolean = false
+    private var playView: Boolean = false
 
     private lateinit var handler: Handler
     private val retryDelayMillis: Long = 1000
@@ -64,14 +59,14 @@ class HomeFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentHomeBinding.inflate(layoutInflater, container, false)
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
-
 
     @OptIn(UnstableApi::class)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
@@ -79,35 +74,33 @@ class HomeFragment : Fragment() {
                     requireActivity().finish()
                 }
             })
+
         observeDoorList()
-        doorActionbtn()
-        Log.d(TAG, "onViewCreated: ")
+        setupUI()
+        doorActionBtn()
+        handler = Handler(Looper.getMainLooper())
+    }
+
+    private fun setupUI() {
         binding.rtspLayout.visibility = View.GONE
 
         binding.fabConfig.setOnClickListener {
             findNavController().navigate(R.id.mqttConfigFragment)
         }
-        handler = Handler(Looper.getMainLooper())
+
         binding.imgClose.setOnClickListener {
-            playView = false
-            binding.rtspLayout.visibility = View.GONE
-            if(player!=null){
-                player?.stop()
-                player?.release()
-            }
-            handler.removeCallbacksAndMessages(null)
+            stopPlayer()
         }
 
         binding.tgMotor.setOnClickListener {
             updateMotor(state = binding.tgMotor.isChecked)
         }
-        //viewModel.startMqtt.postValue(true)
     }
 
     private fun observeDoorList() {
         viewModel.doorsLiveData.observe(viewLifecycleOwner) {
             if (!it.isNullOrEmpty()) {
-                val doorList = it.map { it.toDoorData() }
+                val doorList = it.map { door -> door.toDoorData() }
                 setConveyorList(doorList)
             } else {
                 saveDoorList(doorList)
@@ -123,26 +116,19 @@ class HomeFragment : Fragment() {
     private fun setConveyorList(list: List<DoorData>) {
         selectDoor = null
         adapter = DoorAdapter(
-            requireContext(),
             list,
             object : DoorAdapter.ActionClickListener {
-                @SuppressLint("NotifyDataSetChanged")
                 override fun onActionClick(data: DoorData) {
                     val temp = adapter.getList()
-                    temp.map { it ->
-                        if (data.doorId == it.doorId && !data.selected) {
-                            playView = true
-                            playExoPlayer(data.rtspConfig, doorId = data.doorId)
-                            it.selected = true
-                        } else {
-                            it.selected = false
-                        }
-                    }
-                    selectDoor = if (selectDoor == data) {
-                        null
+                    temp.forEach { it.selected = it.doorId == data.doorId && !data.selected }
+
+                    if (data.selected) {
+                        playView = true
+                        playExoPlayer(data.rtspConfig, doorId = data.doorId)
                     } else {
-                        data
+                        stopPlayer()
                     }
+                    selectDoor = if (selectDoor == data) null else data
                     adapter.updateDoor(temp)
                 }
             }
@@ -151,209 +137,144 @@ class HomeFragment : Fragment() {
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun doorActionbtn() {
+    private fun doorActionBtn() {
         fun handleButtonTouch(doorStateValue: Boolean) = View.OnTouchListener { _, event ->
-            val mqttConnection = (activity as MainActivity).mqttConnectionCheck()
-            if (mqttConnection) {
-                if (selectDoor != null) {
+            if ((activity as MainActivity).mqttConnectionCheck()) {
+                selectDoor?.let {
                     when (event.action) {
                         MotionEvent.ACTION_DOWN -> {
                             isHold = true
                             doorState = doorStateValue
-                            if (doorStateValue) {
-                                generateMsg(AppPreferences.doorOpenCmd, 1)
-                            } else {
-                                generateMsg(AppPreferences.doorCloseCmd, 1)
-                            }
+                            val cmd = if (doorStateValue) AppPreferences.doorOpenCmd else AppPreferences.doorCloseCmd
+                            generateMsg(cmd, 1)
                             true
                         }
-
                         MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                             isHold = false
-                            if (doorStateValue) {
-                                generateMsg(AppPreferences.doorOpenCmd, 0)
-                            } else {
-                                generateMsg(AppPreferences.doorCloseCmd, 0)
-                            }
-
+                            val cmd = if (doorStateValue) AppPreferences.doorOpenCmd else AppPreferences.doorCloseCmd
+                            generateMsg(cmd, 0)
                             true
                         }
-
                         else -> false
                     }
-                } else {
-                    if (event.action != MotionEvent.ACTION_DOWN || event.action != MotionEvent.ACTION_CANCEL) {
-                        Toast.makeText(requireContext(), "Please select door.", Toast.LENGTH_SHORT)
-                            .show()
+                } ?: run {
+                    if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_CANCEL) {
+                        showToast("Please select a door.")
                     }
                     true
                 }
             } else {
                 if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_CANCEL) {
-                    Toast.makeText(
-                        requireContext(),
-                        "Mqtt connection not available. Please check mqtt connection.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    showToast("Mqtt connection not available. Please check mqtt connection.")
                 }
                 true
             }
         }
-        // Set the touch listener for each button using the common function
-        binding.btnClose.setOnTouchListener(handleButtonTouch(false)) // Close action
-        binding.btnOpen.setOnTouchListener(handleButtonTouch(true))   // Open action
-    }
-
-    private fun isWholeNumber(value: Float): Boolean {
-        return value == value.toInt().toFloat()
+        binding.btnClose.setOnTouchListener(handleButtonTouch(false))
+        binding.btnOpen.setOnTouchListener(handleButtonTouch(true))
     }
 
     private fun generateMsg(tag: String, value: Int) {
-
-        val doorID = selectDoor!!.doorId
-        val modifyTag = tag.replace("[DOOR_X]", doorID)
-        val data = WData(
-            w = listOf(
-                TagData(
-                    tag = modifyTag,
-                    value = value
-                )
-            )
-        )
-        val msg = Gson().toJson(data)
-        viewModel.updateDoor.postValue(msg)
+        selectDoor?.let {
+            val modifyTag = tag.replace("[DOOR_X]", it.doorId)
+            val data = WData(w = listOf(TagData(tag = modifyTag, value = value)))
+            viewModel.updateDoor.postValue(Gson().toJson(data))
+        }
     }
 
     private fun updateMotor(tag: String = "LoadingRamp:LRStarter_Cmd", state: Boolean) {
-        val data = WData(
-            w = listOf(
-                TagData(
-                    tag = tag,
-                    value = if (state) 1 else 0
-                )
-            )
-        )
-        val jsonString = Gson().toJson(data)
-        viewModel.updateStarter.postValue(jsonString)
+        val data = WData(w = listOf(TagData(tag = tag, value = if (state) 1 else 0)))
+        viewModel.updateStarter.postValue(Gson().toJson(data))
+    }
+
+    @OptIn(UnstableApi::class)
+    @SuppressLint("ClickableViewAccessibility")
+    fun playExoPlayer(rtspConfig: String, doorId: String) {
+        if (!playView) return
+
+        binding.tvDoorId.text = doorId
+        binding.rtspLayout.visibility = View.VISIBLE
+
+        // Initialize player
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(10000, 30000, 1000, 2000)
+            .setPrioritizeTimeOverSizeThresholds(true)
+            .build()
+
+        player?.release() // Release any previous player
+        player = ExoPlayer.Builder(requireContext()).setLoadControl(loadControl).build()
+
+        binding.playerView.apply {
+            player = this@HomeFragment.player
+            useController = false
+            setOnTouchListener { _, _ -> true }
+        }
+
+        player?.addListener(object : Player.Listener {
+            override fun onPlayerError(error: PlaybackException) {
+                showToast("Failed to connect to RTSP stream.")
+                Log.i(TAG, "onPlaybackStateChanged: Failed to connect to RTSP stream.")
+                retryPlay(rtspConfig, doorId)
+            }
+
+            override fun onPlaybackStateChanged(state: Int) {
+                when (state) {
+                    Player.STATE_BUFFERING -> {
+                        Log.i(TAG, "onPlaybackStateChanged: STATE_BUFFERING")
+                        showToast("Buffering...")
+                    }
+                    Player.STATE_ENDED -> {
+                        Log.i(TAG, "onPlaybackStateChanged: STATE_ENDED")
+                        showToast("Stream ended.")
+                    }
+                    Player.STATE_IDLE -> {
+                        Log.i(TAG, "onPlaybackStateChanged: STATE_IDLE")
+                    }
+
+                    Player.STATE_READY -> {
+                        Log.i(TAG, "onPlaybackStateChanged: STATE_READY")
+                    }
+                }
+            }
+
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                showToast(if (isPlaying) "RTSP stream is playing." else "RTSP stream is paused.")
+                if (!isPlaying) retryPlay(rtspConfig, doorId)
+            }
+        })
+        player?.apply {
+            setMediaItem(MediaItem.fromUri(Uri.parse(rtspConfig)))
+            prepare()
+            playWhenReady = true
+        }
+    }
+
+    private fun stopPlayer() {
+        playView = false
+        binding.rtspLayout.visibility = View.GONE
+        player?.apply {
+            stop()
+            release()
+        }
+        handler.removeCallbacksAndMessages(null)
+    }
+
+    private fun retryPlay(rtspConfig: String, doorId: String) {
+        handler.postDelayed({
+            showToast(message = "Retrying to connect...")
+            playExoPlayer(rtspConfig, doorId)
+        }, retryDelayMillis)
+    }
+
+    private fun showToast(message: String) {
+        Handler(Looper.getMainLooper()).post {
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onPause() {
         super.onPause()
-        selectDoor = null
-        binding.rtspLayout.visibility = View.GONE
-
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (this::adapter.isInitialized){
-            selectDoor = adapter.getList().find { it.selected }
-        }
-        Log.d(TAG, "onResume: ")
-    }
-
-
-    @OptIn(UnstableApi::class)
-    @SuppressLint("ClickableViewAccessibility")
-    fun playExoPlayer(
-        rtspConfig: String = "rtsp://admin:L2ACBEC1@192.168.1.13:554/cam/realmonitor?channel=1&subtype=0",
-        doorId: String
-    ) {
-        if(!playView){
-            return
-        }
-        binding.tvDoorId.text = doorId
-        binding.rtspLayout.visibility = View.VISIBLE
-
-        try {
-            player?.release()
-            val loadControl: LoadControl = DefaultLoadControl.Builder()
-                .setBufferDurationsMs(
-                    10000,  // Minimum buffer before playback starts (10 seconds)
-                    30000,  // Maximum buffer during playback (30 seconds)
-                    1500,   // Minimum buffer for a smooth start (1.5 seconds)
-                    3000    // Minimum buffer after a rebuffer (3 seconds)
-                )
-                .build()
-            val tabLoadControl: LoadControl = DefaultLoadControl.Builder()
-                .setBufferDurationsMs(
-                    0,  // Minimum buffer before playback starts (10 seconds)
-                    1000,  // Maximum buffer during playback (30 seconds)
-                    0,   // Minimum buffer for a smooth start (1.5 seconds)
-                    0    // Minimum buffer after a rebuffer (3 seconds)
-                ).setPrioritizeTimeOverSizeThresholds(true)
-                .build()
-
-            player = ExoPlayer.Builder(requireContext())
-                .setLoadControl(tabLoadControl)
-                .build()
-
-            binding.playerView.player = player
-            binding.playerView.useController = false
-
-            player?.addListener(object : Player.Listener {
-                override fun onPlayerError(error: PlaybackException) {
-                    Toast.makeText(requireContext(), "Failed to connect to RTSP stream.", Toast.LENGTH_LONG).show()
-                    handler.postDelayed({
-                        Toast.makeText(requireContext(), "Attempting to reconnect...", Toast.LENGTH_SHORT).show()
-                        playExoPlayer(rtspConfig, doorId)
-                    }, retryDelayMillis)
-                }
-
-                override fun onPlaybackStateChanged(playbackState: Int) {
-
-                    when (playbackState) {
-
-                        Player.STATE_BUFFERING -> {
-                            Toast.makeText(requireContext(), "Buffering...", Toast.LENGTH_SHORT).show()
-                        }
-                        Player.STATE_ENDED -> {
-                            Toast.makeText(requireContext(), "Stream ended.", Toast.LENGTH_SHORT).show()
-                        }
-
-                    }
-                }
-
-                override fun onIsPlayingChanged(isPlaying: Boolean) {
-                    if (isPlaying) {
-                        Toast.makeText(requireContext(), "RTSP stream is playing.", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(requireContext(), "RTSP stream is paused.", Toast.LENGTH_SHORT).show()
-                        // Delay reconnection attempt
-                            handler.postDelayed({
-                                Toast.makeText(requireContext(), "Attempting to reconnect...", Toast.LENGTH_SHORT).show()
-                                playExoPlayer(rtspConfig, doorId)
-                            }, retryDelayMillis)
-                    }
-                }
-            })
-
-            binding.playerView.setOnTouchListener { _, _ -> true }
-
-            val uri = Uri.parse(rtspConfig)
-            val mediaItem = MediaItem.fromUri(uri)
-            player?.setMediaItem(mediaItem)
-            player?.prepare()
-            player?.playWhenReady = true
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    // Reconnection logic function
-    private fun reconnectToRtspStream(rtspConfig: String) {
-        try {
-            player?.release() // Release the current player before reconnecting
-            player = ExoPlayer.Builder(requireContext()).build()
-            val uri = Uri.parse(rtspConfig)
-            val mediaItem = MediaItem.fromUri(uri)
-            player?.setMediaItem(mediaItem)
-            player?.prepare()
-            player?.playWhenReady = true
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        stopPlayer()
     }
 
     override fun onDestroyView() {
@@ -361,9 +282,10 @@ class HomeFragment : Fragment() {
         _binding = null
         player?.release()
         player = null
+        handler.removeCallbacksAndMessages(null)
     }
 
     companion object {
-        const val TAG: String = "HomeFragment"
+        const val TAG = "HomeFragment"
     }
 }

@@ -29,7 +29,6 @@ fun isOnline(): Boolean {
 fun Window.setStatusBar(color: Int = R.color.black) {
     // Change status bar color
     statusBarColor = getColor(MyPalmApp.instance, color)
-
     // Change status bar text color
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         val controller = WindowCompat.getInsetsController(this, decorView)
