@@ -24,7 +24,8 @@ import androidx.navigation.fragment.NavHostFragment
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.MqttConfig
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.ActivityMainBinding
-import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PUBLISH_TOPIC
+import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PUBLISH_TOPIC_LR
+import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PUBLISH_TOPIC_STR
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MqttHandler
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MqttMessageListener
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.setStatusBar
@@ -49,14 +50,11 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         if (isActivityLaunched()) { return }
-
         setupView()
         setupDebugMode()
-
         observeViewModel()
-
+        Log.i(TAG, "onCreate: ")
         val orientation = resources.configuration.orientation
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             Handler(Looper.getMainLooper()).postDelayed({ setMqttService() }, 200)
@@ -112,8 +110,16 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
     }
 
     private fun observeViewModel() {
-        viewModel.updateDoor.observe(this) { updateDoorStatus(it) }
-        viewModel.updateStarter.observe(this) { updateDoorStatus(it) }
+        viewModel.updateDoor.observe(this) {
+            if (!it.isNullOrEmpty()){
+                publishMessage(topic = MQTT_PUBLISH_TOPIC_LR, message = it)
+            }
+        }
+        viewModel.updateStarter.observe(this) {
+            if (!it.isNullOrEmpty()){
+                publishMessage(topic = MQTT_PUBLISH_TOPIC_STR, message = it)
+            }
+        }
 
         viewModel.startMqtt.observe(this) {
             if (it) {
@@ -144,10 +150,6 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
                 Log.e(TAG, "setMqttService: Error connecting to MQTT", e)
             }
         }
-    }
-
-    private fun updateDoorStatus(msg: String?) {
-        msg?.let { publishMessage(MQTT_PUBLISH_TOPIC, it) }
     }
 
     private fun publishMessage(topic: String, message: String) {

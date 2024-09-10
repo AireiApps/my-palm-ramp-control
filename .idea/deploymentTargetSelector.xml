@@ -4,11 +4,11 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-08-30T11:42:31.565668500Z">
+        <DropdownSelection timestamp="2024-09-06T07:14:45.153852500Z">
           <Target type="DEFAULT_BOOT">
-            <template>
-              <DeviceId pluginId="FirebaseDirectAccess" type="TEMPLATE" identifier="model_id=gts8uwifi/33" />
-            </template>
+            <handle>
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\AIREI\.android\avd\Medium_Tablet_API_35.avd" />
+            </handle>
           </Target>
         </DropdownSelection>
         <DialogSelection />
