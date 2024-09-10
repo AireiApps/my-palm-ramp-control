@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- On state -->
+    <item android:state_checked="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/btn_draw_radius"/>
+            <stroke android:width="2dp"
+                android:color="@color/japanese_laurel"/>
+            <solid android:color="#A6008000"/> <!-- Color when toggled on -->
+        </shape>
+    </item>
+    <!-- Off state -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/btn_draw_radius"/>
+            <stroke android:width="2dp"
+                android:color="@color/flamingo"/>
+            <solid android:color="#A6EF4040"/> <!-- Color when toggled off -->
+        </shape>
+    </item>
+</selector>

@@ -12,7 +12,6 @@ import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.ItemButtonBinding
 
 class DoorAdapter(
-    private var context: Context,
     private val list: List<DoorData>,
     private val listener: ActionClickListener
 ): RecyclerView.Adapter<DoorAdapter.ConveyorViewHolder>() {
@@ -51,13 +50,21 @@ class DoorAdapter(
             if ( door.selected) {
                 layoutDoor.setBackgroundColor(ContextCompat.getColor(MyPalmApp.instance, R.color.card_color))
             }else{
-                layoutDoor.setBackgroundColor(ContextCompat.getColor(MyPalmApp.instance, R.color.white))
+                layoutDoor.setBackgroundColor(
+                    ContextCompat.getColor(
+                        MyPalmApp.instance,
+                        R.color.color_background_2
+                    )
+                )
             }
-            layoutDoor.setOnClickListener {
-                    listener.onActionClick(door)
+            layoutDoor.setOnClickListener { v ->
+                listener.onActionClick(door)
             }
+
         }
     }
+
+
 
     @SuppressLint("NotifyDataSetChanged")
     fun updateDoor(newList: List<DoorData>) {
@@ -68,7 +75,11 @@ class DoorAdapter(
     fun getList(): List<DoorData> = doorList
 
     interface ActionClickListener {
-        fun onActionClick(conveyor: DoorData)
+        fun onActionClick(data: DoorData)
+    }
+
+    companion object {
+        private val TAG: String = "ConveyorAdapter"
     }
 
 }

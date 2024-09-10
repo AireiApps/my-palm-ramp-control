@@ -15,8 +15,8 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        setProperty("archivesBaseName", "my_palm_mqtt-($versionName)")
     }
 
     buildTypes {
@@ -48,6 +48,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.media3.common)
+    implementation(libs.androidx.media3.ui)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -57,6 +58,7 @@ dependencies {
     implementation(libs.androidx.security.crypto)
     // Mqtt
     implementation (libs.org.eclipse.paho.client.mqttv3)
+    implementation (libs.org.eclipse.paho.android.service)
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.android)
     // Navigate
@@ -67,5 +69,14 @@ dependencies {
     implementation(libs.hilt.android)
     // GSON
     implementation(libs.gson)
+    // RoomDb
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.runtime)
+
+    // Exo
+    //implementation("androidx.media3:media3-ui:1.4.0")
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.exoplayer.rtsp)
 
 }
