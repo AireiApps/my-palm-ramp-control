@@ -4,7 +4,7 @@
     <dimen name="icon_margin">12dp</dimen>
     <dimen name="title_name_size">18sp</dimen>
     <dimen name="title_size">20sp</dimen>
-    <dimen name="company_name_size">24sp</dimen>
+    <dimen name="company_name_size">28sp</dimen>
     <dimen name="icon_padding">26dp</dimen>
     <dimen name="loading_ramp_size">18sp</dimen>
     <dimen name="btn_draw_width">2dp</dimen>

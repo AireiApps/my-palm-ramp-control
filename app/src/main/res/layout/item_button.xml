@@ -8,44 +8,84 @@
     android:layout_marginHorizontal="8dp"
     android:layout_marginVertical="8dp"
     android:elevation="9dp"
-    android:outlineSpotShadowColor="@color/lite_dusty_gray"
-    app:cardBackgroundColor="@color/card_color"
-    >
+    android:background="@color/color_background_2"
+    app:cardElevation="10dp"
+    android:outlineSpotShadowColor="@color/white"
+    android:layout_gravity="center_horizontal"
+    android:outlineAmbientShadowColor="@color/white"
+    app:cardBackgroundColor="#ffffff"
+    tools:ignore="UnusedAttribute">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_door"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingTop="8dp"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center_horizontal"
-        android:paddingBottom="12dp"
-        android:background="@color/card_color"
-        >
+        app:cardBackgroundColor="#ffffff"
+        android:layout_gravity="center_horizontal"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="20dp">
 
         <ImageView
             android:id="@+id/imageView"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginHorizontal="18dp"
-            android:layout_marginTop="10dp"
-            android:src="@drawable/ic_sensor_door"
-            />
+            android:layout_width="65dp"
+            android:layout_height="65dp"
+            android:src="@drawable/ic_garage"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline3"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/tv_conveyor_name"
+        <LinearLayout
+            android:id="@+id/linearLayout2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:letterSpacing="0.035"
-            android:paddingHorizontal="18dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp"
-            android:text="Door\n 1"
-            android:textColor="@color/black"
-            android:textSize="18sp"
-            android:gravity="center"
-            android:textStyle="bold" />
+            android:layout_marginEnd="6dp"
+            android:orientation="vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="14dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/guideline3"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-    </LinearLayout>
+            <TextView
+                android:id="@+id/tv_door"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tv_conveyor_name"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/imageView"
+                android:gravity="start"
+                android:paddingTop="4dp"
+                android:text="Door"
+                android:textColor="@color/black"
+                android:textFontWeight="100"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_conveyor_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@+id/imageView"
+                android:gravity="start"
+                android:text="01"
+                android:textColor="@color/black"
+                android:textSize="40sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/tv_door"
+                app:layout_constraintTop_toBottomOf="@+id/tv_door" />
+
+
+        </LinearLayout>
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent=".50" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.cardview.widget.CardView>

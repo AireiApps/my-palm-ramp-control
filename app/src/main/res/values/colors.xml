@@ -7,8 +7,10 @@
     <color name="japanese_laurel">#008000</color>
     <color name="japanese_laurel_lite">#20008000</color>
     <color name="flamingo">#EF4040</color>
+    <color name="flamingo_lite">#20EF4040</color>
     <color name="dusty_gray">#969696</color>
     <color name="lite_dusty_gray">#42969696</color>
+    <color name="muesli">#AD8D65</color>
 
     <color name="color_background">#6b8698</color>
     <color name="color_lite_text">#c0cbd2</color>

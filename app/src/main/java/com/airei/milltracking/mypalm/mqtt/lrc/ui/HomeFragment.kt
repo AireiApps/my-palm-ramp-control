@@ -15,16 +15,16 @@ import androidx.activity.OnBackPressedCallback
 import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.MutableLiveData
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultLoadControl
-import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.LoadControl
 import androidx.navigation.fragment.findNavController
-import com.airei.milltracking.mypalm.iot.adapter.DoorAdapter
+import androidx.recyclerview.widget.GridLayoutManager
+import com.airei.milltracking.mypalm.mqtt.lrc.adapter.DoorAdapter
 import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity
 import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
@@ -48,13 +48,15 @@ class HomeFragment : Fragment() {
     private var isHold: Boolean = false
 
     private val viewModel: AppViewModel by activityViewModels()
-    lateinit var adapter: DoorAdapter
+    private lateinit var adapter: DoorAdapter
 
     private var player: ExoPlayer? = null
     private var playView: Boolean = false
 
     private lateinit var handler: Handler
     private val retryDelayMillis: Long = 1000
+
+    private var clickListener = MutableLiveData<Pair<Boolean,String>>(Pair(false,""))
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -133,12 +135,19 @@ class HomeFragment : Fragment() {
                 }
             }
         )
+        val displayMetrics = resources.displayMetrics
+        val screenHeightDp = displayMetrics.heightPixels / displayMetrics.density
+        Log.i(TAG, "setConveyorList: $screenHeightDp / ${displayMetrics.heightPixels}")
+        val spanCount = if (screenHeightDp < 700) 6 else 8
+        val gridLayoutManager = GridLayoutManager(requireContext(), spanCount)
+        binding.rvConveyor.layoutManager = gridLayoutManager
+
         binding.rvConveyor.adapter = adapter
     }
 
     @SuppressLint("ClickableViewAccessibility")
     private fun doorActionBtn() {
-        fun handleButtonTouch(doorStateValue: Boolean) = View.OnTouchListener { _, event ->
+        fun handleButtonTouch(doorStateValue: Boolean) = View.OnTouchListener { v, event ->
             if ((activity as MainActivity).mqttConnectionCheck()) {
                 selectDoor?.let {
                     when (event.action) {
@@ -147,13 +156,20 @@ class HomeFragment : Fragment() {
                             doorState = doorStateValue
                             val cmd = if (doorStateValue) AppPreferences.doorOpenCmd else AppPreferences.doorCloseCmd
                             generateMsg(cmd, 1)
-                            true
+                            if (this::adapter.isInitialized){
+                                adapter.clickListener(if (doorStateValue) 1 else 2)
+                            }
+                            false
                         }
                         MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                            clickListener.postValue(Pair(false,""))
                             isHold = false
                             val cmd = if (doorStateValue) AppPreferences.doorOpenCmd else AppPreferences.doorCloseCmd
                             generateMsg(cmd, 0)
-                            true
+                            if (this::adapter.isInitialized){
+                                adapter.clickListener(0)
+                            }
+                            false
                         }
                         else -> false
                     }
@@ -161,13 +177,13 @@ class HomeFragment : Fragment() {
                     if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_CANCEL) {
                         showToast("Please select a door.")
                     }
-                    true
+                    false
                 }
             } else {
                 if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_CANCEL) {
                     showToast("Mqtt connection not available. Please check mqtt connection.")
                 }
-                true
+                false
             }
         }
         binding.btnClose.setOnTouchListener(handleButtonTouch(false))
@@ -191,8 +207,8 @@ class HomeFragment : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     fun playExoPlayer(rtspConfig: String, doorId: String) {
         if (!playView) return
-
-        binding.tvDoorId.text = doorId
+        try {
+            binding.tvDoorId.text = doorId
         binding.rtspLayout.visibility = View.VISIBLE
 
         // Initialize player
@@ -246,6 +262,9 @@ class HomeFragment : Fragment() {
             setMediaItem(MediaItem.fromUri(Uri.parse(rtspConfig)))
             prepare()
             playWhenReady = true
+        }
+        }catch (ex: Exception){
+            Log.e(TAG, "playExoPlayer: Error -> ", ex)
         }
     }
 
