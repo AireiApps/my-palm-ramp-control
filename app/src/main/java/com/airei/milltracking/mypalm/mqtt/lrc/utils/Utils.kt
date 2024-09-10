@@ -29,7 +29,6 @@ fun isOnline(): Boolean {
 fun Window.setStatusBar(color: Int = R.color.black) {
     // Change status bar color
     statusBarColor = getColor(MyPalmApp.instance, color)
-
     // Change status bar text color
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         val controller = WindowCompat.getInsetsController(this, decorView)
@@ -51,7 +50,7 @@ fun DoorTable.toDoorData(): DoorData {
         doorName = this.doorName,
         openStatus = this.openStatus,
         selected = false, // Set to a default value or modify as needed
-        rtspConfig = this.rtsp.toRtspConfig()
+        rtspConfig = this.rtsp
     )
 }
 
@@ -60,13 +59,7 @@ fun DoorData.toDoorTable(): DoorTable {
         doorId = this.doorId,
         doorName = this.doorName,
         openStatus = this.openStatus,
-        rtsp = this.rtspConfig?.toRtsp() ?: Rtsp(
-            channel = "0",
-            subtype = "0",
-            ip = "",
-            username = "",
-            password = ""
-        )
+        rtsp = this.rtspConfig
     )
 }
 

@@ -14,7 +14,7 @@ data class DoorTable(
     @PrimaryKey @ColumnInfo(name = "door_id") val doorId: String,
     @ColumnInfo(name = "door_name") val doorName: String,
     @ColumnInfo(name = "door_status") val openStatus: Boolean,
-    @ColumnInfo(name = "rtsp_config") val rtsp: Rtsp
+    @ColumnInfo(name = "rtsp_config") var rtsp: String = ""
 )
 
 data class Rtsp(

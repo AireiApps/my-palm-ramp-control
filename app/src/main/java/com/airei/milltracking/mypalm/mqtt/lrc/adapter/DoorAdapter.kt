@@ -12,7 +12,6 @@ import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.ItemButtonBinding
 
 class DoorAdapter(
-    private var context: Context,
     private val list: List<DoorData>,
     private val listener: ActionClickListener
 ): RecyclerView.Adapter<DoorAdapter.ConveyorViewHolder>() {
