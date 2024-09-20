@@ -22,11 +22,9 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
-import com.airei.milltracking.mypalm.mqtt.lrc.adapter.DoorAdapter
 import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity
-import com.airei.milltracking.mypalm.mqtt.lrc.R
+import com.airei.milltracking.mypalm.mqtt.lrc.adapter.DoorAdapter
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.TagData
@@ -58,6 +56,9 @@ class HomeFragment : Fragment() {
 
     private var clickListener = MutableLiveData<Pair<Boolean,String>>(Pair(false,""))
 
+    private var TAG_OPEN_DOOR :String = ""
+    private var TAG_CLOSE_DOOR :String = ""
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -77,7 +78,7 @@ class HomeFragment : Fragment() {
                 }
             })
 
-        observeDoorList()
+        observeData()
         setupUI()
         doorActionBtn()
         handler = Handler(Looper.getMainLooper())
@@ -85,10 +86,6 @@ class HomeFragment : Fragment() {
 
     private fun setupUI() {
         binding.rtspLayout.visibility = View.GONE
-
-        binding.fabConfig.setOnClickListener {
-            findNavController().navigate(R.id.mqttConfigFragment)
-        }
 
         binding.imgClose.setOnClickListener {
             stopPlayer()
@@ -99,13 +96,32 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun observeDoorList() {
+    private fun observeData() {
         viewModel.doorsLiveData.observe(viewLifecycleOwner) {
             if (!it.isNullOrEmpty()) {
                 val doorList = it.map { door -> door.toDoorData() }
                 setConveyorList(doorList)
             } else {
                 saveDoorList(doorList)
+            }
+        }
+
+        viewModel.commendData.observe(viewLifecycleOwner){
+            if (it != null){
+                TAG_OPEN_DOOR = it.rampDoorOpen
+                TAG_CLOSE_DOOR = it.rampDoorClose
+            }else{
+                (activity as MainActivity).updateCommend()
+            }
+        }
+
+        viewModel.statusData.observe(viewLifecycleOwner){
+            if (it != null){
+                binding.btnDoorStatus.text = when(it.data.mypalmStatus){
+                    "0" -> "MyPalm Mode"
+                    "1" -> "Sara Mode"
+                    else -> "Manual Mode"
+                }
             }
         }
     }

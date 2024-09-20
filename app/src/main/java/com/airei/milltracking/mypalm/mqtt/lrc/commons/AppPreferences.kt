@@ -20,6 +20,7 @@ object AppPreferences {
     private val REPEAT_COUNT = Pair("repeat_cnt", 1)
     private val DOOR_OPEN_CMD = Pair(MyPalmApp.instance.getString(R.string.door_open_cmd), "LoadingRamp:[DOOR_X]_OpenCmd")
     private val DOOR_CLOSE_CMD = Pair(MyPalmApp.instance.getString(R.string.door_close_cmd), "LoadingRamp:[DOOR_X]_CloseCmd")
+    private val CMD_JSON = Pair("cmd_json", commendJsonStr)
 
     fun init(context: Context = MyPalmApp.instance) {
         preferences = EncryptedSharedPreferences.create(
@@ -50,5 +51,9 @@ object AppPreferences {
     var doorCloseCmd: String
         get() = preferences.getString(DOOR_CLOSE_CMD.first, DOOR_CLOSE_CMD.second) ?: DOOR_CLOSE_CMD.second
         set(value) = preferences.edit().putString(DOOR_CLOSE_CMD.first, value).apply()
+
+    var cmdJson: String
+        get() = preferences.getString(CMD_JSON.first, CMD_JSON.second) ?: CMD_JSON.second
+        set(value) = preferences.edit().putString(CMD_JSON.first, value).apply()
 
 }

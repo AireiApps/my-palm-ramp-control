@@ -79,4 +79,14 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.exoplayer.rtsp)
 
+    // Lottie
+    implementation(libs.lottie)
+
+    // Glide
+    implementation (libs.glide)
+    implementation (libs.gifdecoder)
+    implementation (libs.android.gif.drawable)
+
+
+
 }

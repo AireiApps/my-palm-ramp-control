@@ -1,9 +1,9 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.mqtt
 
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
+import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
+import org.eclipse.paho.client.mqttv3.IMqttToken
 import org.eclipse.paho.client.mqttv3.MqttCallback
 import org.eclipse.paho.client.mqttv3.MqttClient
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions
@@ -31,6 +31,7 @@ class MqttHandler {
             val persistence = MemoryPersistence()
             // Initialize the MQTT client
             client = MqttClient(brokerUrl, clientId, persistence)
+
             // Set up the connection options
             val connectOptions = MqttConnectOptions().apply {
                 isCleanSession = true
@@ -38,44 +39,66 @@ class MqttHandler {
                 userName = username
                 password = clientPassword.toCharArray()
             }
+
             // Set the callback for handling messages
             client?.setCallback(object : MqttCallback {
                 override fun connectionLost(cause: Throwable) {
                     Log.i(TAG, "MqttApp Connection lost: ${cause.message}")
-                    if (listener != null) {
-                        listener?.isConnectionLost(cause)
-                    }
+                    listener?.isConnectionLost(cause)
                 }
+
                 override fun messageArrived(topic: String, message: MqttMessage) {
                     Log.i(
                         TAG,
                         "MqttApp Message arrived from topic $topic: ${String(message.payload)}"
                     )
-                    if (listener != null) {
-                        listener?.onReceiveMessage(topic,String(message.payload))
-                    }
+                    listener?.onReceiveMessage(topic, String(message.payload))
                 }
+
                 override fun deliveryComplete(token: IMqttDeliveryToken) {
                     Log.i(TAG, "MqttApp Delivery complete for message with id: ${token.messageId}")
-                    if (listener != null) {
-                        listener?.onDeliveryComplete(token.messageId, token.message , token.isComplete)
-                    }
+                    listener?.onDeliveryComplete(token.messageId, token.message, token.isComplete)
                 }
             })
+
             try {
-                client?.connect(connectOptions)
-                Handler(Looper.getMainLooper()).postDelayed({
-                    client?.isConnected?.let { listener?.onConnection(it) }
-                }, 200)
+                // Use connectWithResult to establish the connection
+                val result = client?.connectWithResult(connectOptions)
+
+                // Check if the result is null
+                result?.let {
+                    // Set the action callback listener
+                    it.actionCallback = object : IMqttActionListener {
+                        override fun onSuccess(asyncActionToken: IMqttToken?) {
+                            Log.d(TAG, "Connected successfully")
+                            listener?.onConnection(true)
+                        }
+
+                        override fun onFailure(
+                            asyncActionToken: IMqttToken?,
+                            exception: Throwable?
+                        ) {
+                            Log.e(TAG, "Failed to connect", exception)
+                            listener?.onConnection(false)
+                        }
+                    }
+
+                    // Check if the connection was completed
+                    if (it.isComplete) {
+                        Log.d(TAG, "Connection process completed")
+                    } else {
+                        Log.d(TAG, "Connection process is still ongoing")
+                    }
+                }
 
             } catch (ex: Exception) {
-                listener?.onConnection(false)
                 Log.e(TAG, "MqttApp Error connecting to broker: $ex")
-
+                listener?.onConnection(false)
             }
 
         } catch (e: MqttException) {
-            Log.i(TAG, "MqttApp Connection failed: ${e.toString()}")
+            Log.e(TAG, "MqttApp Connection failed: ${e.message}")
+            listener?.onConnection(false)
         }
     }
 
@@ -102,6 +125,8 @@ class MqttHandler {
         } else {
             Log.i(TAG, "MqttApp Client is not connected. Cannot subscribe to topic.")
         }
+
+
     }
 
     fun publish(topic: String, message: String, qos: Int) {

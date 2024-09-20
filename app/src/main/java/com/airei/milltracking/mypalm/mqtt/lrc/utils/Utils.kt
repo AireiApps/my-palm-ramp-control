@@ -1,12 +1,18 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.utils
 
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
 import android.os.Build
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.Window
+import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity
 import com.airei.milltracking.mypalm.mqtt.lrc.MyPalmApp
 import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
@@ -26,6 +32,14 @@ fun isOnline(): Boolean {
     return false
 }
 
+fun hideKeyboard(activity: Activity) {
+    val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    val view = activity.currentFocus
+    if (view != null) {
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+}
+
 fun Window.setStatusBar(color: Int = R.color.black) {
     // Change status bar color
     statusBarColor = getColor(MyPalmApp.instance, color)
@@ -37,10 +51,15 @@ fun Window.setStatusBar(color: Int = R.color.black) {
             it.isAppearanceLightNavigationBars = false
             //it.hide(WindowInsetsCompat.Type.systemBars())
             it.systemBarsBehavior =
-                WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
     } else
         decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+    // Fallback for older versions
+    decorView.systemUiVisibility =
+        decorView.systemUiVisibility and
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION.inv() and
+                View.SYSTEM_UI_FLAG_FULLSCREEN.inv()
 }
 
 // Extension functions for conversion between DoorTable and DoorData
@@ -83,3 +102,6 @@ fun RtspConfig.toRtsp(): Rtsp {
         password = this.password
     )
 }
+
+
+

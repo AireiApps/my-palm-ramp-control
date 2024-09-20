@@ -3,7 +3,11 @@ package com.airei.milltracking.mypalm.mqtt.lrc.viewmodel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.CommandData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.StatusData
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.statusDataSample
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.toStatusData
 import com.airei.milltracking.mypalm.mqtt.lrc.roomdb.DBRepository
 import com.airei.milltracking.mypalm.mqtt.lrc.roomdb.DoorTable
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,6 +21,10 @@ class AppViewModel @Inject constructor(
 {
 
     val startMqtt = MutableLiveData<Boolean>(false)
+
+    val statusData = MutableLiveData<StatusData>()
+
+    val commendData = MutableLiveData<CommandData>()
 
     val updateDoor = MutableLiveData<String>()
     val updateStarter = MutableLiveData<String>()
