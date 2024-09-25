@@ -10,12 +10,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity
 import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.TagData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.WData
+import com.airei.milltracking.mypalm.mqtt.lrc.databinding.AlartFfbBinding
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentFfbConveyorBinding
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.CMD_FFB_EME_STOP
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.CMD_FFB_START
@@ -73,28 +75,30 @@ class FfbConveyorFragment : Fragment() {
             if (it != null){
                 with(binding){
                     btnDoorStatus.text = when(it.data.mypalmStatus){
-                        "0" -> "MyPalm Mode"
-                        "1" -> "Sara Mode"
-                        else -> "Manual Mode"
+                        "0" -> getString(R.string.my_palm_mode)
+                        "1" -> getString(R.string.scada_mode)
+                        else -> getString(R.string.manual_mode)
                     }
                     tvFfbSpeed1.text = "${it.data.ffb1Ma} A"
                     tvFfbSpeed2.text = "${it.data.ffb2Ma} A"
                     tvFfbSpeed3.text = "${it.data.ffb3Ma} A"
                     tvFfbSpeed4.text = "${it.data.ffb4Ma} A"
                     tvFfbSpeed5.text = "${it.data.ffb5Ma} A"
-                    tvFfbStatus1.text = if (it.data.ffb1Start == "0") (getString(R.string.run)) else (getString(R.string.stop))
-                    tvFfbStatus2.text = if (it.data.ffb2Start == "0") (getString(R.string.run)) else (getString(R.string.stop))
-                    tvFfbStatus3.text = if (it.data.ffb3Start == "0") (getString(R.string.run)) else (getString(R.string.stop))
-                    tvFfbStatus4.text = if (it.data.ffb4Start == "0") (getString(R.string.run)) else (getString(R.string.stop))
-                    tvFfbStatus5.text = if (it.data.ffb5Start == "0") (getString(R.string.run)) else (getString(R.string.stop))
+                    tvFfbStatus1.text = if (it.data.ffb1Run == "1") (getString(R.string.run)) else (getString(R.string.stop))
+                    tvFfbStatus2.text = if (it.data.ffb2Run == "1") (getString(R.string.run)) else (getString(R.string.stop))
+                    tvFfbStatus3.text = if (it.data.ffb3Run == "1") (getString(R.string.run)) else (getString(R.string.stop))
+                    tvFfbStatus4.text = if (it.data.ffb4Run == "1") (getString(R.string.run)) else (getString(R.string.stop))
+                    tvFfbStatus5.text = if (it.data.ffb5Run == "1") (getString(R.string.run)) else (getString(R.string.stop))
                     tvFfbStatus1.text = if (it.data.ffb1Estop == "1") (getString(R.string.e_stop)) else tvFfbStatus1.text.toString()
                     tvFfbStatus2.text = if (it.data.ffb2Estop == "1") (getString(R.string.e_stop)) else tvFfbStatus2.text.toString()
                     tvFfbStatus3.text = if (it.data.ffb3Estop == "1") (getString(R.string.e_stop)) else tvFfbStatus3.text.toString()
                     tvFfbStatus4.text = if (it.data.ffb4Estop == "1") (getString(R.string.e_stop)) else tvFfbStatus4.text.toString()
                     tvFfbStatus5.text = if (it.data.ffb5Estop == "1") (getString(R.string.e_stop)) else tvFfbStatus5.text.toString()
+
                 }
             }else {
                 with(binding) {
+                    btnDoorStatus.text = "--"
                     tvFfbSpeed1.text = "0.0 A"
                     tvFfbSpeed2.text = "0.0 A"
                     tvFfbSpeed3.text = "0.0 A"
@@ -112,30 +116,40 @@ class FfbConveyorFragment : Fragment() {
 
     @SuppressLint("ClickableViewAccessibility")
     fun handleButtonTouch(actionTag: String) = View.OnTouchListener { v, event ->
-        when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
-                generateMsg(actionTag, 1)
-                false // Return true to indicate the event was handled
-            }
 
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                when (actionTag) {
-                    FFB_START_TAG -> {
-                        setImages(true)
-                    }
-                    FFB_STOP_TAG -> {
-                        setImages(false)
-                    }
-                    FFB_EME_STOP_TAG -> {
-                        setImages(false)
-                    }
+        if ((activity as MainActivity).mqttConnectionCheck()) {
+            when (event.action) {
+
+                MotionEvent.ACTION_DOWN -> {
+                    generateMsg(actionTag, 1)
+                    false // Return true to indicate the event was handled
                 }
-                generateMsg(actionTag, 0)
-                false // Return true to indicate the event was handled
-            }
 
-            else -> false // Return false for other actions to allow default behavior
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    when (actionTag) {
+                        FFB_START_TAG -> {
+                            setImages(true)
+                        }
+
+                        FFB_STOP_TAG -> {
+                            setImages(false)
+                        }
+
+                        FFB_EME_STOP_TAG -> {
+                            setImages(false)
+                        }
+                    }
+                    generateMsg(actionTag, 0)
+                    false // Return true to indicate the event was handled
+                }
+
+                else -> false // Return false for other actions to allow default behavior
+            }
+        }else{
+            showToast("Mqtt connection not available. Please check mqtt connection.")
+            false
         }
+
     }
 
     private fun generateMsg(tagStr: String, value: Int) {
@@ -238,4 +252,5 @@ class FfbConveyorFragment : Fragment() {
     companion object {
         const val TAG: String = "FfbConveyorFragment"
     }
+
 }

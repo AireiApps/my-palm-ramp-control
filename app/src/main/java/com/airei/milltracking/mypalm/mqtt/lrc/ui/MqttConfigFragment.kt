@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -22,6 +24,7 @@ import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_HOST
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PASS
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PORT
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_USER
+import com.airei.milltracking.mypalm.mqtt.lrc.utils.hideKeyboard
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorTable
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
@@ -55,6 +58,13 @@ class MqttConfigFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+
+                }
+            })
         getData()
     }
 
@@ -68,16 +78,39 @@ class MqttConfigFragment : Fragment() {
 
     private fun setupButtonActions() {
         with(binding) {
+
+            layoutMqtt.setOnClickListener {
+                requireActivity().window.hideKeyboard()
+            }
+            layoutCmd.setOnClickListener {
+                requireActivity().window.hideKeyboard()
+            }
+            layoutDoorTags.setOnClickListener {
+                requireActivity().window.hideKeyboard()
+            }
+
             btnReset.setOnClickListener {
                 when (selectedLayout) {
-                    0 -> setMqttConfig()
-                    1 -> getDoorList()
-                    2 -> setCommandView()
+                    0 -> {
+                        setMqttConfig()
+                        Toast.makeText(requireContext(), "Reset Mqtt data.", Toast.LENGTH_SHORT).show()
+                    }
+                    1 -> {
+                        getDoorList()
+                        Toast.makeText(requireContext(), "Reset Door data.", Toast.LENGTH_SHORT).show()
+                    }
+                    2 -> {
+                        setCommandView()
+                        Toast.makeText(requireContext(), "Reset Commands data.", Toast.LENGTH_SHORT).show()
+                    }
                 }
+
             }
             btnGoBack.setOnClickListener {
                 if (!AppPreferences.mqttClientId.isNullOrBlank()) {
+                    binding.cardMqttConfig.visibility = View.INVISIBLE
                     findNavController().navigate(R.id.homeFragment)
+                    viewModel.startMqtt.postValue(true)
                 }
             }
             btnSaveCmd.setOnClickListener {
@@ -96,23 +129,24 @@ class MqttConfigFragment : Fragment() {
 
             if (validateCommandFields()) {
                 val cmdData = CommandData(
-                    rampDoorOpen = etDoorOpen.text.toString(),
-                    rampDoorClose = etDoorClose.text.toString(),
-                    LRStarter = etStarterMotor.text.toString(),
+                    rampDoorOpen = etDoorOpen.text.toString().trim(),
+                    rampDoorClose = etDoorClose.text.toString().trim(),
+                    LRStarter = etStarterMotor.text.toString().trim(),
                     FFB = FFBCommands(
-                        start = etFfbStart.text.toString(),
-                        stop = etFfbStop.text.toString(),
-                        emergencyStop = etFfbEmeStop.text.toString()
+                        start = etFfbStart.text.toString().trim(),
+                        stop = etFfbStop.text.toString().trim(),
+                        emergencyStop = etFfbEmeStop.text.toString().trim()
                     ),
                     SFB = SFBCommands(
-                        start = etSfbStart.text.toString(),
-                        stop = etSfbStop.text.toString(),
-                        emergencyStop = etSfbEmeStop.text.toString()
+                        start = etSfbStart.text.toString().trim(),
+                        stop = etSfbStop.text.toString().trim(),
+                        emergencyStop = etSfbEmeStop.text.toString().trim()
                     )
                 )
 
                 AppPreferences.cmdJson = Gson().toJson(cmdData)
                 (activity as MainActivity).updateCommend()
+                Toast.makeText(requireContext(), "Commands data updated", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -225,6 +259,7 @@ class MqttConfigFragment : Fragment() {
                     tvMqtt.setSelectedLayoutState()
                     layoutMqtt.visibility = View.VISIBLE
                     setMqttConfig()
+
                 }
 
                 1 -> {
@@ -268,7 +303,8 @@ class MqttConfigFragment : Fragment() {
             etPort.setText(mqttConfigData.port.takeIf { it != 0 }?.toString() ?: MQTT_PORT)
             etUserName.setText(mqttConfigData.username.ifBlank { MQTT_USER })
             etPassword.setText(mqttConfigData.password.ifBlank { MQTT_PASS })
-            etRepeat.setText(AppPreferences.repeatCnt.toString())
+            etRepeat.visibility = View.GONE
+            etRepeat.setText(AppPreferences.repeatCnt.toString().trim())
         }
     }
 
@@ -295,6 +331,7 @@ class MqttConfigFragment : Fragment() {
             username = MQTT_USER,
             password = MQTT_PASS
         )
+
     }
 
     private fun setDoorIp(doorList: List<DoorData> = dbDoorList) {
@@ -304,6 +341,7 @@ class MqttConfigFragment : Fragment() {
 
     private fun saveDoorList(doorList: List<DoorData>) {
         viewModel.insertAllDoors(doorList.map { it.toDoorTable() })
+        Toast.makeText(requireContext(), "Door config updated", Toast.LENGTH_SHORT).show()
     }
 
     private fun validateInputs(): Boolean {
@@ -336,15 +374,16 @@ class MqttConfigFragment : Fragment() {
     private fun saveMqttConfig() {
         with(binding) {
             mqttConfigData = MqttConfig(
-                host = etHost.text.toString(),
-                port = etPort.text.toString().toInt(),
-                username = etUserName.text.toString(),
-                password = etPassword.text.toString()
+                host = etHost.text.toString().trim(),
+                port = etPort.text.toString().trim().toInt(),
+                username = etUserName.text.toString().trim(),
+                password = etPassword.text.toString().trim()
             )
 
             AppPreferences.mqttConfig = Gson().toJson(mqttConfigData)
-            AppPreferences.mqttClientId = etClientId.text.toString()
+            AppPreferences.mqttClientId = etClientId.text.toString().trim()
             AppPreferences.repeatCnt = etRepeat.text.toString().toInt()
+            Toast.makeText(requireContext(), "Mqtt config updated", Toast.LENGTH_SHORT).show()
         }
     }
 

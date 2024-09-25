@@ -1,13 +1,20 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.ui
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.os.CountDownTimer
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.airei.milltracking.mypalm.mqtt.lrc.R
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.fadeInByAlpha
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.fadeInByObject
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.fadeOutByObject
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentSplashBinding
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 
@@ -35,6 +42,34 @@ class SplashFragment : Fragment() {
                     requireActivity().finish()
                 }
             })
+
+    }
+
+    private val timer: CountDownTimer = object : CountDownTimer(DELAY, 1000) {
+
+        override fun onTick(millisUntilFinished: Long) {
+            Log.i(TAG, "onTick: ")
+        }
+
+        override fun onFinish() {
+            binding.root.visibility = View.INVISIBLE
+            if (!AppPreferences.mqttConfig.isNullOrEmpty() && !AppPreferences.mqttClientId.isNullOrEmpty()) {
+                findNavController().navigate(R.id.homeFragment)
+            } else {
+                findNavController().navigate(R.id.mqttConfigFragment)
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        fadeInByObject(binding.imgLogo)
+        timer.start()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        timer.cancel()
     }
 
     override fun onDestroyView() {
@@ -44,5 +79,6 @@ class SplashFragment : Fragment() {
 
     companion object {
         const val TAG: String = "SplashFragment"
+        const val DELAY: Long = 4000
     }
 }

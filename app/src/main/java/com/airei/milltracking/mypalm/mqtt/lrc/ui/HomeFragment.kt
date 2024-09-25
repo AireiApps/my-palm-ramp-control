@@ -1,7 +1,9 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.ui
 
 import android.annotation.SuppressLint
-import android.net.Uri
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -16,14 +18,18 @@ import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
+import androidx.media3.common.C.VIDEO_SCALING_MODE_SCALE_TO_FIT
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.rtsp.RtspMediaSource
+import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.recyclerview.widget.GridLayoutManager
 import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity
+import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.adapter.DoorAdapter
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
@@ -78,6 +84,8 @@ class HomeFragment : Fragment() {
                 }
             })
 
+        binding.layoutBtns!!.visibility = View.INVISIBLE
+
         observeData()
         setupUI()
         doorActionBtn()
@@ -91,12 +99,38 @@ class HomeFragment : Fragment() {
             stopPlayer()
         }
 
+        binding.tgAiMode!!.isChecked = AppPreferences.aiMode
+
         binding.tgMotor.setOnClickListener {
-            updateMotor(state = binding.tgMotor.isChecked)
+            if ((activity as MainActivity).mqttConnectionCheck()) {
+                updateMotor(state = binding.tgMotor.isChecked)
+            } else {
+                binding.tgMotor.isChecked = !binding.tgMotor.isChecked
+                showToast("Mqtt connection not available. Please check mqtt connection.")
+            }
+        }
+        binding.tgAiMode!!.setOnClickListener {
+            if ((activity as MainActivity).mqttConnectionCheck()) {
+                AppPreferences.aiMode = binding.tgAiMode!!.isChecked
+                updateAiMode(state = binding.tgAiMode!!.isChecked)
+            }else{
+                binding.tgAiMode!!.isChecked = !binding.tgAiMode!!.isChecked
+                showToast("Mqtt connection not available. Please check mqtt connection.")
+            }
         }
     }
 
+    data class AiModeData(val mobile: Int)
+
+    private fun updateAiMode(state: Boolean) {
+        val aiMode = if (state) 1 else 0
+        val mobileData = AiModeData(mobile = aiMode)
+        val jsonString = Gson().toJson(mobileData)
+        viewModel.updateAiModeData.postValue(jsonString)
+    }
+
     private fun observeData() {
+
         viewModel.doorsLiveData.observe(viewLifecycleOwner) {
             if (!it.isNullOrEmpty()) {
                 val doorList = it.map { door -> door.toDoorData() }
@@ -118,10 +152,19 @@ class HomeFragment : Fragment() {
         viewModel.statusData.observe(viewLifecycleOwner){
             if (it != null){
                 binding.btnDoorStatus.text = when(it.data.mypalmStatus){
-                    "0" -> "MyPalm Mode"
-                    "1" -> "Sara Mode"
-                    else -> "Manual Mode"
+                    "0" -> getString(R.string.my_palm_mode)
+                    "1" -> getString(R.string.scada_mode)
+                    else -> getString(R.string.manual_mode)
                 }
+                /*binding.btnRampStatus!!.text = when(it.data.){
+                    "0" -> "Auto"
+                    "1" -> "Manual"
+                    else -> "Manual"
+                }*/
+
+            }else{
+                binding.btnDoorStatus.text = "--"
+                binding.btnRampStatus!!.text = "--"
             }
         }
     }
@@ -159,6 +202,8 @@ class HomeFragment : Fragment() {
         binding.rvConveyor.layoutManager = gridLayoutManager
 
         binding.rvConveyor.adapter = adapter
+
+        binding.layoutBtns!!.visibility = View.VISIBLE
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -225,73 +270,133 @@ class HomeFragment : Fragment() {
         if (!playView) return
         try {
             binding.tvDoorId.text = doorId
-        binding.rtspLayout.visibility = View.VISIBLE
+            binding.rtspLayout.visibility = View.VISIBLE
 
-        // Initialize player
-        val loadControl = DefaultLoadControl.Builder()
-            .setBufferDurationsMs(10000, 30000, 1000, 2000)
-            .setPrioritizeTimeOverSizeThresholds(true)
-            .build()
+            /*  // Calculate average network speed (in kbps)
+              val avgNetSpeedKbps = getAverageNetworkSpeed()
 
-        player?.release() // Release any previous player
-        player = ExoPlayer.Builder(requireContext()).setLoadControl(loadControl).build()
+              // Set bitrate based on network speed
+              val maxBitrate = calculateBitrateBasedOnNetworkSpeed(avgNetSpeedKbps)
+  */
+            // Initialize track selector to set bitrate
+            val trackSelector = DefaultTrackSelector(requireContext()).apply {
+                val params =
+                    buildUponParameters().setMaxVideoBitrate(1000 * 1024) // Set bitrate to 1000 kbps
+                        .build()
+                setParameters(params)
+            }
+            // Initialize load control
+            val loadControl = DefaultLoadControl.Builder()
+                //.setBufferDurationsMs(10000, 30000, 1000, 2000)
+                .setPrioritizeTimeOverSizeThresholds(true).build()
 
-        binding.playerView.apply {
-            player = this@HomeFragment.player
-            useController = false
-            setOnTouchListener { _, _ -> true }
-        }
-
-        player?.addListener(object : Player.Listener {
-            override fun onPlayerError(error: PlaybackException) {
-                showToast("Failed to connect to RTSP stream.")
-                Log.i(TAG, "onPlaybackStateChanged: Failed to connect to RTSP stream.")
-                retryPlay(rtspConfig, doorId)
+            player?.release() // Release any previous player
+            player = ExoPlayer.Builder(requireContext())
+                //.setTrackSelector(trackSelector)
+                .setLoadControl(loadControl).build()
+            player?.videoScalingMode = VIDEO_SCALING_MODE_SCALE_TO_FIT
+            binding.playerView.apply {
+                player = this@HomeFragment.player
+                useController = false
+                setOnTouchListener { _, _ -> true }
             }
 
-            override fun onPlaybackStateChanged(state: Int) {
-                when (state) {
-                    Player.STATE_BUFFERING -> {
-                        Log.i(TAG, "onPlaybackStateChanged: STATE_BUFFERING")
-                        showToast("Buffering...")
-                    }
-                    Player.STATE_ENDED -> {
-                        Log.i(TAG, "onPlaybackStateChanged: STATE_ENDED")
-                        showToast("Stream ended.")
-                    }
-                    Player.STATE_IDLE -> {
-                        Log.i(TAG, "onPlaybackStateChanged: STATE_IDLE")
-                    }
+            player?.addListener(object : Player.Listener {
+                override fun onPlayerError(error: PlaybackException) {
+                    showToast("Failed to connect to RTSP stream.")
+                    Log.i(TAG, "onPlaybackStateChanged: Failed to connect to RTSP stream.")
+                    retryPlay(rtspConfig, doorId)
+                }
 
-                    Player.STATE_READY -> {
-                        Log.i(TAG, "onPlaybackStateChanged: STATE_READY")
+                override fun onPlaybackStateChanged(state: Int) {
+                    when (state) {
+                        Player.STATE_BUFFERING -> {
+                            Log.i(TAG, "onPlaybackStateChanged: STATE_BUFFERING")
+                            showToast("Buffering...")
+                        }
+
+                        Player.STATE_ENDED -> {
+                            Log.i(TAG, "onPlaybackStateChanged: STATE_ENDED")
+                            showToast("Stream ended.")
+                        }
+
+                        Player.STATE_IDLE -> {
+                            Log.i(TAG, "onPlaybackStateChanged: STATE_IDLE")
+                        }
+
+                        Player.STATE_READY -> {
+                            Log.i(TAG, "onPlaybackStateChanged: STATE_READY")
+                        }
                     }
                 }
-            }
 
-            override fun onIsPlayingChanged(isPlaying: Boolean) {
-                showToast(if (isPlaying) "RTSP stream is playing." else "RTSP stream is paused.")
-                if (!isPlaying) retryPlay(rtspConfig, doorId)
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    showToast(if (isPlaying) "RTSP stream is playing." else "RTSP stream is paused.")
+                    if (!isPlaying) retryPlay(rtspConfig, doorId)
+                }
+            })
+
+            val mediaSource = RtspMediaSource.Factory().setForceUseRtpTcp(true)
+                .createMediaSource(MediaItem.fromUri(rtspConfig))
+            //"rtsp://admin:L2ACBEC1@192.168.1.13:554/cam/realmonitor?channel=1&subtype=0"));
+
+            //val mediaSource = RtspMediaSource.Factory().createMediaSource(MediaItem.fromUri("rtsp://admin:L2ACBEC1@192.168.1.13:554/cam/realmonitor?channel=1&subtype=0"))
+
+            player?.apply {
+                setMediaSource(mediaSource)
+                prepare()
+                playWhenReady = true
             }
-        })
-        player?.apply {
-            setMediaItem(MediaItem.fromUri(Uri.parse(rtspConfig)))
-            prepare()
-            playWhenReady = true
-        }
-        }catch (ex: Exception){
+        } catch (ex: Exception) {
             Log.e(TAG, "playExoPlayer: Error -> ", ex)
         }
     }
 
-    private fun stopPlayer() {
-        playView = false
-        binding.rtspLayout.visibility = View.GONE
-        player?.apply {
-            stop()
-            release()
+    // Measure average network speed
+    private fun getAverageNetworkSpeed(): Int {
+        // You can use Android's ConnectivityManager to measure the network type
+        val connectivityManager: ConnectivityManager =
+            requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkCapabilities =
+            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+
+        return when {
+            networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true -> 5000 // Assume WiFi speed as 5000 kbps
+            networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true -> {
+                // Assume average cellular speed based on network type (LTE, 3G, etc.)
+                if (networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+                    2000 // Assume 2000 kbps for cellular data
+                } else {
+                    1000 // Lower speeds for older networks
+                }
+            }
+
+            else -> 1000 // Default to lower speed for unknown networks
         }
-        handler.removeCallbacksAndMessages(null)
+    }
+
+    // Calculate bitrate based on network speed
+    private fun calculateBitrateBasedOnNetworkSpeed(avgNetSpeedKbps: Int): Int {
+        return when {
+            avgNetSpeedKbps > 4000 -> 3000 * 1024 // Higher bitrate for fast networks
+            avgNetSpeedKbps > 2000 -> 1500 * 1024 // Medium bitrate
+            else -> 800 * 1024 // Lower bitrate for slow networks
+        }
+    }
+
+    private fun stopPlayer() {
+        try {
+            playView = false
+            binding.rtspLayout.visibility = View.GONE
+            player?.apply {
+                stop()
+                release()
+            }
+            handler.removeCallbacksAndMessages(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "stopPlayer: Error -> ", e)
+        }
+
     }
 
     private fun retryPlay(rtspConfig: String, doorId: String) {
@@ -302,9 +407,14 @@ class HomeFragment : Fragment() {
     }
 
     private fun showToast(message: String) {
-        Handler(Looper.getMainLooper()).post {
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        try {
+            kotlin.runCatching {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "showToast: ", e)
         }
+
     }
 
     override fun onPause() {

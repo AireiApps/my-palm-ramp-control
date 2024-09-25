@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.Window
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.view.WindowCompat
@@ -33,10 +34,35 @@ fun isOnline(): Boolean {
 }
 
 fun hideKeyboard(activity: Activity) {
-    val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    // Get the current focused view
     val view = activity.currentFocus
     if (view != null) {
-        imm.hideSoftInputFromWindow(view.windowToken, 0)
+        // Clear focus from the view
+        //view.clearFocus()
+
+        // Hide the keyboard
+        val inputMethodManager = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+    } else {
+        // If no view is focused, try to hide the keyboard anyway
+        val inputMethodManager = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
+    }
+}
+
+fun Window.hideKeyboard() {
+    try {
+        (context as Activity).window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
+        if ((context as Activity).currentFocus != null && (context as Activity).currentFocus!!
+                .windowToken != null
+        ) {
+            currentFocus?.clearFocus()
+            (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(
+                (context as Activity).currentFocus!!.windowToken, 0
+            )
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
 }
 

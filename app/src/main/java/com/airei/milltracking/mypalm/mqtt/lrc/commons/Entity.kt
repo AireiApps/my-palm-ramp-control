@@ -57,6 +57,13 @@ data class WData(
     val w: List<TagData>
 )
 
+data class FfbRunningStatus(
+    val ffb1Run: String,
+    val ffb2Run: String,
+    val ffb3Run: String,
+    val ffb4Run: String,
+    val ffb5Run: String,
+)
 
 data class StatusData(
     @SerializedName("dts") val dts: String,

@@ -79,19 +79,19 @@ class SfbConveyorFragment : Fragment() {
             if (it != null) {
                 with(binding) {
                     btnDoorStatus.text = when (it.data.mypalmStatus) {
-                        "0" -> "MyPalm Mode"
-                        "1" -> "Sara Mode"
-                        else -> "Manual Mode"
+                        "0" -> getString(R.string.my_palm_mode)
+                        "1" -> getString(R.string.scada_mode)
+                        else -> getString(R.string.manual_mode)
                     }
                     tvSfbSpeed1.text = "${it.data.sfb1Ma} A"
                     tvSfbSpeed2.text = "${it.data.sfb2Ma} A"
                     tvSfbSpeed3.text = "${it.data.sfb3Ma} A"
                     tvSfbStatus1.text =
-                        if (it.data.sfb1Start == "0") (getString(R.string.run)) else (getString(R.string.stop))
+                        if (it.data.sfb1Run == "1") (getString(R.string.run)) else (getString(R.string.stop))
                     tvSfbStatus2.text =
-                        if (it.data.sfb2Start == "0") (getString(R.string.run)) else (getString(R.string.stop))
+                        if (it.data.sfb2Run == "1") (getString(R.string.run)) else (getString(R.string.stop))
                     tvSfbStatus3.text =
-                        if (it.data.sfb3Start == "0") (getString(R.string.run)) else (getString(R.string.stop))
+                        if (it.data.sfb3Run == "1") (getString(R.string.run)) else (getString(R.string.stop))
                     tvSfbStatus1.text =
                         if (it.data.sfb1Estop == "1") (getString(R.string.e_stop)) else tvSfbStatus1.text.toString()
                     tvSfbStatus2.text =
@@ -101,6 +101,7 @@ class SfbConveyorFragment : Fragment() {
                 }
             } else {
                 with(binding) {
+                    btnDoorStatus.text = "--"
                     tvSfbSpeed1.text = "0.0 A"
                     tvSfbSpeed2.text = "0.0 A"
                     tvSfbSpeed3.text = "0.0 A"
@@ -114,8 +115,9 @@ class SfbConveyorFragment : Fragment() {
 
     @SuppressLint("ClickableViewAccessibility")
     fun handleButtonTouch(actionTag: String) = View.OnTouchListener { v, event ->
-        when (event.action) {
 
+        if ((activity as MainActivity).mqttConnectionCheck()) {
+        when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 generateMsg(actionTag, 1)
                 Log.i(TAG, "handleButtonTouch: actionTag = $actionTag")
@@ -141,6 +143,10 @@ class SfbConveyorFragment : Fragment() {
             }
 
             else -> false // Return false for other actions to allow default behavior
+        }
+        } else {
+            showToast("Mqtt connection not available. Please check mqtt connection.")
+            false
         }
     }
 

@@ -14,7 +14,7 @@ android {
         minSdk = 26
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "my_palm_mqtt-($versionName)")
     }
@@ -86,7 +86,6 @@ dependencies {
     implementation (libs.glide)
     implementation (libs.gifdecoder)
     implementation (libs.android.gif.drawable)
-
 
 
 }

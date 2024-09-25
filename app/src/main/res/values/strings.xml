@@ -62,4 +62,17 @@
     <string name="status">Status</string>
     <string name="run">Run</string>
     <string name="e_stop">E_Stop</string>
+    <string name="ai">AI Mode \t:\t</string>
+    <string name="disable">Disable</string>
+    <string name="enable">Enable</string>
+    <string name="reconnect">Reconnect</string>
+    <string name="connect">Connected</string>
+    <string name="my_palm_mode">MyPalm Mode</string>
+    <string name="scada_mode">Scada Mode</string>
+    <string name="manual_mode">Manual Mode</string>
+    <string name="ffb_alert_msg_single">FFB Conveyor started. Can we start feeding?</string>
+    <string name="ffb_alert_msg_multiple">FFB Conveyors started. Can we start feeding?</string>
+    <string name="ffb_alert_confirm">Yes</string>
+    <string name="ffb_alert_title">Are you Sure?</string>
+
 </resources>

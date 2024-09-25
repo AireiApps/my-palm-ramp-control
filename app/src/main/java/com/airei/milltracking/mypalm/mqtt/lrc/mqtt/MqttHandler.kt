@@ -86,8 +86,14 @@ class MqttHandler {
                     // Check if the connection was completed
                     if (it.isComplete) {
                         Log.d(TAG, "Connection process completed")
+                        if (client?.isConnected == true){
+                            listener?.onConnection(true)
+                        }else{
+                            listener?.onConnection(false)
+                        }
                     } else {
                         Log.d(TAG, "Connection process is still ongoing")
+                        listener?.onConnection(false)
                     }
                 }
 

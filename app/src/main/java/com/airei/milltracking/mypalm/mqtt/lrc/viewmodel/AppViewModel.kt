@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.CommandData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.FfbRunningStatus
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.StatusData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.statusDataSample
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.toStatusData
@@ -20,14 +21,17 @@ class AppViewModel @Inject constructor(
 ):ViewModel()
 {
 
+    var ffbLastStatus : FfbRunningStatus? = null
+
     val startMqtt = MutableLiveData<Boolean>(false)
 
-    val statusData = MutableLiveData<StatusData>()
+    val statusData = MutableLiveData<StatusData?>(null)
 
     val commendData = MutableLiveData<CommandData>()
 
     val updateDoor = MutableLiveData<String>()
     val updateStarter = MutableLiveData<String>()
+    val updateAiModeData = MutableLiveData<String>()
 
     // LiveData or other observables for the UI
     val doorsLiveData = doorRepository.getAllDoors()

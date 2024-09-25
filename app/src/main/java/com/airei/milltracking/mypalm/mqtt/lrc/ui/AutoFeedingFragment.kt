@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.StatusData
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentAutoFeedingBinding
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
@@ -40,17 +41,21 @@ class AutoFeedingFragment : Fragment() {
 
     private fun viewModelObserve() {
         viewModel.statusData.observe(viewLifecycleOwner){
-            if (it != null){
+
                 updateView(it)
-            }
+
         }
     }
 
-    private fun updateView(it: StatusData) {
-        binding.btnDoorStatus.text = when(it.data.mypalmStatus){
-            "0" -> "MyPalm Mode"
-            "1" -> "Sara Mode"
-            else -> "Manual Mode"
+    private fun updateView(it: StatusData?) {
+        if (it == null){
+            binding.btnDoorStatus.text = "--"
+        }else{
+            binding.btnDoorStatus.text = when(it.data.mypalmStatus){
+                "0" -> getString(R.string.my_palm_mode)
+                "1" -> getString(R.string.scada_mode)
+                else -> getString(R.string.manual_mode)
+            }
         }
     }
 
