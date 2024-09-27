@@ -1,5 +1,7 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.ui
 
+import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
@@ -14,7 +16,9 @@ import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.fadeInByObject
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentSplashBinding
+import com.airei.milltracking.mypalm.mqtt.lrc.utils.getAppVersion
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
+import org.eclipse.paho.android.service.BuildConfig
 
 class SplashFragment : Fragment() {
 
@@ -30,6 +34,7 @@ class SplashFragment : Fragment() {
         return binding.root
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         requireActivity().onBackPressedDispatcher.addCallback(
@@ -39,6 +44,12 @@ class SplashFragment : Fragment() {
                     requireActivity().finish()
                 }
             })
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            binding.tvAppVersion.visibility = View.VISIBLE
+            binding.tvAppVersion.text = getAppVersion(requireContext())
+        }else{
+            binding.tvAppVersion.visibility = View.INVISIBLE
+        }
     }
 
     private val timer: CountDownTimer = object : CountDownTimer(DELAY, 1000) {

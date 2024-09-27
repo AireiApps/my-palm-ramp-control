@@ -3,6 +3,7 @@ package com.airei.milltracking.mypalm.mqtt.lrc.utils
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.view.MotionEvent
@@ -10,6 +11,7 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -129,5 +131,16 @@ fun RtspConfig.toRtsp(): Rtsp {
     )
 }
 
+@RequiresApi(Build.VERSION_CODES.P)
+fun getAppVersion(context: Context): String {
+    return try {
+        val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+        val versionName = packageInfo.versionName
+        //val versionCode = packageInfo.longVersionCode  // For API 28+
+        "Version: $versionName"
+    } catch (e: PackageManager.NameNotFoundException) {
+        "Version: info not available"
+    }
+}
 
 
