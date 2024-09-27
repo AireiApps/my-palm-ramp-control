@@ -379,7 +379,8 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
                         binding.navHostFragment.visibility = View.VISIBLE
                     }
 
-                    navController.findDestination(R.id.splashFragment)?.label
+                    navController.findDestination(R.id.splashFragment)?.label,
+                    navController.findDestination(R.id.guideFragment)?.label
                     -> {
                         binding.bnNavigation.visibility = View.GONE
                     }

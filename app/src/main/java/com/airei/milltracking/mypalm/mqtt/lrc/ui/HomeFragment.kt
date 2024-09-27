@@ -84,7 +84,7 @@ class HomeFragment : Fragment() {
                 }
             })
 
-        binding.layoutBtns!!.visibility = View.INVISIBLE
+        binding.layoutBtns.visibility = View.INVISIBLE
 
         observeData()
         setupUI()
@@ -99,7 +99,7 @@ class HomeFragment : Fragment() {
             stopPlayer()
         }
 
-        binding.tgAiMode!!.isChecked = AppPreferences.aiMode
+        binding.tgAiMode.isChecked = AppPreferences.aiMode
 
         binding.tgMotor.setOnClickListener {
             if ((activity as MainActivity).mqttConnectionCheck()) {
@@ -109,12 +109,12 @@ class HomeFragment : Fragment() {
                 showToast("Mqtt connection not available. Please check mqtt connection.")
             }
         }
-        binding.tgAiMode!!.setOnClickListener {
+        binding.tgAiMode.setOnClickListener {
             if ((activity as MainActivity).mqttConnectionCheck()) {
-                AppPreferences.aiMode = binding.tgAiMode!!.isChecked
-                updateAiMode(state = binding.tgAiMode!!.isChecked)
+                AppPreferences.aiMode = binding.tgAiMode.isChecked
+                updateAiMode(state = binding.tgAiMode.isChecked)
             }else{
-                binding.tgAiMode!!.isChecked = !binding.tgAiMode!!.isChecked
+                binding.tgAiMode.isChecked = !binding.tgAiMode.isChecked
                 showToast("Mqtt connection not available. Please check mqtt connection.")
             }
         }
@@ -156,6 +156,7 @@ class HomeFragment : Fragment() {
                     "1" -> getString(R.string.scada_mode)
                     else -> getString(R.string.manual_mode)
                 }
+                binding.btnRampStatus.text = "--"
                 /*binding.btnRampStatus!!.text = when(it.data.){
                     "0" -> "Auto"
                     "1" -> "Manual"
@@ -164,7 +165,7 @@ class HomeFragment : Fragment() {
 
             }else{
                 binding.btnDoorStatus.text = "--"
-                binding.btnRampStatus!!.text = "--"
+                binding.btnRampStatus.text = "--"
             }
         }
     }
@@ -199,11 +200,12 @@ class HomeFragment : Fragment() {
         Log.i(TAG, "setConveyorList: $screenHeightDp / ${displayMetrics.heightPixels}")
         val spanCount = if (screenHeightDp < 700) 6 else 8
         val gridLayoutManager = GridLayoutManager(requireContext(), spanCount)
+
         binding.rvConveyor.layoutManager = gridLayoutManager
 
         binding.rvConveyor.adapter = adapter
 
-        binding.layoutBtns!!.visibility = View.VISIBLE
+        binding.layoutBtns.visibility = View.VISIBLE
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -272,13 +274,6 @@ class HomeFragment : Fragment() {
             binding.tvDoorId.text = doorId
             binding.rtspLayout.visibility = View.VISIBLE
 
-            /*  // Calculate average network speed (in kbps)
-              val avgNetSpeedKbps = getAverageNetworkSpeed()
-
-              // Set bitrate based on network speed
-              val maxBitrate = calculateBitrateBasedOnNetworkSpeed(avgNetSpeedKbps)
-  */
-            // Initialize track selector to set bitrate
             val trackSelector = DefaultTrackSelector(requireContext()).apply {
                 val params =
                     buildUponParameters().setMaxVideoBitrate(1000 * 1024) // Set bitrate to 1000 kbps
@@ -337,7 +332,7 @@ class HomeFragment : Fragment() {
             })
 
             val mediaSource = RtspMediaSource.Factory().setForceUseRtpTcp(true)
-                .createMediaSource(MediaItem.fromUri(rtspConfig))
+                .createMediaSource(MediaItem.fromUri("rtsp://admin:L2ACBEC1@192.168.1.13:554/cam/realmonitor?channel=1&subtype=0"))
             //"rtsp://admin:L2ACBEC1@192.168.1.13:554/cam/realmonitor?channel=1&subtype=0"));
 
             //val mediaSource = RtspMediaSource.Factory().createMediaSource(MediaItem.fromUri("rtsp://admin:L2ACBEC1@192.168.1.13:554/cam/realmonitor?channel=1&subtype=0"))

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_gradient_gray"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/black"
     tools:context=".ui.HomeFragment">
 
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -19,85 +19,97 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/main"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent">
 
-            <ImageView
-                android:id="@+id/imageView"
-                android:layout_width="@dimen/icon_img"
-                android:layout_height="@dimen/icon_img"
-                android:layout_margin="@dimen/icon_margin"
-                android:padding="@dimen/icon_padding_1"
-                android:src="@drawable/airei_logo"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageView
-                android:id="@+id/imageView2"
-                android:layout_width="@dimen/icon_img"
-                android:layout_height="@dimen/icon_img"
-                android:layout_margin="@dimen/icon_margin"
-                android:padding="@dimen/icon_padding"
-                android:src="@drawable/my_palm_logo_gray"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toTopOf="@+id/guideline2"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/guideline"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                app:layout_constraintGuide_percent=".20" />
-
-            <TextView
-                android:id="@+id/tv_company_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:letterSpacing=".03"
-                android:paddingVertical="8dp"
-                android:text="@string/company_name"
-                android:textColor="@color/white"
-                android:textFontWeight="1000"
-                android:textSize="@dimen/company_name_size"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toStartOf="@+id/imageView2"
-                app:layout_constraintStart_toEndOf="@+id/imageView"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:ignore="UnusedAttribute" />
+                app:layout_constraintVertical_bias="1.0">
 
-            <TextView
-                android:id="@+id/textView2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:letterSpacing=".02"
-                android:paddingVertical="6dp"
-                android:text="@string/title"
-                android:textColor="@color/white"
-                android:textFontWeight="580"
-                android:textSize="@dimen/title_size"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toStartOf="@+id/imageView2"
-                app:layout_constraintStart_toEndOf="@+id/imageView"
-                app:layout_constraintTop_toBottomOf="@+id/tv_company_name" />
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="@dimen/icon_img"
+                    android:layout_height="0dp"
+                    android:src="@drawable/airei_logo"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/imageView2"
+                    android:layout_width="@dimen/icon_img"
+                    android:layout_height="0dp"
+                    android:src="@drawable/my_palm_logo_gray"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tv_company_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:letterSpacing=".03"
+                    android:paddingVertical="4dp"
+                    android:text="@string/company_name"
+                    android:textColor="@color/white"
+                    android:textFontWeight="1000"
+                    android:textSize="@dimen/company_name_size"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toStartOf="@+id/imageView2"
+                    app:layout_constraintStart_toEndOf="@+id/imageView"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="UnusedAttribute" />
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:letterSpacing=".02"
+                    android:paddingVertical="4dp"
+                    android:text="@string/title"
+                    android:textColor="@color/white"
+                    android:textFontWeight="580"
+                    android:textSize="@dimen/title_size"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toStartOf="@+id/imageView2"
+                    app:layout_constraintStart_toEndOf="@+id/imageView"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_company_name" />
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="@color/lite_gray"
+                app:layout_constraintBottom_toBottomOf="@+id/linearLayout"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
             <LinearLayout
                 android:id="@+id/linearLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="2dp"
                 android:gravity="center"
                 android:orientation="horizontal"
-                android:paddingTop="20dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="15dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView2">
+                app:layout_constraintTop_toBottomOf="@+id/guideline2">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/loading_ramp"
+                    android:text="@string/door_control"
                     android:textColor="@color/white"
                     android:textFontWeight="500"
                     android:textSize="@dimen/loading_ramp_size"
@@ -113,7 +125,7 @@
                     android:layout_height="@dimen/btn_ramp_height"
                     android:layout_marginStart="12dp"
                     android:background="@drawable/btn_outline_green"
-                    android:text="Auto/Manual"
+                    android:text="MyPalm Mode/MyPalm Mode"
                     android:textColor="@color/color_background_1"
                     app:backgroundTint="@color/color_background_2" />
 
@@ -123,6 +135,7 @@
                     android:text="@string/loading_ramp"
                     android:textColor="@color/white"
                     android:textFontWeight="500"
+                    android:layout_marginStart="26dp"
                     android:textSize="@dimen/loading_ramp_size"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/imageView2"
@@ -131,6 +144,7 @@
                     tools:ignore="UnusedAttribute" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_ramp_status"
                     android:layout_width="@dimen/btn_ramp_width"
                     android:layout_height="@dimen/btn_ramp_height"
                     android:layout_marginStart="12dp"
@@ -156,13 +170,40 @@
                 <ToggleButton
                     android:id="@+id/tg_motor"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="@dimen/btn_ramp_height"
                     android:layout_marginLeft="8dp"
                     android:background="@drawable/toggle_button_background"
                     android:text="ToggleButton"
+                    android:textAllCaps="false"
                     android:textColor="@color/white"
                     android:textOff="Off"
                     android:textOn="On" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="26dp"
+                    android:text="@string/ai"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="@dimen/loading_ramp_size"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toStartOf="@+id/imageView2"
+                    app:layout_constraintStart_toEndOf="@+id/imageView"
+                    app:layout_constraintTop_toBottomOf="@+id/textView"
+                    tools:ignore="UnusedAttribute" />
+
+                <ToggleButton
+                    android:id="@+id/tg_ai_mode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/btn_ramp_height"
+                    android:layout_marginLeft="8dp"
+                    android:background="@drawable/toggle_button_background"
+                    android:text="ToggleButton"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textOff="@string/disable"
+                    android:textOn="@string/enable" />
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
@@ -172,7 +213,8 @@
                 android:layout_marginHorizontal="18dp"
                 android:layout_marginTop="6dp"
                 android:foregroundGravity="center_horizontal"
-                android:paddingVertical="18dp"
+                android:maxHeight="300dp"
+                android:paddingVertical="9dp"
                 app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -185,10 +227,10 @@
                 android:id="@+id/rtsp_layout"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:orientation="vertical"
                 android:background="@color/black"
-                android:visibility="gone"
                 android:backgroundTint="@color/black"
+                android:orientation="vertical"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="@+id/rv_conveyor"
                 app:layout_constraintTop_toTopOf="parent">
 
@@ -200,8 +242,8 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    />
+                    app:layout_constraintTop_toTopOf="parent" />
+
                 <androidx.media3.ui.PlayerView
                     android:id="@+id/player_view"
                     android:layout_width="match_parent"
@@ -214,19 +256,19 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:resize_mode="fit"
                     app:show_buffering="when_playing"
-                    app:show_shuffle_button="false"/>
+                    app:show_shuffle_button="false" />
 
 
                 <TextView
                     android:id="@+id/tv_door_id"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="30dp"
                     android:background="@drawable/btn_outline_white"
                     android:backgroundTint="#8AFFFFFF"
                     android:paddingHorizontal="30dp"
                     android:paddingVertical="6dp"
                     android:text="Door 12"
-                    android:layout_marginTop="30dp"
                     android:textColor="@color/black"
                     android:textSize="26sp"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -248,43 +290,55 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <LinearLayout
+                android:id="@+id/layout_btns"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="0dp"
                 android:layout_marginHorizontal="18dp"
-                android:minHeight="300dp"
-                android:paddingBottom="50dp"
                 android:weightSum="1"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/rv_conveyor">
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_open"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:layout_margin="18dp"
+                    android:layout_marginBottom="18dp"
+                    android:layout_marginTop="9dp"
+                    android:layout_marginHorizontal="9dp"
                     android:layout_weight=".5"
                     android:background="@drawable/btn_click_green"
                     android:text="@string/open"
-                    android:textSize="35sp"
+                    android:textSize="28sp"
                     app:backgroundTint="@null"
                     app:rippleColor="@color/lite_white" />
 
-                <androidx.appcompat.widget.AppCompatButton
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_close"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:layout_margin="18dp"
                     android:layout_weight=".5"
+                    android:layout_marginBottom="18dp"
+                    android:layout_marginTop="9dp"
+                    android:layout_marginHorizontal="9dp"
                     android:background="@drawable/btn_click_red"
                     android:text="@string/close"
-                    android:textSize="35sp"
-                    android:textAllCaps="false"
-                    android:textColor="@color/white" />
+                    android:textSize="28sp"
+                    app:backgroundTint="@null"
+                    app:rippleColor="@color/white" />
             </LinearLayout>
+
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintGuide_percent=".15" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-    </ScrollView>
+    </LinearLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

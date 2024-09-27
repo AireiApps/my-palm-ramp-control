@@ -42,5 +42,10 @@
         android:name="com.airei.milltracking.mypalm.mqtt.lrc.ui.SplashFragment"
         android:label="fragment_splash"
         tools:layout="@layout/fragment_splash" />
+    <fragment
+        android:id="@+id/guideFragment"
+        android:name="com.airei.milltracking.mypalm.mqtt.lrc.ui.GuideFragment"
+        android:label="fragment_guide"
+        tools:layout="@layout/fragment_guide" />
 
 </navigation>

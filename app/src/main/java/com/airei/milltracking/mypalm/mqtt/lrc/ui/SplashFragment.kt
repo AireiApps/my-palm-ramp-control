@@ -12,12 +12,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
-import com.airei.milltracking.mypalm.mqtt.lrc.commons.fadeInByAlpha
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.fadeInByObject
-import com.airei.milltracking.mypalm.mqtt.lrc.commons.fadeOutByObject
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentSplashBinding
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
-
 
 class SplashFragment : Fragment() {
 
@@ -42,7 +39,6 @@ class SplashFragment : Fragment() {
                     requireActivity().finish()
                 }
             })
-
     }
 
     private val timer: CountDownTimer = object : CountDownTimer(DELAY, 1000) {
@@ -53,11 +49,16 @@ class SplashFragment : Fragment() {
 
         override fun onFinish() {
             binding.root.visibility = View.INVISIBLE
-            if (!AppPreferences.mqttConfig.isNullOrEmpty() && !AppPreferences.mqttClientId.isNullOrEmpty()) {
-                findNavController().navigate(R.id.homeFragment)
-            } else {
-                findNavController().navigate(R.id.mqttConfigFragment)
+            if (AppPreferences.guideStatus){
+                if (!AppPreferences.mqttConfig.isNullOrEmpty() && !AppPreferences.mqttClientId.isNullOrEmpty()) {
+                    findNavController().navigate(R.id.homeFragment)
+                } else {
+                    findNavController().navigate(R.id.mqttConfigFragment)
+                }
+            }else{
+                findNavController().navigate(R.id.guideFragment)
             }
+
         }
     }
 

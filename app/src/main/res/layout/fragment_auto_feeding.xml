@@ -166,6 +166,7 @@
                 android:id="@+id/tv_leave_1"
                 style="@style/AutoFeedTextViewStyle"
                 android:layout_width="0dp"
+                android:text="8"
                 android:layout_height="wrap_content"
                 android:layout_weight=".5" />
 
@@ -192,6 +193,7 @@
                 android:id="@+id/tv_speed_1"
                 style="@style/AutoFeedTextViewStyle"
                 android:layout_width="0dp"
+                android:text="15"
                 android:layout_height="wrap_content"
                 android:layout_weight=".5" />
 
@@ -219,6 +221,7 @@
                 android:id="@+id/tv_digester_leave_1"
                 style="@style/AutoFeedTextViewStyle"
                 android:layout_width="0dp"
+                android:text="7"
                 android:layout_height="wrap_content"
                 android:layout_weight=".5" />
 
@@ -267,6 +270,7 @@
                 android:id="@+id/tv_leave_2"
                 style="@style/AutoFeedTextViewStyle"
                 android:layout_width="0dp"
+                android:text="7"
                 android:layout_height="wrap_content"
                 android:layout_weight=".5" />
 
@@ -293,6 +297,7 @@
                 android:id="@+id/tv_speed_2"
                 style="@style/AutoFeedTextViewStyle"
                 android:layout_width="0dp"
+                android:text="17"
                 android:layout_height="wrap_content"
                 android:layout_weight=".5" />
 
@@ -320,6 +325,7 @@
                 android:id="@+id/tv_digester_leave_3"
                 style="@style/AutoFeedTextViewStyle"
                 android:layout_width="0dp"
+                android:text="8"
                 android:layout_height="wrap_content"
                 android:layout_weight=".5" />
 

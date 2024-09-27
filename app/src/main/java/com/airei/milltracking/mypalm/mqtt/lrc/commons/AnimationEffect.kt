@@ -81,3 +81,26 @@ fun applyDismissAnimation(view: View?, onAnimationEnd: () -> Unit) {
     // Start the animation
     animatorSet.start()
 }
+
+fun applyZoomAndFadeAnimation(view: View?, duration: Long = 500) {
+    if (view == null) return
+
+    // Create zoom in animations for X and Y axes (scaling up)
+    val scaleX = ObjectAnimator.ofFloat(view, "scaleX", 0.7f, 1.0f)
+    val scaleY = ObjectAnimator.ofFloat(view, "scaleY", 0.7f, 1.0f)
+
+    // Create fade-in animation (alpha from 0 to 1)
+    val fadeIn = ObjectAnimator.ofFloat(view, "alpha", 0.0f, 1.0f)
+
+    // Set duration and interpolators
+    scaleX.duration = duration
+    scaleY.duration = duration
+    fadeIn.duration = duration
+
+    // Combine the animations into an AnimatorSet
+    val animatorSet = AnimatorSet()
+    animatorSet.playTogether(scaleX, scaleY, fadeIn)
+
+    // Start the animation
+    animatorSet.start()
+}

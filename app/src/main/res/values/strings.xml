@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MyPlamRampController</string>
+    <string name="app_name">MyPalm Controller</string>
     <string name="company_name">AI-BASED SMART PALM OIL MILL</string>
     <string name="title">LOADING RAMP CONTROL</string>
     <string name="loading_ramp">Loading Ramp\t:\t</string>
