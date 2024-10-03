@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.CommandData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.FfbRunningStatus
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.SfbRunningStatus
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.StatusData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.statusDataSample
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.toStatusData
@@ -21,7 +22,8 @@ class AppViewModel @Inject constructor(
 ):ViewModel()
 {
 
-    var ffbLastStatus : FfbRunningStatus? = null
+    var ffbLastStatus : MutableLiveData<FfbRunningStatus?> = MutableLiveData(null)
+ var sfbLastStatus : MutableLiveData<SfbRunningStatus?> = MutableLiveData(null)
 
     val startMqtt = MutableLiveData<Boolean>(false)
 

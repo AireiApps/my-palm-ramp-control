@@ -19,6 +19,7 @@
     <string name="auto_feeding_title">AUTO FEEDING</string>
     <string name="sfb_conveyor_title">SFB CONVEYOR</string>
     <string name="ffb_conveyor_title">FFB CONVEYOR</string>
+    <string name="available_doors_title">AVAILABLE DOORS</string>
     <string name="level">Level</string>
     <string name="digester_leave">Digester level</string>
     <string name="current_speed">Current speed</string>
@@ -45,6 +46,7 @@
     <string name="auto_feeding">Auto Feeding</string>
     <string name="sfb_conveyor">SFB Conveyor</string>
     <string name="ffb_conveyor">FFB Conveyor</string>
+    <string name="available_doors">Available Doors</string>
     <string name="conveyor_1">Conveyor 1</string>
     <string name="conveyor_2">Conveyor 2</string>
     <string name="conveyor_3">Conveyor 3</string>
@@ -74,5 +76,7 @@
     <string name="ffb_alert_msg_multiple">FFB Conveyors started. Can we start feeding?</string>
     <string name="ffb_alert_confirm">Yes</string>
     <string name="ffb_alert_title">Are you Sure?</string>
+    <string name="select_all">Select All</string>
+    <string name="clear">Clear</string>
 
 </resources>

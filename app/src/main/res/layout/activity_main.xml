@@ -12,7 +12,6 @@
     >
 
 
-
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment"
         android:name="androidx.navigation.fragment.NavHostFragment"
@@ -35,7 +34,7 @@
         android:layout_height="70dp"
         android:background="@drawable/bottom_nav_background"
         android:orientation="horizontal"
-        android:weightSum="6"
+        android:weightSum="7"
         android:paddingHorizontal="4dp"
         android:layout_marginBottom="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -115,10 +114,30 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bottom_nav_background"
-                android:text="Auto Feeding"
+                android:text="@string/auto_feeding"
                 android:textSize="18sp"
                 app:backgroundTint="@null"
                 app:icon="@drawable/ic_menu_auto_feed"
+                app:iconSize="28dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_door"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_door"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bottom_nav_background"
+                android:text="@string/available_doors"
+                android:textSize="18sp"
+                app:backgroundTint="@null"
+                app:icon="@drawable/ic_door"
                 app:iconSize="28dp" />
         </LinearLayout>
 
@@ -135,12 +154,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bottom_nav_background"
-                android:text="Config"
+                android:text="@string/config"
                 android:textSize="18sp"
                 app:backgroundTint="@null"
                 app:icon="@drawable/ic_menu_settings"
                 app:iconSize="28dp" />
         </LinearLayout>
+
+
 
         <LinearLayout
             android:id="@+id/layout_mqtt_status"
@@ -156,7 +177,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bottom_nav_background"
                 android:text="@string/reconnect"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:textColor="@color/flamingo"
                 app:backgroundTint="@null"
                 app:icon="@drawable/ic_refresh"

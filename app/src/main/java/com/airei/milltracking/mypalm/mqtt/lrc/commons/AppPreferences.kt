@@ -23,6 +23,7 @@ object AppPreferences {
     private val CMD_JSON = Pair("cmd_json", commendJsonStr)
     private val AI_MODE = Pair("ai_mode", false)
     private val GUIDE_STATUS = Pair("guide_status", true)
+    private val AVAILABLE_DOORS = Pair("available_doors", "")
 
     fun init(context: Context = MyPalmApp.instance) {
         preferences = EncryptedSharedPreferences.create(
@@ -65,5 +66,9 @@ object AppPreferences {
     var guideStatus: Boolean
         get() = preferences.getBoolean(GUIDE_STATUS.first, GUIDE_STATUS.second) ?: AI_MODE.second
         set(value) = preferences.edit().putBoolean(GUIDE_STATUS.first, value).apply()
+
+    var availableDoorsData: String
+        get() = preferences.getString(AVAILABLE_DOORS.first, AVAILABLE_DOORS.second).toString()
+        set(value) = preferences.edit().putString(AVAILABLE_DOORS.first, value).apply()
 
 }

@@ -141,21 +141,21 @@
                 android:layout_weight="1"
                 android:id="@+id/img_gear_conveyor_1"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_marginStart="4dp"
                 android:src="@drawable/gear_conveyor_3_ffb1" />
             <ImageView
                 android:layout_weight="1"
                 android:id="@+id/img_gear_conveyor_2"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_marginStart="4dp"
                 android:src="@drawable/gear_conveyor_3_ffb2" />
             <ImageView
                 android:layout_weight="1"
                 android:id="@+id/img_gear_conveyor_3"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_marginStart="4dp"
                 android:src="@drawable/gear_conveyor_3_ffb3" />
         </LinearLayout>
@@ -221,6 +221,7 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout">
 
         <LinearLayout
+            android:id="@+id/layout_ffb_1"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight=".2"
@@ -307,6 +308,7 @@
 
         </LinearLayout>
         <LinearLayout
+            android:id="@+id/layout_ffb_2"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight=".2"
@@ -393,6 +395,7 @@
 
         </LinearLayout>
         <LinearLayout
+            android:id="@+id/layout_ffb_3"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight=".2"
@@ -479,6 +482,7 @@
 
         </LinearLayout>
         <LinearLayout
+            android:id="@+id/layout_ffb_4"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight=".2"
@@ -565,6 +569,7 @@
 
         </LinearLayout>
         <LinearLayout
+            android:id="@+id/layout_ffb_5"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight=".2"

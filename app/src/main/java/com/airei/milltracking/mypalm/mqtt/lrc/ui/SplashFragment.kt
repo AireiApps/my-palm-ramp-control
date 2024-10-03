@@ -12,11 +12,14 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity
+import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity.Companion
 import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.fadeInByObject
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentSplashBinding
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.getAppVersion
+import com.airei.milltracking.mypalm.mqtt.lrc.utils.getScreenSizeInInches
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 import org.eclipse.paho.android.service.BuildConfig
 
@@ -46,9 +49,16 @@ class SplashFragment : Fragment() {
             })
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             binding.tvAppVersion.visibility = View.VISIBLE
+            binding.tvScreenInch.visibility = View.VISIBLE
             binding.tvAppVersion.text = getAppVersion(requireContext())
+            val displayMetrics = resources.displayMetrics
+            val density = displayMetrics.density
+            val densityDpi = displayMetrics.densityDpi
+
+            binding.tvScreenInch.text = "Screen: I ${getScreenSizeInInches(requireContext())} | D ${densityDpi}"
         }else{
             binding.tvAppVersion.visibility = View.INVISIBLE
+            binding.tvScreenInch.visibility = View.INVISIBLE
         }
     }
 

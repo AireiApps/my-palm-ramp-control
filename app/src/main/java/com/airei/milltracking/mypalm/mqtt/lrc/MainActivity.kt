@@ -50,6 +50,8 @@ import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PUBLISH_TOPIC_STR
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_TOPIC_LR
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MqttHandler
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MqttMessageListener
+import com.airei.milltracking.mypalm.mqtt.lrc.ui.HomeFragment
+import com.airei.milltracking.mypalm.mqtt.lrc.ui.HomeFragment.Companion
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.hideKeyboard
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.setStatusBar
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
@@ -100,6 +102,8 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
     }
 
     private fun setupView() {
+
+
         enableEdgeToEdge()
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -139,6 +143,10 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
         binding.btnAutoFeeding.setOnClickListener {
             selectButton(binding.btnAutoFeeding)
             nextFragment(R.id.autoFeedingFragment)
+        }
+        binding.btnDoor.setOnClickListener {
+            selectButton(binding.btnDoor)
+            nextFragment(R.id.doorsFragment)
         }
         binding.btnConfig.setOnClickListener {
             selectButton(binding.btnConfig)
@@ -193,7 +201,8 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
             binding.btnFfb,
             binding.btnSfb,
             binding.btnAutoFeeding,
-            binding.btnConfig
+            binding.btnConfig,
+            binding.btnDoor
         )
 
         // Loop through all buttons and apply styles
@@ -208,6 +217,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
                     binding.btnSfb -> getString(R.string.sfb_conveyor)
                     binding.btnAutoFeeding -> getString(R.string.auto_feeding)
                     binding.btnConfig -> getString(R.string.config)
+                    binding.btnDoor -> getString(R.string.available_doors)
                     else -> ""
                 }
             } else {
@@ -247,16 +257,22 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
 
     private fun observeViewModel() {
         viewModel.updateDoor.observe(this) {
+
+            Log.i(TAG, "observeViewModel: ")
+
             if (!it.isNullOrEmpty()) {
                 publishMessage(topic = MQTT_PUBLISH_TOPIC_LR, message = it)
             }
         }
         viewModel.updateStarter.observe(this) {
+
+            Log.i(TAG, "observeViewModel: ")
             if (!it.isNullOrEmpty()) {
                 publishMessage(topic = MQTT_PUBLISH_TOPIC_STR, message = it)
             }
         }
         viewModel.updateAiModeData.observe(this) {
+            Log.i(TAG, "observeViewModel: ")
             if (!it.isNullOrEmpty()) {
                 publishMessage(topic = MQTT_PUBLISH_AI, message = it)
             }
@@ -271,7 +287,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
 
         viewModel.statusData.observe(this) {
             if (it != null) {
-                var lastFfb = viewModel.ffbLastStatus
+                val lastFfb = viewModel.ffbLastStatus.value
                 val ffb = FfbRunningStatus(
                     ffb1Run = it.data.ffb1Run,
                     ffb2Run = it.data.ffb2Run,
@@ -279,28 +295,31 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
                     ffb4Run = it.data.ffb4Run,
                     ffb5Run = it.data.ffb5Run
                 )
+
+                viewModel.ffbLastStatus.postValue(ffb)
+
                 if (lastFfb != null) {
                     if (lastFfb == ffb) {
-                        viewModel.ffbLastStatus = ffb
+                        //viewModel.ffbLastStatus.postValue(ffb)
                     } else {
                         val msgString: ArrayList<String> = arrayListOf()
                         if (ffb.ffb1Run == "1" && lastFfb.ffb1Run != "1") msgString.add("FFB1")
-                        if (ffb.ffb2Run == "1" && lastFfb.ffb2Run != "1") msgString.add("FFB2")
-                        if (ffb.ffb3Run == "1" && lastFfb.ffb3Run != "1") msgString.add("FFB3")
-                        if (ffb.ffb4Run == "1" && lastFfb.ffb4Run != "1") msgString.add("FFB4")
-                        if (ffb.ffb5Run == "1" && lastFfb.ffb5Run != "1") msgString.add("FFB5")
-                        viewModel.ffbLastStatus = ffb
+                        //if (ffb.ffb2Run == "1" && lastFfb.ffb2Run != "1") msgString.add("FFB2")
+                        //if (ffb.ffb3Run == "1" && lastFfb.ffb3Run != "1") msgString.add("FFB3")
+                        //if (ffb.ffb4Run == "1" && lastFfb.ffb4Run != "1") msgString.add("FFB4")
+                        //if (ffb.ffb5Run == "1" && lastFfb.ffb5Run != "1") msgString.add("FFB5")
+                        //viewModel.ffbLastStatus = ffb
                         Log.i(TAG, "showAlert: msgString = $msgString")
                         showAlert(msgString.joinToString(", "),(msgString.size != 1))
                     }
                 } else {
-                    viewModel.ffbLastStatus = ffb
+                    //viewModel.ffbLastStatus = ffb
                     val msgString: ArrayList<String> = arrayListOf()
                     if (ffb.ffb1Run == "1") msgString.add("FFB1")
-                    if (ffb.ffb2Run == "1") msgString.add("FFB2")
-                    if (ffb.ffb3Run == "1") msgString.add("FFB3")
-                    if (ffb.ffb4Run == "1") msgString.add("FFB4")
-                    if (ffb.ffb5Run == "1") msgString.add("FFB5")
+                    //if (ffb.ffb2Run == "1") msgString.add("FFB2")
+                    //if (ffb.ffb3Run == "1") msgString.add("FFB3")
+                    //if (ffb.ffb4Run == "1") msgString.add("FFB4")
+                    //if (ffb.ffb5Run == "1") msgString.add("FFB5")
                     showAlert(msgString.joinToString(", "),(msgString.size != 1))
                 }
             }

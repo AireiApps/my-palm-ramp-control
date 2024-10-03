@@ -58,11 +58,16 @@ data class WData(
 )
 
 data class FfbRunningStatus(
-    val ffb1Run: String,
-    val ffb2Run: String,
-    val ffb3Run: String,
-    val ffb4Run: String,
-    val ffb5Run: String,
+    var ffb1Run: String = "0",
+    var ffb2Run: String = "0",
+    var ffb3Run: String = "0",
+    var ffb4Run: String = "0",
+    var ffb5Run: String = "0"
+)
+data class SfbRunningStatus(
+    var sfb1Run: String = "0",
+    var sfb2Run: String = "0",
+    var sfb3Run: String = "0"
 )
 
 data class StatusData(

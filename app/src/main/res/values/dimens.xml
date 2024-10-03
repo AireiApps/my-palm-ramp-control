@@ -11,4 +11,5 @@
     <dimen name="btn_ramp_width">180dp</dimen>
     <dimen name="btn_ramp_height">50dp</dimen>
     <dimen name="icon_padding_1">14dp</dimen>
+    <dimen name="df_btn_text">24sp</dimen>
 </resources>

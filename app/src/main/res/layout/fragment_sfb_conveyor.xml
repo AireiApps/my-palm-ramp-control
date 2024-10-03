@@ -144,6 +144,7 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout_sfb_1"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight=".33"
@@ -219,6 +220,7 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout_sfb_2"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight=".33"
@@ -294,6 +296,7 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout_sfb_3"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight=".33"
@@ -395,7 +398,7 @@
             <ImageView
                 android:id="@+id/img_gear_conveyor_1"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_marginStart="4dp"
                 android:layout_weight="1"
                 android:src="@drawable/gear_conveyor_3_ffb1" />
@@ -403,7 +406,7 @@
             <ImageView
                 android:id="@+id/img_gear_conveyor_2"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_marginStart="4dp"
                 android:layout_weight="1"
                 android:src="@drawable/gear_conveyor_3_ffb2" />
@@ -411,7 +414,7 @@
             <ImageView
                 android:id="@+id/img_gear_conveyor_3"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_marginStart="4dp"
                 android:layout_weight="1"
                 android:src="@drawable/gear_conveyor_3_ffb3" />

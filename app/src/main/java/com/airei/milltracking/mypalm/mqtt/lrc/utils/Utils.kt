@@ -4,7 +4,9 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
+import android.hardware.display.DisplayManager
 import android.os.Build
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -22,6 +24,7 @@ import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.RtspConfig
 import com.airei.milltracking.mypalm.mqtt.lrc.roomdb.DoorTable
 import com.airei.milltracking.mypalm.mqtt.lrc.roomdb.Rtsp
+import kotlin.math.sqrt
 
 fun isOnline(): Boolean {
     try {
@@ -141,6 +144,36 @@ fun getAppVersion(context: Context): String {
     } catch (e: PackageManager.NameNotFoundException) {
         "Version: info not available"
     }
+}
+
+fun getScreenSizeInInches(context: Context): String {
+    val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+    val displays = displayManager.displays
+
+    // Use the first display available (usually the primary display)
+    if (displays.isNotEmpty()) {
+        val display = displays[0]
+
+        val metrics = DisplayMetrics()
+        display.getMetrics(metrics)
+
+        val widthPixels = metrics.widthPixels
+        val heightPixels = metrics.heightPixels
+        val densityDpi = metrics.densityDpi
+
+        // Calculate the width and height in inches
+        val widthInches = widthPixels / densityDpi.toDouble()
+        val heightInches = heightPixels / densityDpi.toDouble()
+
+        // Calculate the diagonal size in inches
+        val diagonalInches = sqrt(widthInches * widthInches + heightInches * heightInches)
+
+        // Format the result to two decimal places
+        return String.format("%.2f", diagonalInches)
+    }
+
+    // Return 0 if no displays are found
+    return "0.0"
 }
 
 

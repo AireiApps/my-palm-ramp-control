@@ -41,6 +41,10 @@ import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorTable
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 import com.google.gson.Gson
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class HomeFragment : Fragment() {
 
@@ -201,37 +205,49 @@ class HomeFragment : Fragment() {
         val spanCount = if (screenHeightDp < 700) 6 else 8
         val gridLayoutManager = GridLayoutManager(requireContext(), spanCount)
 
-        binding.rvConveyor.layoutManager = gridLayoutManager
+        binding.rvDoors.layoutManager = gridLayoutManager
 
-        binding.rvConveyor.adapter = adapter
+        binding.rvDoors.adapter = adapter
 
         binding.layoutBtns.visibility = View.VISIBLE
     }
 
+
+    @kotlin.OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("ClickableViewAccessibility")
     private fun doorActionBtn() {
         fun handleButtonTouch(doorStateValue: Boolean) = View.OnTouchListener { v, event ->
             if ((activity as MainActivity).mqttConnectionCheck()) {
+
+                Log.i(TAG, "handleButtonTouch: ${event.action}")
                 selectDoor?.let {
                     when (event.action) {
                         MotionEvent.ACTION_DOWN -> {
+
                             isHold = true
                             doorState = doorStateValue
-                            val cmd = if (doorStateValue) AppPreferences.doorOpenCmd else AppPreferences.doorCloseCmd
-                            generateMsg(cmd, 1)
-                            if (this::adapter.isInitialized){
-                                adapter.clickListener(if (doorStateValue) 1 else 2)
+                            GlobalScope.launch {
+                                runBlocking {
+                                    val perCmd =
+                                        if (!doorStateValue) AppPreferences.doorOpenCmd else AppPreferences.doorCloseCmd
+                                    generateMsg(perCmd, 0)
+                                }
+                                runBlocking {
+                                    val cmd =
+                                        if (doorStateValue) AppPreferences.doorOpenCmd else AppPreferences.doorCloseCmd
+                                    generateMsg(cmd, 1)
+                                }
                             }
+
                             false
                         }
                         MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+
                             clickListener.postValue(Pair(false,""))
                             isHold = false
                             val cmd = if (doorStateValue) AppPreferences.doorOpenCmd else AppPreferences.doorCloseCmd
                             generateMsg(cmd, 0)
-                            if (this::adapter.isInitialized){
-                                adapter.clickListener(0)
-                            }
+
                             false
                         }
                         else -> false
@@ -332,7 +348,7 @@ class HomeFragment : Fragment() {
             })
 
             val mediaSource = RtspMediaSource.Factory().setForceUseRtpTcp(true)
-                .createMediaSource(MediaItem.fromUri("rtsp://admin:L2ACBEC1@192.168.1.13:554/cam/realmonitor?channel=1&subtype=0"))
+                .createMediaSource(MediaItem.fromUri(rtspConfig))
             //"rtsp://admin:L2ACBEC1@192.168.1.13:554/cam/realmonitor?channel=1&subtype=0"));
 
             //val mediaSource = RtspMediaSource.Factory().createMediaSource(MediaItem.fromUri("rtsp://admin:L2ACBEC1@192.168.1.13:554/cam/realmonitor?channel=1&subtype=0"))

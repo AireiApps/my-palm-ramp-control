@@ -1,6 +1,7 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.ui
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -9,12 +10,17 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity
 import com.airei.milltracking.mypalm.mqtt.lrc.R
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.SfbRunningStatus
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.TagData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.WData
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentSfbConveyorBinding
@@ -53,7 +59,6 @@ class SfbConveyorFragment : Fragment() {
                 }
             })
         observeData()
-        setImages(false)
     }
 
     @SuppressLint("SetTextI18n")
@@ -75,29 +80,76 @@ class SfbConveyorFragment : Fragment() {
                 (activity as MainActivity).updateCommend()
             }
         }
+        viewModel.sfbLastStatus.observe(viewLifecycleOwner) {
+            with(binding) {
+                if (it != null) {
+                    val conveyors = listOf(
+                        Triple(
+                            it.sfb1Run,
+                            imgGearConveyor1,
+                            R.raw.gear_conveyor_3_sfb1 to R.drawable.gear_conveyor_3_sfb1
+                        ),
+                        Triple(
+                            it.sfb2Run,
+                            imgGearConveyor2,
+                            R.raw.gear_conveyor_3_sfb2 to R.drawable.gear_conveyor_3_sfb2
+                        ),
+                        Triple(
+                            it.sfb3Run,
+                            imgGearConveyor3,
+                            R.raw.gear_conveyor_3_sfb3 to R.drawable.gear_conveyor_3_sfb3
+                        )
+                    )
+
+                    conveyors.forEach { (runStatus, imgView, resources) ->
+                        val (gifResource, staticResource) = resources
+                        sfbConveyorGif(
+                            imgView,
+                            if (runStatus == "1") gifResource else staticResource
+                        )
+                    }
+                } else {
+                    val imageViews = listOf(
+                        imgGearConveyor1 to R.drawable.gear_conveyor_3_sfb1,
+                        imgGearConveyor2 to R.drawable.gear_conveyor_3_sfb2,
+                        imgGearConveyor3 to R.drawable.gear_conveyor_3_sfb3
+                    )
+
+                    imageViews.forEach { (imgView, staticResource) ->
+                        Glide.with(requireContext()).clear(imgView)
+                        imgView.setImageResource(staticResource)
+                    }
+                }
+            }
+        }
+
         viewModel.statusData.observe(viewLifecycleOwner) {
             if (it != null) {
                 with(binding) {
+                    // Set button status based on mypalmStatus
                     btnDoorStatus.text = when (it.data.mypalmStatus) {
                         "0" -> getString(R.string.my_palm_mode)
                         "1" -> getString(R.string.scada_mode)
                         else -> getString(R.string.manual_mode)
                     }
+
+                    val sfb = SfbRunningStatus(
+                        sfb1Run = it.data.sfb1Run,
+                        sfb2Run = it.data.sfb2Run,
+                        sfb3Run = it.data.sfb3Run
+                    )
+
+                    viewModel.sfbLastStatus.postValue(sfb)
+
+                    // Update the current values
                     tvSfbSpeed1.text = "${it.data.sfb1Ma} A"
                     tvSfbSpeed2.text = "${it.data.sfb2Ma} A"
                     tvSfbSpeed3.text = "${it.data.sfb3Ma} A"
-                    tvSfbStatus1.text =
-                        if (it.data.sfb1Run == "1") (getString(R.string.run)) else (getString(R.string.stop))
-                    tvSfbStatus2.text =
-                        if (it.data.sfb2Run == "1") (getString(R.string.run)) else (getString(R.string.stop))
-                    tvSfbStatus3.text =
-                        if (it.data.sfb3Run == "1") (getString(R.string.run)) else (getString(R.string.stop))
-                    tvSfbStatus1.text =
-                        if (it.data.sfb1Estop == "1") (getString(R.string.e_stop)) else tvSfbStatus1.text.toString()
-                    tvSfbStatus2.text =
-                        if (it.data.sfb2Estop == "1") (getString(R.string.e_stop)) else tvSfbStatus2.text.toString()
-                    tvSfbStatus3.text =
-                        if (it.data.sfb3Estop == "1") (getString(R.string.e_stop)) else tvSfbStatus3.text.toString()
+
+                    // Set status and background for each SFB TextView
+                    setSfbStatus(layoutSfb1, tvSfbStatus1, it.data.sfb1Run, it.data.sfb1Estop)
+                    setSfbStatus(layoutSfb2, tvSfbStatus2, it.data.sfb2Run, it.data.sfb2Estop)
+                    setSfbStatus(layoutSfb3, tvSfbStatus3, it.data.sfb3Run, it.data.sfb3Estop)
                 }
             } else {
                 with(binding) {
@@ -105,13 +157,91 @@ class SfbConveyorFragment : Fragment() {
                     tvSfbSpeed1.text = "0.0 A"
                     tvSfbSpeed2.text = "0.0 A"
                     tvSfbSpeed3.text = "0.0 A"
-                    tvSfbStatus1.text = "--"
-                    tvSfbStatus2.text = "--"
-                    tvSfbStatus3.text = "--"
+
+                    // Reset status and background for each SFB TextView
+                    setSfbStatus(layoutSfb1, tvSfbStatus1, "--", "0")
+                    setSfbStatus(layoutSfb2, tvSfbStatus2, "--", "0")
+                    setSfbStatus(layoutSfb3, tvSfbStatus3, "--", "0")
                 }
             }
         }
+
     }
+
+    private fun sfbConveyorGif(imageView: ImageView, gifResId: Int) {
+        Glide.with(this).clear(imageView)
+        Glide.with(this)
+            .asGif()
+            .load(gifResId)
+            .error(gifResId)
+            .into(imageView)
+    }
+
+    // Helper function to set status and background tint for SFB
+    private fun setSfbStatus(
+        layout: ConstraintLayout,
+        tvStatus: TextView,
+        runStatus: String,
+        estopStatus: String
+    ) {
+        val finalStatus = if (estopStatus == "1") {
+            tvStatus.context.getString(R.string.e_stop)
+        } else {
+            if (runStatus == "1") tvStatus.context.getString(R.string.run)
+            else if (runStatus == "0") tvStatus.context.getString(R.string.stop)
+            else ("--")
+        }
+
+        tvStatus.text = finalStatus
+
+        // Set background tint based on the status
+        when (finalStatus) {
+            tvStatus.context.getString(R.string.run) -> {
+                layout.setBackgroundTintList(
+                    ColorStateList.valueOf(
+                        ContextCompat.getColor(
+                            tvStatus.context,
+                            R.color.japanese_laurel
+                        )
+                    )
+                )
+            }
+
+            "--" -> {
+                layout.setBackgroundTintList(
+                    ColorStateList.valueOf(
+                        ContextCompat.getColor(
+                            tvStatus.context,
+                            R.color.color_background_1
+                        )
+                    )
+                )
+            }
+
+            tvStatus.context.getString(R.string.e_stop) -> {
+                layout.setBackgroundTintList(
+                    ColorStateList.valueOf(
+                        ContextCompat.getColor(
+                            tvStatus.context,
+                            R.color.flamingo
+                        )
+                    )
+                )
+            }
+
+            else -> {
+                layout.setBackgroundTintList(
+                    ColorStateList.valueOf(
+                        ContextCompat.getColor(
+                            tvStatus.context,
+                            R.color.flamingo
+                        )
+                    )
+                )
+            }
+        }
+    }
+
 
     @SuppressLint("ClickableViewAccessibility")
     fun handleButtonTouch(actionTag: String) = View.OnTouchListener { v, event ->
@@ -121,19 +251,6 @@ class SfbConveyorFragment : Fragment() {
             MotionEvent.ACTION_DOWN -> {
                 generateMsg(actionTag, 1)
                 Log.i(TAG, "handleButtonTouch: actionTag = $actionTag")
-                when (actionTag) {
-                    SFB_START_TAG -> {
-                        setImages(true)
-                    }
-
-                    SFB_STOP_TAG -> {
-                        setImages(false)
-                    }
-
-                    SFB_EME_STOP_TAG -> {
-                        setImages(false)
-                    }
-                }
                 false // Return true to indicate the event was handled
             }
 
@@ -166,60 +283,6 @@ class SfbConveyorFragment : Fragment() {
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
-
-    private fun setImages(isSetGif: Boolean = false) {
-        try {
-            // Clear previous images and stop any ongoing GIFs
-            Glide.with(this).clear(binding.imgGearConveyor1)
-            Glide.with(this).clear(binding.imgGearConveyor2)
-            Glide.with(this).clear(binding.imgGearConveyor3)
-
-            if (isSetGif) {
-                // Load GIFs from raw resources
-                Glide.with(this)
-                    .asGif()
-                    .load(R.raw.gear_conveyor_3_sfb1)
-                    .error(R.drawable.gear_conveyor_3_sfb1)
-                    .into(binding.imgGearConveyor1)
-                Glide.with(this)
-                    .asGif()
-                    .load(R.raw.gear_conveyor_3_sfb2) // Adjusted to load a different GIF
-                    .error(R.drawable.gear_conveyor_3_sfb2)
-                    .into(binding.imgGearConveyor2)
-                Glide.with(this)
-                    .asGif()
-                    .load(R.raw.gear_conveyor_3_sfb3) // Adjusted to load a different GIF
-                    .error(R.drawable.gear_conveyor_3_sfb3)
-                    .into(binding.imgGearConveyor3)
-            } else {
-                // Load drawables
-                Glide.with(this)
-                    .load(R.drawable.gear_conveyor_3_sfb1)
-                    .error(R.drawable.gear_conveyor_3_sfb1)
-                    .into(binding.imgGearConveyor1)
-                Glide.with(this)
-                    .load(R.drawable.gear_conveyor_3_sfb2) // Adjusted to load a different drawable
-                    .error(R.drawable.gear_conveyor_3_sfb2)
-                    .into(binding.imgGearConveyor2)
-                Glide.with(this)
-                    .load(R.drawable.gear_conveyor_3_sfb3) // Adjusted to load a different drawable
-                    .error(R.drawable.gear_conveyor_3_sfb3)
-                    .into(binding.imgGearConveyor3)
-                Glide.with(this)
-            }
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-            // Handle any exceptions and set default images in case of failure
-            Glide.with(this).clear(binding.imgGearConveyor1)
-            Glide.with(this).clear(binding.imgGearConveyor2)
-            Glide.with(this).clear(binding.imgGearConveyor3)
-            binding.imgGearConveyor1.setImageResource(R.drawable.gear_conveyor_3_sfb1)
-            binding.imgGearConveyor2.setImageResource(R.drawable.gear_conveyor_3_sfb2)
-            binding.imgGearConveyor3.setImageResource(R.drawable.gear_conveyor_3_sfb3)
-        }
-    }
-
 
     override fun onDestroyView() {
         super.onDestroyView()

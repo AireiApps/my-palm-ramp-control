@@ -47,5 +47,10 @@
         android:name="com.airei.milltracking.mypalm.mqtt.lrc.ui.GuideFragment"
         android:label="fragment_guide"
         tools:layout="@layout/fragment_guide" />
+    <fragment
+        android:id="@+id/doorsFragment"
+        android:name="com.airei.milltracking.mypalm.mqtt.lrc.ui.DoorsFragment"
+        android:label="fragment_doors"
+        tools:layout="@layout/fragment_doors" />
 
 </navigation>
