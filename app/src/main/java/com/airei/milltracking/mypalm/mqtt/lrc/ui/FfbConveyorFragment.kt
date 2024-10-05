@@ -11,7 +11,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
@@ -46,9 +45,11 @@ class FfbConveyorFragment : Fragment() {
     private var previousRunStatus: MutableMap<Int, String> = mutableMapOf()
 
     // Variables to store previous values
-    private var previousMypalmStatus: String? = null
-    private var previousFfbSpeeds = FfbSpeedStatus("", "", "", "", "")
-    private var previousFfbStatuses = FfbRunningStatus("", "", "", "", "")
+    private var previousMyPalmStatus: String? = null
+    private var previousFfbSpeed = FfbSpeedStatus("", "", "", "", "")
+    private var previousFfbRunState = FfbRunningStatus("", "", "", "", "")
+    private var previousSfbMode = FfbModeStatus("", "", "", "", "")
+
 
 
     override fun onCreateView(
@@ -86,277 +87,191 @@ class FfbConveyorFragment : Fragment() {
             }
         }
 
-        viewModel.ffbLastStatus.observe(viewLifecycleOwner) {
+        viewModel.statusData.observe(viewLifecycleOwner) {
             with(binding) {
                 if (it != null) {
-                    // Create a list of conveyor run statuses, image views, and resources
-                    val conveyors = listOf(
-                        Triple(it.ffb1Run, imgGearConveyor1, R.raw.gear_conveyor_3_ffb1 to R.drawable.gear_conveyor_3_ffb1),
-                        Triple(it.ffb2Run, imgGearConveyor2, R.raw.gear_conveyor_3_ffb2 to R.drawable.gear_conveyor_3_ffb2),
-                        Triple(it.ffb3Run, imgGearConveyor3, R.raw.gear_conveyor_3_ffb3 to R.drawable.gear_conveyor_3_ffb3),
-                        Triple(it.ffb4Run, imgGearConveyor4, R.raw.gear_conveyor_3_ffb4 to R.drawable.gear_conveyor_3_ffb4),
-                        Triple(it.ffb5Run, imgGearConveyor5, R.raw.gear_conveyor_3_ffb5 to R.drawable.gear_conveyor_3_ffb5)
-                    )
-
-                    conveyors.forEachIndexed { index, (runStatus, imgView, resources) ->
-                        val (gifResource, staticResource) = resources
-                        // Get the previous run status from the map
-                        val prevStatus = previousRunStatus[index] ?: ""
-
-                        // Only update the image if the status has changed
-                        if (prevStatus != runStatus) {
-                            ffbConveyorGif(
-                                imgView,
-                                if (runStatus == "1") gifResource else staticResource
-                            )
-                            // Update the map with the new status
-                            previousRunStatus[index] = runStatus
-                        }
+                    val status = when (it.data.mypalmStatus) {
+                        "1" -> getString(R.string.my_palm_mode)
+                        "0" -> getString(R.string.scada_mode)
+                        else -> getString(R.string.manual_mode)
                     }
-                } else {
-                    val imageViews = listOf(
-                        imgGearConveyor1 to R.drawable.gear_conveyor_3_ffb1,
-                        imgGearConveyor2 to R.drawable.gear_conveyor_3_ffb2,
-                        imgGearConveyor3 to R.drawable.gear_conveyor_3_ffb3,
-                        imgGearConveyor4 to R.drawable.gear_conveyor_3_ffb4,
-                        imgGearConveyor5 to R.drawable.gear_conveyor_3_ffb5
+                    checkMyPalmStatus(status)
+                    val ffbSpeeds = FfbSpeedStatus(
+                        ffb1Ma = "${it.data.ffb1Ma} A",
+                        ffb2Ma = "${it.data.ffb2Ma} A",
+                        ffb3Ma = "${it.data.ffb3Ma} A",
+                        ffb4Ma = "${it.data.ffb4Ma} A",
+                        ffb5Ma = "${it.data.ffb5Ma} A"
                     )
-
-                    imageViews.forEachIndexed { index, (imgView, staticResource) ->
-                        Glide.with(requireContext()).clear(imgView)
-                        imgView.setImageResource(staticResource)
-                        // Clear previous run statuses when no data is available
-                        previousRunStatus[index] = ""
-                    }
-                }
-            }
-        }
-
-        viewModel.statusData.observe(viewLifecycleOwner) {
-            if (it != null) {
-                with(binding) {
-                    // Check if mypalmStatus has changed before updating the UI
-                    if (previousMypalmStatus != it.data.mypalmStatus) {
-                        btnDoorStatus.text = when (it.data.mypalmStatus) {
-                            "1" -> getString(R.string.my_palm_mode)
-                            "0" -> getString(R.string.scada_mode)
-                            else -> getString(R.string.manual_mode)
-                        }
-                        previousMypalmStatus = it.data.mypalmStatus
-                    }
-
-                    val ffb = FfbRunningStatus(
-                        ffb1Run = it.data.ffb1Run,
-                        ffb2Run = it.data.ffb2Run,
-                        ffb3Run = it.data.ffb3Run,
-                        ffb4Run = it.data.ffb4Run,
-                        ffb5Run = it.data.ffb5Run
+                    checkFfbSpeed(ffbSpeeds)
+                    var ffbRunStates = FfbRunningStatus(
+                        ffb1Run = if (it.data.ffb1Run == "1") getString(R.string.run) else getString(
+                            R.string.stop
+                        ),
+                        ffb2Run = if (it.data.ffb2Run == "1") getString(R.string.run) else getString(
+                            R.string.stop
+                        ),
+                        ffb3Run = if (it.data.ffb3Run == "1") getString(R.string.run) else getString(
+                            R.string.stop
+                        ),
+                        ffb4Run = if (it.data.ffb4Run == "1") getString(R.string.run) else getString(
+                            R.string.stop
+                        ),
+                        ffb5Run = if (it.data.ffb5Run == "1") getString(R.string.run) else getString(
+                            R.string.stop
+                        )
                     )
+                    ffbRunStates = FfbRunningStatus(
+                        ffb1Run = if (it.data.ffb1Estop == "1") getString(R.string.e_stop) else ffbRunStates.ffb1Run,
+                        ffb2Run = if (it.data.ffb2Estop == "1") getString(R.string.e_stop) else ffbRunStates.ffb2Run,
+                        ffb3Run = if (it.data.ffb3Estop == "1") getString(R.string.e_stop) else ffbRunStates.ffb3Run,
+                        ffb4Run = if (it.data.ffb4Estop == "1") getString(R.string.e_stop) else ffbRunStates.ffb4Run,
+                        ffb5Run = if (it.data.ffb5Estop == "1") getString(R.string.e_stop) else ffbRunStates.ffb5Run
+                    )
+                    checkFfbRunStates(ffbRunStates)
                     val ffbModes = FfbModeStatus(
-                        ffb1Mode = it.data.ffb1Run,
-                        ffb2Mode = it.data.ffb2Run,
-                        ffb3Mode = it.data.ffb3Run,
-                        ffb4Mode = it.data.ffb4Run,
-                        ffb5Mode = it.data.ffb5Run
+                        ffb1Mode = if (it.data.ffb1Auto == "1") getString(R.string.ffb_auto) else if (it.data.ffb1Manual == "1") getString(
+                            R.string.ffb_manual
+                        ) else "--",
+                        ffb2Mode = if (it.data.ffb2Auto == "1") getString(R.string.ffb_auto) else if (it.data.ffb1Manual == "1") getString(
+                            R.string.ffb_manual
+                        ) else "--",
+                        ffb3Mode = if (it.data.ffb3Auto == "1") getString(R.string.ffb_auto) else if (it.data.ffb1Manual == "1") getString(
+                            R.string.ffb_manual
+                        ) else "--",
+                        ffb4Mode = if (it.data.ffb4Auto == "1") getString(R.string.ffb_auto) else if (it.data.ffb1Manual == "1") getString(
+                            R.string.ffb_manual
+                        ) else "--",
+                        ffb5Mode = if (it.data.ffb5Auto == "1") getString(R.string.ffb_auto) else if (it.data.ffb1Manual == "1") getString(
+                            R.string.ffb_manual
+                        ) else "--"
                     )
-
-
-
-                    // Only post ffbLastStatus if it's different from the previous one
-                    if (previousFfbStatuses != ffb) {
-                        viewModel.ffbLastStatus.postValue(ffb)
-                        previousFfbStatuses = ffb
-                    }
-
-                    // Update FFB speeds only if they have changed
-                    val newFfbSpeeds = FfbSpeedStatus(
-                        ffb1Ma = it.data.ffb1Ma,
-                        ffb2Ma = it.data.ffb2Ma,
-                        ffb3Ma = it.data.ffb3Ma,
-                        ffb4Ma = it.data.ffb4Ma,
-                        ffb5Ma = it.data.ffb5Ma
-                    )
-
-                    if (previousFfbSpeeds != newFfbSpeeds) {
-                        tvFfbSpeed1.text = "${newFfbSpeeds.ffb1Ma} A"
-                        tvFfbSpeed2.text = "${newFfbSpeeds.ffb2Ma} A"
-                        tvFfbSpeed3.text = "${newFfbSpeeds.ffb3Ma} A"
-                        tvFfbSpeed4.text = "${newFfbSpeeds.ffb4Ma} A"
-                        tvFfbSpeed5.text = "${newFfbSpeeds.ffb5Ma} A"
-                        previousFfbSpeeds = newFfbSpeeds
-                    }
-
-                    // Set status and background for each FFB TextView
-                    setFfbStatus(
-                        layoutFfb1,
-                        viewFfb1,
-                        tvFfbStatus1,
-                        tvFfbMode1,
-                        it.data.ffb1Run,
-                        it.data.ffb1Estop,
-                        it.data.ffb1Auto,
-                        it.data.ffb1Manual
-                    )
-                    setFfbStatus(
-                        layoutFfb2,
-                        viewFfb2,
-                        tvFfbStatus2,
-                        tvFfbMode2,
-                        it.data.ffb2Run,
-                        it.data.ffb2Estop,
-                        it.data.ffb2Auto,
-                        it.data.ffb2Manual
-                    )
-                    setFfbStatus(
-                        layoutFfb3,
-                        viewFfb3,
-                        tvFfbStatus3,
-                        tvFfbMode3,
-                        it.data.ffb3Run,
-                        it.data.ffb3Estop,
-                        it.data.ffb3Auto,
-                        it.data.ffb3Manual
-                    )
-                    setFfbStatus(
-                        layoutFfb4,
-                        viewFfb4,
-                        tvFfbStatus4,
-                        tvFfbMode4,
-                        it.data.ffb4Run,
-                        it.data.ffb4Estop,
-                        it.data.ffb4Auto,
-                        it.data.ffb4Manual
-                    )
-                    setFfbStatus(
-                        layoutFfb5,
-                        viewFfb5,
-                        tvFfbStatus5,
-                        tvFfbMode5,
-                        it.data.ffb5Run,
-                        it.data.ffb5Estop,
-                        it.data.ffb5Auto,
-                        it.data.ffb5Manual
-                    )
-
-
-
-
-                }
-            } else {
-                with(binding) {
-                    // Reset to default values
-                    btnDoorStatus.text = "--"
-                    tvFfbSpeed1.text = "0.0 A"
-                    tvFfbSpeed2.text = "0.0 A"
-                    tvFfbSpeed3.text = "0.0 A"
-                    tvFfbSpeed4.text = "0.0 A"
-                    tvFfbSpeed5.text = "0.0 A"
-
-                    // Reset status and background for each FFB TextView
-                    setFfbStatus(
-                        layoutFfb1,
-                        viewFfb1,
-                        tvFfbStatus1,
-                        tvFfbMode1,
-                        "--",
-                        "0",
-                        "0",
-                        "0"
-                    )
-                    setFfbStatus(
-                        layoutFfb2,
-                        viewFfb2,
-                        tvFfbStatus2,
-                        tvFfbMode2,
-                        "--",
-                        "0",
-                        "0",
-                        "0"
-                    )
-                    setFfbStatus(
-                        layoutFfb3,
-                        viewFfb3,
-                        tvFfbStatus3,
-                        tvFfbMode3,
-                        "--",
-                        "0",
-                        "0",
-                        "0"
-                    )
-                    setFfbStatus(
-                        layoutFfb4,
-                        viewFfb4,
-                        tvFfbStatus4,
-                        tvFfbMode4,
-                        "--",
-                        "0",
-                        "0",
-                        "0"
-                    )
-                    setFfbStatus(
-                        layoutFfb5,
-                        viewFfb5,
-                        tvFfbStatus5,
-                        tvFfbMode5,
-                        "--",
-                        "0",
-                        "0",
-                        "0"
-                    )
-
-                    // Clear previous values when data is null
-                    previousMypalmStatus = null
-                    previousFfbSpeeds = FfbSpeedStatus("", "", "", "", "")
-                    previousFfbStatuses = FfbRunningStatus("", "", "", "", "")
+                    checkFfbModes(ffbModes)
+                } else {
+                    checkMyPalmStatus("--")
+                    checkFfbSpeed(FfbSpeedStatus())
+                    checkFfbRunStates(FfbRunningStatus())
+                    checkFfbModes(FfbModeStatus())
                 }
             }
         }
     }
 
-    private fun setFfbStatus(
-        layout: LinearLayout,
-        lineView: View,
-        tvStatus: TextView,
-        tvMode: TextView,
-        status: String,
-        eStop: String,
-        ffbAuto: String,
-        ffbManual: String
-    ) {
-        // Determine the final status text
-        val finalStatus = if (eStop == "1") {
-            tvStatus.context.getString(R.string.e_stop)
-        } else {
-            when (status) {
-                "1" -> tvStatus.context.getString(R.string.run)
-                "0" -> tvStatus.context.getString(R.string.stop)
-                else -> "--"
+    private fun checkMyPalmStatus(status: String) {
+        with(binding) {
+            if (previousMyPalmStatus != status) {
+                btnDoorStatus.text = status
+                previousMyPalmStatus = status
             }
         }
+    }
 
-        // Set mode text and status text
-        tvMode.text = if (ffbAuto == "1") {
-            getString(R.string.auto)
-        }else if (ffbManual == "1"){
-            getString(R.string.manual)
+    private fun checkFfbModes(ffbModes: FfbModeStatus) {
+        with(binding) {
+            if (previousSfbMode != ffbModes) {
+                if (previousSfbMode.ffb1Mode != ffbModes.ffb1Mode) {
+                    tvFfbMode1.text = ffbModes.ffb1Mode
+                }
+                if (previousSfbMode.ffb2Mode != ffbModes.ffb2Mode) {
+                    tvFfbMode2.text = ffbModes.ffb2Mode
+                }
+                if (previousSfbMode.ffb3Mode != ffbModes.ffb3Mode) {
+                    tvFfbMode3.text = ffbModes.ffb3Mode
+                }
+                if (previousSfbMode.ffb4Mode != ffbModes.ffb4Mode) {
+                    tvFfbMode4.text = ffbModes.ffb4Mode
+                }
+                if (previousSfbMode.ffb5Mode != ffbModes.ffb5Mode) {
+                    tvFfbMode5.text = ffbModes.ffb5Mode
+                }
+                previousSfbMode = ffbModes
+            }
+        }
+    }
+
+    private fun checkFfbRunStates(ffbRunStates: FfbRunningStatus) {
+        with(binding) {
+            if (previousFfbRunState != ffbRunStates) {
+                if (previousFfbRunState.ffb1Run != ffbRunStates.ffb1Run) {
+                    tvFfbStatus1.text = ffbRunStates.ffb1Run
+                    setTint(layoutFfb1,viewFfb1,ffbRunStates.ffb1Run)
+                    val imgGearConveyor = Triple(ffbRunStates.ffb1Run, imgGearConveyor1, R.raw.gear_conveyor_3_ffb1 to R.drawable.gear_conveyor_3_ffb1)
+                    setGifPlay(imgGearConveyor)
+                }
+                if (previousFfbRunState.ffb2Run != ffbRunStates.ffb2Run) {
+                    tvFfbStatus2.text = ffbRunStates.ffb2Run
+                    setTint(layoutFfb2,viewFfb2,ffbRunStates.ffb2Run)
+                    val imgGearConveyor = Triple(ffbRunStates.ffb2Run, imgGearConveyor2, R.raw.gear_conveyor_3_ffb2 to R.drawable.gear_conveyor_3_ffb2)
+                    setGifPlay(imgGearConveyor)
+                }
+                if (previousFfbRunState.ffb3Run != ffbRunStates.ffb3Run) {
+                    tvFfbStatus3.text = ffbRunStates.ffb3Run
+                    setTint(layoutFfb3,viewFfb3,ffbRunStates.ffb3Run)
+                    val imgGearConveyor = Triple(ffbRunStates.ffb3Run, imgGearConveyor3, R.raw.gear_conveyor_3_ffb3 to R.drawable.gear_conveyor_3_ffb3)
+                    setGifPlay(imgGearConveyor)
+                }
+                if (previousFfbRunState.ffb4Run != ffbRunStates.ffb4Run) {
+                    tvFfbStatus4.text = ffbRunStates.ffb4Run
+                    setTint(layoutFfb4,viewFfb4,ffbRunStates.ffb4Run)
+                    val imgGearConveyor = Triple(ffbRunStates.ffb4Run, imgGearConveyor4, R.raw.gear_conveyor_3_ffb4 to R.drawable.gear_conveyor_3_ffb4)
+                    setGifPlay(imgGearConveyor)
+                }
+                if (previousFfbRunState.ffb5Run != ffbRunStates.ffb5Run) {
+                    tvFfbStatus5.text = ffbRunStates.ffb5Run
+                    setTint(layoutFfb5,viewFfb5,ffbRunStates.ffb5Run)
+                    val imgGearConveyor = Triple(ffbRunStates.ffb5Run, imgGearConveyor5, R.raw.gear_conveyor_3_ffb5 to R.drawable.gear_conveyor_3_ffb5)
+                    setGifPlay(imgGearConveyor)
+                }
+                previousFfbRunState = ffbRunStates
+            }
+        }
+    }
+
+    private fun setTint(
+        layout: LinearLayout,
+        lineView: View,
+        finalStatus: String
+    ) {
+        var colorRes = R.color.color_background_1
+        colorRes = when (finalStatus) {
+            getString(R.string.run) -> (R.color.japanese_laurel)
+            getString(R.string.e_stop) -> (R.color.flamingo)
+            "--" -> (R.color.color_background_1)
+            else -> (R.color.flamingo)
+        }
+        val color = ContextCompat.getColor(requireContext(), colorRes)
+        layout.backgroundTintList = ColorStateList.valueOf(color)
+        lineView.backgroundTintList = ColorStateList.valueOf(color)
+    }
+
+    private fun setGifPlay(imgGearConveyor1: Triple<String, ImageView, Pair<Int, Int>>) {
+        if (imgGearConveyor1.first == getString(R.string.run)){
+            ffbConveyorGif(imgGearConveyor1.second,imgGearConveyor1.third.first)
         }else{
-            "--"
+            ffbConveyorGif(imgGearConveyor1.second,imgGearConveyor1.third.second)
         }
-        tvStatus.text = finalStatus
+    }
 
-        // Function to set the background tint
-        fun setTint(colorRes: Int) {
-            val color = ContextCompat.getColor(tvStatus.context, colorRes)
-            layout.backgroundTintList = ColorStateList.valueOf(color)
-            lineView.backgroundTintList = ColorStateList.valueOf(color)
-        }
-
-        // Apply the background tint based on finalStatus
-        when (finalStatus) {
-            tvStatus.context.getString(R.string.run) -> setTint(R.color.japanese_laurel)
-            tvStatus.context.getString(R.string.e_stop) -> setTint(R.color.flamingo)
-            "--" -> setTint(R.color.color_background_1)
-            else -> setTint(R.color.flamingo)  // Default case for unexpected values
+    private fun checkFfbSpeed(ffbSpeeds: FfbSpeedStatus) {
+        with(binding) {
+            if (previousFfbSpeed != ffbSpeeds) {
+                if (previousFfbRunState.ffb1Run != ffbSpeeds.ffb1Ma) {
+                    tvFfbSpeed1.text = ffbSpeeds.ffb1Ma
+                }
+                if (previousFfbRunState.ffb2Run != ffbSpeeds.ffb2Ma) {
+                    tvFfbSpeed2.text = ffbSpeeds.ffb2Ma
+                }
+                if (previousFfbRunState.ffb3Run != ffbSpeeds.ffb3Ma) {
+                    tvFfbSpeed3.text = ffbSpeeds.ffb3Ma
+                }
+                if (previousFfbRunState.ffb4Run != ffbSpeeds.ffb4Ma) {
+                    tvFfbSpeed4.text = ffbSpeeds.ffb4Ma
+                }
+                if (previousFfbRunState.ffb5Run != ffbSpeeds.ffb5Ma) {
+                    tvFfbSpeed5.text = ffbSpeeds.ffb5Ma
+                }
+                previousFfbSpeed = ffbSpeeds
+            }
         }
     }
 
@@ -373,19 +288,6 @@ class FfbConveyorFragment : Fragment() {
                 }
 
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    /*when (actionTag) {
-                        FFB_START_TAG -> {
-                            setImages(true)
-                        }
-
-                        FFB_STOP_TAG -> {
-                            setImages(false)
-                        }
-
-                        FFB_EME_STOP_TAG -> {
-                            setImages(false)
-                        }
-                    }*/
                     generateMsg(actionTag, 0)
                     false // Return true to indicate the event was handled
                 }
@@ -424,6 +326,7 @@ class FfbConveyorFragment : Fragment() {
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

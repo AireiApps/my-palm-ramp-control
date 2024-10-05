@@ -85,5 +85,7 @@
     <string name="ffb_mode">Mode</string>
     <string name="auto">Auto</string>
     <string name="manual">Manual</string>
+    <string name="ffb_auto">Auto</string>
+    <string name="ffb_manual">Manual</string>
 
 </resources>

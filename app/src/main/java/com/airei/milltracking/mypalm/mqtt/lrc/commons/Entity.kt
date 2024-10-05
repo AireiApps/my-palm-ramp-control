@@ -58,27 +58,27 @@ data class WData(
 )
 
 data class FfbRunningStatus(
-    var ffb1Run: String = "0",
-    var ffb2Run: String = "0",
-    var ffb3Run: String = "0",
-    var ffb4Run: String = "0",
-    var ffb5Run: String = "0"
+    var ffb1Run: String = "--",
+    var ffb2Run: String = "--",
+    var ffb3Run: String = "--",
+    var ffb4Run: String = "--",
+    var ffb5Run: String = "--"
 )
 
 data class FfbSpeedStatus(
-    var ffb1Ma: String="",
-    var ffb2Ma: String="",
-    var ffb3Ma: String="",
-    var ffb4Ma: String="",
-    var ffb5Ma: String=""
+    var ffb1Ma: String= "0 A",
+    var ffb2Ma: String= "0 A",
+    var ffb3Ma: String= "0 A",
+    var ffb4Ma: String= "0 A",
+    var ffb5Ma: String= "0 A"
 )
 
 data class FfbModeStatus(
-    var ffb1Mode: String="",
-    var ffb2Mode: String="",
-    var ffb3Mode: String="",
-    var ffb4Mode: String="",
-    var ffb5Mode: String=""
+    var ffb1Mode: String="--",
+    var ffb2Mode: String="--",
+    var ffb3Mode: String="--",
+    var ffb4Mode: String="--",
+    var ffb5Mode: String="--"
 )
 
 
