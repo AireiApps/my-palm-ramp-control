@@ -138,6 +138,7 @@
                     android:layout_marginStart="26dp"
                     android:textSize="@dimen/loading_ramp_size"
                     android:textStyle="bold"
+                    android:visibility="gone"
                     app:layout_constraintEnd_toStartOf="@+id/imageView2"
                     app:layout_constraintStart_toEndOf="@+id/imageView"
                     app:layout_constraintTop_toBottomOf="@+id/textView"
@@ -150,6 +151,7 @@
                     android:layout_marginStart="12dp"
                     android:background="@drawable/btn_outline_green"
                     android:text="Auto/Manual"
+                    android:visibility="gone"
                     android:textColor="@color/color_background_1"
                     app:backgroundTint="@color/color_background_2" />
 

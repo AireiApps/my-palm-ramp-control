@@ -36,6 +36,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.AutoFeedingData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.CommandData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.FfbRunningStatus
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.MqttConfig
@@ -47,6 +48,8 @@ import com.airei.milltracking.mypalm.mqtt.lrc.databinding.AlartFfbBinding
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PUBLISH_AI
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PUBLISH_TOPIC_LR
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PUBLISH_TOPIC_STR
+import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AUTO_FEED_1
+import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AUTO_FEED_2
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_TOPIC_LR
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MqttHandler
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MqttMessageListener
@@ -487,6 +490,8 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
         Log.i(TAG, "onConnection: isConnect = $isConnect")
         if (isConnect) {
             mqttHandler?.subscribe(MQTT_SUBSCRIBE_TOPIC_LR)
+            mqttHandler?.subscribe(MQTT_SUBSCRIBE_AUTO_FEED_1)
+            mqttHandler?.subscribe(MQTT_SUBSCRIBE_AUTO_FEED_2)
         }
         runOnUiThread {
             val message = if (isConnect) "Mqtt Connected" else "Mqtt Connection Failed"
@@ -508,6 +513,28 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
                     Log.e(TAG, "onReceiveMessage: ", e)
                 }
 
+            }
+
+            MQTT_SUBSCRIBE_AUTO_FEED_1 -> {
+                try {
+                    val autoFeedingData = Gson().fromJson(message, AutoFeedingData::class.java)
+                    Log.d(TAG, "onReceiveMessage: AutoFeed1: $autoFeedingData ")
+                    viewModel.autoFeedingData1.postValue(autoFeedingData)
+                }catch (e:Exception){
+                    viewModel.autoFeedingData1.postValue(null)
+                    Log.e(TAG, "onReceiveMessage: ", e)
+                }
+            }
+
+            MQTT_SUBSCRIBE_AUTO_FEED_2 -> {
+                try {
+                    val autoFeedingData = Gson().fromJson(message, AutoFeedingData::class.java)
+                    Log.d(TAG, "onReceiveMessage: AutoFeed2: $autoFeedingData ")
+                    viewModel.autoFeedingData2.postValue(autoFeedingData)
+                }catch (e:Exception){
+                    viewModel.autoFeedingData2.postValue(null)
+                    Log.e(TAG, "onReceiveMessage: ", e)
+                }
             }
 
             else -> {

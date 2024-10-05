@@ -40,7 +40,12 @@ class SfbConveyorFragment : Fragment() {
     private var SFB_STOP_TAG = ""
     private var SFB_EME_STOP_TAG = ""
 
-    lateinit var gifImageView: GifImageView
+    private var previousSfbRunStatus: MutableMap<Int, String> = mutableMapOf()
+
+    private var previousStatus: String? = null
+    private var previousSfbSpeed1: String? = null
+    private var previousSfbSpeed2: String? = null
+    private var previousSfbSpeed3: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -83,6 +88,7 @@ class SfbConveyorFragment : Fragment() {
         viewModel.sfbLastStatus.observe(viewLifecycleOwner) {
             with(binding) {
                 if (it != null) {
+                    // Create a list of conveyor run statuses, image views, and resources
                     val conveyors = listOf(
                         Triple(
                             it.sfb1Run,
@@ -101,12 +107,20 @@ class SfbConveyorFragment : Fragment() {
                         )
                     )
 
-                    conveyors.forEach { (runStatus, imgView, resources) ->
+                    conveyors.forEachIndexed { index, (runStatus, imgView, resources) ->
                         val (gifResource, staticResource) = resources
-                        sfbConveyorGif(
-                            imgView,
-                            if (runStatus == "1") gifResource else staticResource
-                        )
+                        // Get the previous run status from the map
+                        val prevStatus = previousSfbRunStatus[index] ?: ""
+
+                        // Only update the image if the status has changed
+                        if (prevStatus != runStatus) {
+                            sfbConveyorGif(
+                                imgView,
+                                if (runStatus == "1") gifResource else staticResource
+                            )
+                            // Update the map with the new status
+                            previousSfbRunStatus[index] = runStatus
+                        }
                     }
                 } else {
                     val imageViews = listOf(
@@ -115,9 +129,11 @@ class SfbConveyorFragment : Fragment() {
                         imgGearConveyor3 to R.drawable.gear_conveyor_3_sfb3
                     )
 
-                    imageViews.forEach { (imgView, staticResource) ->
+                    imageViews.forEachIndexed { index, (imgView, staticResource) ->
                         Glide.with(requireContext()).clear(imgView)
                         imgView.setImageResource(staticResource)
+                        // Clear previous run statuses when no data is available
+                        previousSfbRunStatus[index] = ""
                     }
                 }
             }
@@ -126,11 +142,16 @@ class SfbConveyorFragment : Fragment() {
         viewModel.statusData.observe(viewLifecycleOwner) {
             if (it != null) {
                 with(binding) {
-                    // Set button status based on mypalmStatus
-                    btnDoorStatus.text = when (it.data.mypalmStatus) {
-                        "0" -> getString(R.string.my_palm_mode)
-                        "1" -> getString(R.string.scada_mode)
+                    // Check if the new myPalmStatus is different from the previous one
+                    val newStatus = when (it.data.mypalmStatus) {
+                        "1" -> getString(R.string.my_palm_mode)
+                        "0" -> getString(R.string.scada_mode)
                         else -> getString(R.string.manual_mode)
+                    }
+
+                    if (newStatus != previousStatus) {
+                        btnDoorStatus.text = newStatus
+                        previousStatus = newStatus // Update previous status
                     }
 
                     val sfb = SfbRunningStatus(
@@ -141,10 +162,19 @@ class SfbConveyorFragment : Fragment() {
 
                     viewModel.sfbLastStatus.postValue(sfb)
 
-                    // Update the current values
-                    tvSfbSpeed1.text = "${it.data.sfb1Ma} A"
-                    tvSfbSpeed2.text = "${it.data.sfb2Ma} A"
-                    tvSfbSpeed3.text = "${it.data.sfb3Ma} A"
+                    // Update SFB speeds only if they have changed
+                    if (previousSfbSpeed1 != "${it.data.sfb1Ma} A") {
+                        tvSfbSpeed1.text = "${it.data.sfb1Ma} A"
+                        previousSfbSpeed1 = "${it.data.sfb1Ma} A"
+                    }
+                    if (previousSfbSpeed2 != "${it.data.sfb2Ma} A") {
+                        tvSfbSpeed2.text = "${it.data.sfb2Ma} A"
+                        previousSfbSpeed2 = "${it.data.sfb2Ma} A"
+                    }
+                    if (previousSfbSpeed3 != "${it.data.sfb3Ma} A") {
+                        tvSfbSpeed3.text = "${it.data.sfb3Ma} A"
+                        previousSfbSpeed3 = "${it.data.sfb3Ma} A"
+                    }
 
                     // Set status and background for each SFB TextView
                     setSfbStatus(layoutSfb1, tvSfbStatus1, it.data.sfb1Run, it.data.sfb1Estop)
@@ -162,6 +192,12 @@ class SfbConveyorFragment : Fragment() {
                     setSfbStatus(layoutSfb1, tvSfbStatus1, "--", "0")
                     setSfbStatus(layoutSfb2, tvSfbStatus2, "--", "0")
                     setSfbStatus(layoutSfb3, tvSfbStatus3, "--", "0")
+
+                    // Reset previous state
+                    previousStatus = null
+                    previousSfbSpeed1 = null
+                    previousSfbSpeed2 = null
+                    previousSfbSpeed3 = null
                 }
             }
         }

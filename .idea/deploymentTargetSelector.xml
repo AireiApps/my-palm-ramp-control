@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-10-03T12:09:28.573194400Z">
+        <DropdownSelection timestamp="2024-10-05T10:18:12.225493100Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="Default" identifier="serial=192.168.1.10:5555;connection=9ba5c9d7" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\AIREI\.android\avd\8-Inch_API_34.avd" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -15,7 +15,7 @@
           <targets>
             <Target type="DEFAULT_BOOT">
               <handle>
-                <DeviceId pluginId="PhysicalDevice" identifier="serial=HA1E4Y6X" />
+                <DeviceId pluginId="Default" identifier="serial=192.168.1.10:5555;connection=6978ed28" />
               </handle>
             </Target>
             <Target type="DEFAULT_BOOT">
@@ -25,7 +25,7 @@
             </Target>
             <Target type="DEFAULT_BOOT">
               <handle>
-                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\AIREI\.android\avd\Medium_Tablet_API_35.avd" />
+                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\AIREI\.android\avd\8-Inch_API_34.avd" />
               </handle>
             </Target>
           </targets>

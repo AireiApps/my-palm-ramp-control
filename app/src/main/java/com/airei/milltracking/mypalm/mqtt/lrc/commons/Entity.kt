@@ -64,6 +64,24 @@ data class FfbRunningStatus(
     var ffb4Run: String = "0",
     var ffb5Run: String = "0"
 )
+
+data class FfbSpeedStatus(
+    var ffb1Ma: String="",
+    var ffb2Ma: String="",
+    var ffb3Ma: String="",
+    var ffb4Ma: String="",
+    var ffb5Ma: String=""
+)
+
+data class FfbModeStatus(
+    var ffb1Mode: String="",
+    var ffb2Mode: String="",
+    var ffb3Mode: String="",
+    var ffb4Mode: String="",
+    var ffb5Mode: String=""
+)
+
+
 data class SfbRunningStatus(
     var sfb1Run: String = "0",
     var sfb2Run: String = "0",
@@ -291,6 +309,17 @@ data class DeviceStatusData(
     @SerializedName("efbpress2_ma") val efbpress2Ma: String
 )
 
+data class AutoFeedingData(
+    @SerializedName("dts")
+    val dts: String,
+    @SerializedName("LEVEL 1")
+    val level1: String,
+    @SerializedName("LEVEL 2")
+    val level2: String,
+    @SerializedName("LEVEL 3")
+    val level3: String
+)
+
 
 val doorList = listOf(
     DoorData(doorId = "Door1", doorName = "01", openStatus = false, rtspConfig = "rtsp://admin:afg69008@192.168.1.51:554/cam/realmonitor?channel=0&subtype=0"),
@@ -315,228 +344,7 @@ fun String.toStatusData(): StatusData {
     return gson.fromJson(this, StatusData::class.java)
 }
 
-val statusDataSample = "{\n" +
-        " \"dts\" : \"2024-09-12 13:38:31\",\n" +
-        " \"data\" : {\n" +
-        "  \"mypalm_status\":\"0\",\n" +
-        "  \"lr_starter\": \"0\",\n" +
-        "  \"lrdoor1\": \"0\",\n" +
-        "  \"lrdoor2\": \"0\",\n" +
-        "  \"lrdoor3\": \"0\",\n" +
-        "  \"lrdoor4\": \"0\",\n" +
-        "  \"lrdoor5\": \"0\",\n" +
-        "  \"lrdoor6\": \"0\",\n" +
-        "  \"lrdoor7\": \"0\",\n" +
-        "  \"lrdoor8\": \"0\", \n" +
-        "  \"lrdoor9\": \"0\",\n" +
-        "  \"lrdoor10\": \"0\",\n" +
-        "  \"lrdoor11\": \"0\",\n" +
-        "  \"lrdoor12\": \"0\", \n" +
-        "  \"lrdoor13\": \"0\",\n" +
-        "  \"lrdoor14\": \"0\",\n" +
-        "  \"lrdoor15\": \"0\",\n" +
-        "  \"lrdoor16\": \"0\",\n" +
-        "  \"ffbsys_start\":\"0\",\n" +
-        "  \"ffbsys_stop\":\"0\",\n" +
-        "  \"ffbsys_estop\":\"0\",\n" +
-        "  \"ffb1_run\":\"0\",\n" +
-        "  \"ffb2_run\":\"0\",\n" +
-        "  \"ffb3_run\":\"0\",\n" +
-        "  \"ffb4_run\":\"0\",\n" +
-        "  \"ffb5_run\":\"0\",\n" +
-        "  \"ffb1_trip\":\"0\",\n" +
-        "  \"ffb2_trip\":\"0\",\n" +
-        "  \"ffb3_trip\":\"0\",\n" +
-        "  \"ffb4_trip\":\"0\",\n" +
-        "  \"ffb5_trip\":\"0\",\n" +
-        "  \"ffb1_auto\":\"0\",\n" +
-        "  \"ffb2_auto\":\"0\",\n" +
-        "  \"ffb3_auto\":\"0\",\n" +
-        "  \"ffb4_auto\":\"0\",\n" +
-        "  \"ffb5_auto\":\"0\",\n" +
-        "  \"ffb1_manual\":\"1\",\n" +
-        "  \"ffb2_manual\":\"1\",\n" +
-        "  \"ffb3_manual\":\"1\",\n" +
-        "  \"ffb4_manual\":\"0\",\n" +
-        "  \"ffb5_manual\":\"1\",  \n" +
-        "  \"ffb1_start\":\"0\",\n" +
-        "  \"ffb2_start\":\"0\",\n" +
-        "  \"ffb3_start\":\"0\",\n" +
-        "  \"ffb4_start\":\"0\",\n" +
-        "  \"ffb5_start\":\"0\",\n" +
-        "  \"ffb1_estop\":\"0\",\n" +
-        "  \"ffb2_estop\":\"0\",\n" +
-        "  \"ffb3_estop\":\"0\",\n" +
-        "  \"ffb4_estop\":\"0\",\n" +
-        "  \"ffb5_estop\":\"0\",\n" +
-        "  \"sfbsys_start\":\"0\",\n" +
-        "  \"sfbsys_stop\":\"0\",\n" +
-        "  \"sfbsys_estop\":\"0\",\n" +
-        "  \"sfb1_run\":\"0\",\n" +
-        "  \"sfb2_run\":\"0\",\n" +
-        "  \"sfb3_run\":\"0\",\n" +
-        "  \"sfb1_trip\":\"0\",\n" +
-        "  \"sfb2_trip\":\"0\",\n" +
-        "  \"sfb3_trip\":\"0\",\n" +
-        "  \"sfb1_auto\":\"0\",\n" +
-        "  \"sfb2_auto\":\"0\",\n" +
-        "  \"sfb3_auto\":\"0\",\n" +
-        "  \"sfb1_manual\":\"0\",\n" +
-        "  \"sfb2_manual\":\"1\",\n" +
-        "  \"sfb3_manual\":\"1\",\n" +
-        "  \"sfb1_start\":\"0\",\n" +
-        "  \"sfb2_start\":\"0\",\n" +
-        "  \"sfb3_start\":\"0\",\n" +
-        "  \"sfb1_estop\":\"0\",\n" +
-        "  \"sfb2_estop\":\"0\",\n" +
-        "  \"sfb3_estop\":\"0\",\n" +
-        "  \"cbc1_run\":\"1\",\n" +
-        "  \"cbc2_run\":\"1\",\n" +
-        "  \"cbc1_trip\":\"0\",\n" +
-        "  \"cbc2_trip\":\"0\",\n" +
-        "  \"cbc1_auto\":\"0\",\n" +
-        "  \"cbc2_auto\":\"0\",\n" +
-        "  \"cbc1_manual\":\"1\",\n" +
-        "  \"cbc2_manual\":\"1\",\n" +
-        "  \"cbc1_start\":\"0\",\n" +
-        "  \"cbc2_start\":\"0\",\n" +
-        "  \"cbc1_estop\":\"0\",\n" +
-        "  \"cbc2_estop\":\"0\",\n" +
-        "  \"cbc1_start\":\"0\",\n" +
-        "  \"cbc2_start\":\"0\",\n" +
-        "  \"cbc1_estop\":\"0\",\n" +
-        "  \"cbc2_estop\":\"0\",\n" +
-        "  \"ccbc_run\":\"0\",\n" +
-        "  \"ccbc_trip\":\"0\",\n" +
-        "  \"ccbc_auto\":\"0\",\n" +
-        "  \"ccbc_manual\":\"0\",\n" +
-        "  \"ccbc_start\":\"0\",\n" +
-        "  \"ccbc_estop\":\"0\",\n" +
-        "  \"rfc_run\":\"1\",\n" +
-        "  \"rfc_trip\":\"0\",\n" +
-        "  \"rfc_auto\":\"0\",\n" +
-        "  \"rfc_manual\":\"1\",\n" +
-        "  \"rfc_start\":\"0\",\n" +
-        "  \"rfc_estop\":\"0\",\n" +
-        "  \"ffc_run\":\"1\",\n" +
-        "  \"ffc_trip\":\"0\",\n" +
-        "  \"ffc_auto\":\"0\",\n" +
-        "  \"ffc_manual\":\"1\",\n" +
-        "  \"ffc_start\":\"0\",\n" +
-        "  \"ffc_estop\":\"0\",\n" +
-        "  \"td2_run\":\"1\",\n" +
-        "  \"td2_trip\":\"0\",\n" +
-        "  \"td2_auto\":\"0\",\n" +
-        "  \"td2_manual\":\"1\",\n" +
-        "  \"td2_start\":\"0\",\n" +
-        "  \"td2_estop\":\"0\",\n" +
-        "  \"bfc2_run\":\"1\",\n" +
-        "  \"bfc2_trip\":\"0\",\n" +
-        "  \"bfc2_auto\":\"0\",\n" +
-        "  \"bfc2_manual\":\"1\",\n" +
-        "  \"bfc2_start\":\"0\",\n" +
-        "  \"bfc2_estop\":\"0\",\n" +
-        "  \"fe2_run\":\"1\",\n" +
-        "  \"fe2_trip\":\"0\",\n" +
-        "  \"fe2_auto\":\"0\",\n" +
-        "  \"fe2_manual\":\"1\",\n" +
-        "  \"fe2_start\":\"0\",\n" +
-        "  \"fe2_estop\":\"0\",\n" +
-        "  \"ffb1_ma\":\"0.01\",\n" +
-        "  \"ffb2_ma\":\"0.00\",\n" +
-        "  \"ffb3_ma\":\"0.00\",\n" +
-        "  \"ffb4_ma\":\"0.00\",\n" +
-        "  \"ffb5_ma\":\"0.00\",\n" +
-        "  \"sfb1_ma\":\"0\",\n" +
-        "  \"sfb2_ma\":\"0\",\n" +
-        "  \"sfb3_ma\":\"0\",\n" +
-        "  \"cbc1_ma\": \"6.51\",\n" +
-        "  \"cbc2_ma\": \"6.24\",\n" +
-        "  \"ccbc_ma\": \"0.00\",\n" +
-        "  \"rfc_ma\": \"4.30\",\n" +
-        "  \"ffc_ma\": \"3.66\",\n" +
-        "  \"td2_ma\": \"11.09\",\n" +
-        "  \"bfc2_ma\": \"3.76\",\n" +
-        "  \"fe2_ma\": \"6.03\",\n" +
-        "  \"crc_run\":\"0\",\n" +
-        "  \"crc_trip\":\"0\",\n" +
-        "  \"crc_auto\":\"0\",\n" +
-        "  \"crc_manual\":\"0\",\n" +
-        "  \"crc_start\":\"0\",\n" +
-        "  \"crc_estop\":\"0\",\n" +
-        "  \"ebc_run\":\"1\",\n" +
-        "  \"ebc_trip\":\"0\",\n" +
-        "  \"ebc_auto\":\"0\",\n" +
-        "  \"ebc_manual\":\"1\",\n" +
-        "  \"ebc_start\":\"0\",\n" +
-        "  \"ebc_estop\":\"0\",\n" +
-        "  \"td1_run\":\"1\",\n" +
-        "  \"td1_trip\":\"0\",\n" +
-        "  \"td1_auto\":\"0\",\n" +
-        "  \"td1_manual\":\"1\",\n" +
-        "  \"td1_start\":\"0\",\n" +
-        "  \"td1_estop\":\"0\",\n" +
-        "  \"td3_run\":\"1\",\n" +
-        "  \"td3_trip\":\"0\",\n" +
-        "  \"td3_auto\":\"0\",\n" +
-        "  \"td3_manual\":\"1\",\n" +
-        "  \"td3_start\":\"0\",\n" +
-        "  \"td3_estop\":\"0\",\n" +
-        "  \"bfc1_run\":\"1\",\n" +
-        "  \"bfc1_trip\":\"0\",\n" +
-        "  \"bfc1_auto\":\"0\",\n" +
-        "  \"bfc1_manual\":\"1\",\n" +
-        "  \"bfc1_start\":\"0\",\n" +
-        "  \"bfc1_estop\":\"0\",\n" +
-        "  \"bfc3_run\":\"1\",\n" +
-        "  \"bfc3_trip\":\"0\",\n" +
-        "  \"bfc3_auto\":\"0\",\n" +
-        "  \"bfc3_manual\":\"1\",\n" +
-        "  \"bfc3_start\":\"0\",\n" +
-        "  \"bfc3_estop\":\"0\",\n" +
-        "  \"fe1_run\":\"1\",\n" +
-        "  \"fe1_trip\":\"0\",\n" +
-        "  \"fe1_auto\":\"0\",\n" +
-        "  \"fe1_manual\":\"1\",\n" +
-        "  \"fe1_start\":\"0\",\n" +
-        "  \"fe1_estop\":\"0\",\n" +
-        "  \"efbconv1_run\":\"0\",\n" +
-        "  \"efbconv1_trip\":\"0\",\n" +
-        "  \"efbconv1_auto\":\"0\",\n" +
-        "  \"efbconv1_manual\":\"0\",\n" +
-        "  \"efbconv1_start\":\"0\",\n" +
-        "  \"efbconv1_estop\":\"0\",\n" +
-        "  \"efbconv2_run\":\"0\",\n" +
-        "  \"efbconv2_trip\":\"0\",\n" +
-        "  \"efbconv2_auto\":\"0\",\n" +
-        "  \"efbconv2_manual\":\"0\",\n" +
-        "  \"efbconv2_start\":\"0\",\n" +
-        "  \"efbconv2_estop\":\"0\",\n" +
-        "  \"efbpress1_run\":\"0\",\n" +
-        "  \"efbpress1_trip\":\"0\",\n" +
-        "  \"efbpress1_auto\":\"0\",\n" +
-        "  \"efbpress1_manual\":\"0\",\n" +
-        "  \"efbpress1_start\":\"0\",\n" +
-        "  \"efbpress1_estop\":\"0\",\n" +
-        "  \"efbpress3_run\":\"0\",\n" +
-        "  \"efbpress3_trip\":\"0\",\n" +
-        "  \"efbpress3_auto\":\"0\",\n" +
-        "  \"efbpress3_manual\":\"0\",\n" +
-        "  \"efbpress3_start\":\"0\",\n" +
-        "  \"efbpress3_estop\":\"0\",\n" +
-        "  \"crc_ma\": \"0.00\",\n" +
-        "  \"ebc_ma\": \"0.00\",\n" +
-        "  \"td1_ma\": \"0.00\",\n" +
-        "  \"td3_ma\": \"0.00\",\n" +
-        "  \"bfc1_ma\": \"0.00\",\n" +
-        "  \"bfc3_ma\": \"0.00\",\n" +
-        "  \"fe1_ma\": \"0.00\",\n" +
-        "  \"efbconv1_ma\": \"0.00\", \n" +
-        "  \"efbconv2_ma\": \"0.00\",    \n" +
-        "  \"efbpress1_ma\": \"0.00\", \n" +
-        "  \"efbpress2_ma\": \"0.00\"  \n" +
-        "   }\n" +
-        "}"
+
 
 val commendJsonStr = "{\n" +
         "  \"rampDoorOpen\": \"LoadingRamp:Door1_OpenCmd\",\n" +

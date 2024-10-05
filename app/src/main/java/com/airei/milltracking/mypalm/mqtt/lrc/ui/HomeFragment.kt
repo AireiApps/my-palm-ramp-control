@@ -1,9 +1,6 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.ui
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -26,7 +23,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.rtsp.RtspMediaSource
-import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity
 import com.airei.milltracking.mypalm.mqtt.lrc.R
@@ -37,6 +34,7 @@ import com.airei.milltracking.mypalm.mqtt.lrc.commons.TagData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.WData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.doorList
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentHomeBinding
+import com.airei.milltracking.mypalm.mqtt.lrc.ui.DoorsFragment.AvailableDoorsData
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorTable
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
@@ -69,6 +67,20 @@ class HomeFragment : Fragment() {
     private var TAG_OPEN_DOOR :String = ""
     private var TAG_CLOSE_DOOR :String = ""
 
+    private var aiButtonDisable: Boolean = false
+
+    // Declare variables to store previous values
+    private var previousMypalmStatus: String? = null
+    private var previousLrStarterStatus: String? = null
+
+    private lateinit var aiModeHandler: Handler
+    private var aiModeDelay: Long = 30000L
+    private val aiModeRunnable = Runnable {
+        // Disable the toggle button after 30 seconds
+        Log.d(TAG, "aiModeRunnable: ")
+        aiButtonDisable = false
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -89,11 +101,12 @@ class HomeFragment : Fragment() {
             })
 
         binding.layoutBtns.visibility = View.INVISIBLE
-
+        aiButtonDisable = false
         observeData()
         setupUI()
         doorActionBtn()
         handler = Handler(Looper.getMainLooper())
+        aiModeHandler = Handler(Looper.getMainLooper())
     }
 
     private fun setupUI() {
@@ -103,7 +116,9 @@ class HomeFragment : Fragment() {
             stopPlayer()
         }
 
-        binding.tgAiMode.isChecked = AppPreferences.aiMode
+        binding.tgAiMode.isChecked = AppPreferences.aiMode.split(":")[0] == "true"
+
+        viewModel.aiModeUpdate.postValue(AppPreferences.aiMode)
 
         binding.tgMotor.setOnClickListener {
             if ((activity as MainActivity).mqttConnectionCheck()) {
@@ -113,22 +128,35 @@ class HomeFragment : Fragment() {
                 showToast("Mqtt connection not available. Please check mqtt connection.")
             }
         }
+
         binding.tgAiMode.setOnClickListener {
-            if ((activity as MainActivity).mqttConnectionCheck()) {
-                AppPreferences.aiMode = binding.tgAiMode.isChecked
-                updateAiMode(state = binding.tgAiMode.isChecked)
-            }else{
+            if (aiButtonDisable) {
                 binding.tgAiMode.isChecked = !binding.tgAiMode.isChecked
-                showToast("Mqtt connection not available. Please check mqtt connection.")
+                showToast("Processing... Please wait until the operation completes.")
+            } else {
+                if ((activity as MainActivity).mqttConnectionCheck()) {
+                    val aiState = binding.tgAiMode.isChecked
+
+                    if (AppPreferences.availableDoorsData.isNotEmpty()) {
+                        viewModel.aiModeUpdate.postValue("${aiState}:${System.currentTimeMillis()}")
+                        updateAiMode(aiState)
+                    } else {
+                        showToast("Please select at least one door.")
+                        findNavController().navigate(R.id.doorsFragment)
+                    }
+                }else{
+                    binding.tgAiMode.isChecked = !binding.tgAiMode.isChecked
+                    showToast("Mqtt connection not available. Please check mqtt connection.")
+                }
             }
         }
     }
 
-    data class AiModeData(val mobile: Int)
-
-    private fun updateAiMode(state: Boolean) {
-        val aiMode = if (state) 1 else 0
-        val mobileData = AiModeData(mobile = aiMode)
+    private fun updateAiMode(
+        state: Boolean, availableDoors: String = AppPreferences.availableDoorsData
+    ) {
+        val mobileData =
+            AvailableDoorsData(availableDoors = availableDoors, mobile = if (state) "1" else "0")
         val jsonString = Gson().toJson(mobileData)
         viewModel.updateAiModeData.postValue(jsonString)
     }
@@ -153,26 +181,84 @@ class HomeFragment : Fragment() {
             }
         }
 
-        viewModel.statusData.observe(viewLifecycleOwner){
-            if (it != null){
-                binding.btnDoorStatus.text = when(it.data.mypalmStatus){
-                    "0" -> getString(R.string.my_palm_mode)
-                    "1" -> getString(R.string.scada_mode)
-                    else -> getString(R.string.manual_mode)
+        viewModel.statusData.observe(viewLifecycleOwner) {
+            if (it != null) {
+                val newMypalmStatus = it.data.mypalmStatus
+                val newLrStarterStatus = it.data.lrStarter
+
+                // Update btnDoorStatus only if the mypalmStatus has changed
+                if (previousMypalmStatus != newMypalmStatus) {
+                    binding.btnDoorStatus.text = when (newMypalmStatus) {
+                        "0" -> getString(R.string.scada_mode)
+                        "1" -> getString(R.string.my_palm_mode)
+                        else -> getString(R.string.manual_mode)
+                    }
+                    previousMypalmStatus = newMypalmStatus
                 }
-                binding.btnRampStatus.text = "--"
-                /*binding.btnRampStatus!!.text = when(it.data.){
-                    "0" -> "Auto"
-                    "1" -> "Manual"
-                    else -> "Manual"
+
+                // Update tgMotor isChecked only if lrStarter has changed
+                if (previousLrStarterStatus != newLrStarterStatus) {
+                    binding.tgMotor.isChecked = newLrStarterStatus == "1"
+                    previousLrStarterStatus = newLrStarterStatus
+                }
+
+                // Uncomment and use this when rampStatus is available
+                /*if (previousRampStatus != newRampStatus) {
+                    binding.btnRampStatus.text = when (newRampStatus) {
+                        "0" -> "Auto"
+                        "1" -> "Manual"
+                        else -> "Manual"
+                    }
+                    previousRampStatus = newRampStatus
                 }*/
 
-            }else{
+            } else {
+                // If data is null, reset the UI and previous values
                 binding.btnDoorStatus.text = "--"
                 binding.btnRampStatus.text = "--"
+                previousMypalmStatus = null
+                previousLrStarterStatus = null
+            }
+        }
+
+        viewModel.aiModeUpdate.observe(viewLifecycleOwner) { lastUpdate ->
+            if (lastUpdate.isNotEmpty()) {
+                val aiStateData = lastUpdate.split(":")
+                AppPreferences.aiMode = lastUpdate
+                if (aiStateData.first() == "true") {
+                    binding.tgAiMode.isChecked = true
+                } else {
+                    binding.tgAiMode.isChecked = false
+                    if (aiStateData.last().toLong() != 0L) {
+                        aiModeDelay = checkTimeDifference(aiStateData.last().toLong())
+                        Log.d(TAG, "observeData: aiModeUpdate ${(aiModeDelay)}")
+
+                        if (aiModeDelay != 0L) {
+                            aiButtonDisable = true
+                            aiModeHandler.postDelayed(aiModeRunnable, aiModeDelay)
+                        }
+                    }
+                }
             }
         }
     }
+
+    private fun checkTimeDifference(timestamp: Long): Long {
+        // Get the current time in milliseconds
+        val currentTime = System.currentTimeMillis()
+
+        // Calculate the time difference in milliseconds
+        val timeDifference = currentTime - timestamp
+
+        // Check if the difference is less than or equal to 30 seconds
+        Log.i(TAG, "checkTimeDifference = $timeDifference")
+        return if (timeDifference <= 30000) {
+            30000 - timeDifference
+        } else {
+            0L
+        }
+    }
+
 
     private fun saveDoorList(doorList: List<DoorData>) {
         val doorTable = doorList.map { it.toDoorTable() }
@@ -187,7 +273,6 @@ class HomeFragment : Fragment() {
                 override fun onActionClick(data: DoorData) {
                     val temp = adapter.getList()
                     temp.forEach { it.selected = it.doorId == data.doorId && !data.selected }
-
                     if (data.selected) {
                         playView = true
                         playExoPlayer(data.rtspConfig, doorId = data.doorId)
@@ -290,12 +375,6 @@ class HomeFragment : Fragment() {
             binding.tvDoorId.text = doorId
             binding.rtspLayout.visibility = View.VISIBLE
 
-            val trackSelector = DefaultTrackSelector(requireContext()).apply {
-                val params =
-                    buildUponParameters().setMaxVideoBitrate(1000 * 1024) // Set bitrate to 1000 kbps
-                        .build()
-                setParameters(params)
-            }
             // Initialize load control
             val loadControl = DefaultLoadControl.Builder()
                 //.setBufferDurationsMs(10000, 30000, 1000, 2000)
@@ -363,38 +442,6 @@ class HomeFragment : Fragment() {
         }
     }
 
-    // Measure average network speed
-    private fun getAverageNetworkSpeed(): Int {
-        // You can use Android's ConnectivityManager to measure the network type
-        val connectivityManager: ConnectivityManager =
-            requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkCapabilities =
-            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-
-        return when {
-            networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true -> 5000 // Assume WiFi speed as 5000 kbps
-            networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true -> {
-                // Assume average cellular speed based on network type (LTE, 3G, etc.)
-                if (networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
-                    2000 // Assume 2000 kbps for cellular data
-                } else {
-                    1000 // Lower speeds for older networks
-                }
-            }
-
-            else -> 1000 // Default to lower speed for unknown networks
-        }
-    }
-
-    // Calculate bitrate based on network speed
-    private fun calculateBitrateBasedOnNetworkSpeed(avgNetSpeedKbps: Int): Int {
-        return when {
-            avgNetSpeedKbps > 4000 -> 3000 * 1024 // Higher bitrate for fast networks
-            avgNetSpeedKbps > 2000 -> 1500 * 1024 // Medium bitrate
-            else -> 800 * 1024 // Lower bitrate for slow networks
-        }
-    }
-
     private fun stopPlayer() {
         try {
             playView = false
@@ -431,6 +478,7 @@ class HomeFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         stopPlayer()
+        aiModeHandler.removeCallbacksAndMessages(aiModeRunnable)
     }
 
     override fun onDestroyView() {

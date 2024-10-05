@@ -20,6 +20,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity
 import com.airei.milltracking.mypalm.mqtt.lrc.MyPalmApp
 import com.airei.milltracking.mypalm.mqtt.lrc.R
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.AutoFeedingData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.RtspConfig
 import com.airei.milltracking.mypalm.mqtt.lrc.roomdb.DoorTable
@@ -111,6 +112,17 @@ fun DoorData.toDoorTable(): DoorTable {
         openStatus = this.openStatus,
         rtsp = this.rtspConfig
     )
+}
+
+fun AutoFeedingData.getAverageLevel(): String {
+    // Convert the level strings to Double, using 0.0 as a default in case of a conversion error
+    val level1Value = level1.toDoubleOrNull() ?: 0.0
+    val level2Value = level2.toDoubleOrNull() ?: 0.0
+    val level3Value = level3.toDoubleOrNull() ?: 0.0
+    // Calculate the average
+    val average = (level1Value + level2Value + level3Value) / 3
+    // Return the average formatted to 2 decimal places
+    return "%.2f".format(average)
 }
 
 // Extension functions for conversion between Rtsp and RtspConfig

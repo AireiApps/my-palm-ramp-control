@@ -5,14 +5,23 @@ val MQTT_PUBLISH_TOPIC_STR = "cmd/MinsawiLR"
 val MQTT_PUBLISH_AI = "AI/mobile"
 
 val MQTT_SUBSCRIBE_TOPIC_LR = "data/MinsawiLR"
+val MQTT_SUBSCRIBE_AUTO_FEED_1 = "AI/Autofeeder1"
+val MQTT_SUBSCRIBE_AUTO_FEED_2 = "AI/Autofeeder2"
+
 
 /*
     topic name : cmd/MinsawiLR
+    Topic : AI/Autofeeder1
+    Topic : AI/Autofeeder2
 */
-/*val MQTT_HOST = "airei.net"
+
+/*
+val MQTT_HOST = "airei.net"
 val MQTT_PORT = "1883"
 val MQTT_USER = "airei"
-val MQTT_PASS = "4rEpepi#OsaYoPUGewRI"*/
+val MQTT_PASS = "4rEpepi#OsaYoPUGewRI"
+*/
+
 val MQTT_CLIENT_ID = "mypalm_mobile_123"
 val MQTT_HOST = "mypalm"
 val MQTT_PORT = "1883"

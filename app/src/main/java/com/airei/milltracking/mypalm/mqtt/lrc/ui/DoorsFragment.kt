@@ -62,8 +62,13 @@ class DoorsFragment : Fragment() {
                 val selectedDoors = adapter.getSelectedDoors().map { it.doorName }
                 Log.d(TAG, "setButton: btnSave ${selectedDoors.joinToString(",")}")
                 if (selectedDoors.isNotEmpty()) {
-                    updateAiMode(selectedDoors.joinToString(","))
+                    //updateAiMode(selectedDoors.joinToString(","))
                     AppPreferences.availableDoorsData = selectedDoors.joinToString(",")
+                    Toast.makeText(
+                        requireContext(),
+                        "Saved successfully",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 } else {
                     Toast.makeText(
                         requireContext(),
@@ -94,13 +99,6 @@ class DoorsFragment : Fragment() {
         @SerializedName("AVAILABLE_DOORS")
         val availableDoors: String
     )
-
-    private fun updateAiMode(availableDoors: String) {
-        val mobileData = AvailableDoorsData(availableDoors = availableDoors)
-        val jsonString = Gson().toJson(mobileData)
-        viewModel.updateAiModeData.postValue(jsonString)
-    }
-
 
     private fun setDoorsAdapterList(doorList: List<DoorData>) {
         adapter = DoorSelectAdapter(doorList, object : DoorSelectAdapter.ActionClickListener {
