@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_home"
+        android:icon="@drawable/ic_close"
+        android:title="home" />
+    <item
+        android:id="@+id/navigation_ffb"
+        android:icon="@drawable/ic_close"
+        android:title="ffb" />
+    <item
+        android:id="@+id/navigation_sfb"
+        android:icon="@drawable/ic_close"
+        android:title="sfb" />
+    <item
+        android:id="@+id/navigation_auto_feeder"
+        android:icon="@drawable/ic_close"
+        android:title="auto_feeder" />
+    <item
+        android:id="@+id/navigation_config"
+        android:icon="@drawable/ic_close"
+        android:title="config" />
+</menu>

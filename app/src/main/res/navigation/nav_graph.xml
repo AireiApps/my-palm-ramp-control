@@ -2,14 +2,13 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/nav_graph.xml"
-    app:startDestination="@id/homeFragment">
+    app:startDestination="@id/splashFragment">
 
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.airei.milltracking.mypalm.mqtt.lrc.ui.HomeFragment"
         android:label="fragment_home"
-        tools:layout="@layout/fragment_home" >
+        tools:layout="@layout/fragment_home">
         <action
             android:id="@+id/action_homeFragment_to_mqttConfigFragment"
             app:destination="@id/mqttConfigFragment" />
@@ -18,9 +17,40 @@
         android:id="@+id/mqttConfigFragment"
         android:name="com.airei.milltracking.mypalm.mqtt.lrc.ui.MqttConfigFragment"
         android:label="fragment_mqtt_config"
-        tools:layout="@layout/fragment_mqtt_config" >
+        tools:layout="@layout/fragment_mqtt_config">
         <action
             android:id="@+id/action_mqttConfigFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/autoFeedingFragment"
+        android:name="com.airei.milltracking.mypalm.mqtt.lrc.ui.AutoFeedingFragment"
+        android:label="fragment_auto_feeding"
+        tools:layout="@layout/fragment_auto_feeding" />
+    <fragment
+        android:id="@+id/sfbConveyorFragment"
+        android:name="com.airei.milltracking.mypalm.mqtt.lrc.ui.SfbConveyorFragment"
+        android:label="fragment_sfb_conveyor"
+        tools:layout="@layout/fragment_sfb_conveyor" />
+    <fragment
+        android:id="@+id/ffbConveyorFragment"
+        android:name="com.airei.milltracking.mypalm.mqtt.lrc.ui.FfbConveyorFragment"
+        android:label="fragment_ffb_conveyor"
+        tools:layout="@layout/fragment_ffb_conveyor" />
+    <fragment
+        android:id="@+id/splashFragment"
+        android:name="com.airei.milltracking.mypalm.mqtt.lrc.ui.SplashFragment"
+        android:label="fragment_splash"
+        tools:layout="@layout/fragment_splash" />
+    <fragment
+        android:id="@+id/guideFragment"
+        android:name="com.airei.milltracking.mypalm.mqtt.lrc.ui.GuideFragment"
+        android:label="fragment_guide"
+        tools:layout="@layout/fragment_guide" />
+    <fragment
+        android:id="@+id/doorsFragment"
+        android:name="com.airei.milltracking.mypalm.mqtt.lrc.ui.DoorsFragment"
+        android:label="fragment_doors"
+        tools:layout="@layout/fragment_doors" />
+
 </navigation>

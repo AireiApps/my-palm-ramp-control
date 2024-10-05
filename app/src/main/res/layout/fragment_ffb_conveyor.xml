@@ -1,0 +1,968 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    tools:context=".ui.FfbConveyorFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_h3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="@dimen/icon_img"
+            android:layout_height="0dp"
+            android:src="@drawable/airei_logo"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="@dimen/icon_img"
+            android:layout_height="0dp"
+            android:src="@drawable/my_palm_logo_gray"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_company_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:letterSpacing=".03"
+            android:paddingVertical="4dp"
+            android:text="@string/company_name"
+            android:textColor="@color/white"
+            android:textFontWeight="1000"
+            android:textSize="@dimen/company_name_size"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/imageView2"
+            app:layout_constraintStart_toEndOf="@+id/imageView"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="UnusedAttribute" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:letterSpacing=".02"
+            android:paddingVertical="4dp"
+            android:text="@string/ffb_conveyor_title"
+            android:textColor="@color/white"
+            android:textFontWeight="580"
+            android:textSize="@dimen/title_size"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/imageView2"
+            app:layout_constraintStart_toEndOf="@+id/imageView"
+            app:layout_constraintTop_toBottomOf="@+id/tv_company_name" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/lite_gray"
+        app:layout_constraintBottom_toBottomOf="@+id/linearLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingTop="6dp"
+        android:paddingBottom="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout2">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/mode"
+            android:textColor="@color/white"
+            android:textFontWeight="500"
+            android:textSize="@dimen/loading_ramp_size"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/imageView2"
+            app:layout_constraintStart_toEndOf="@+id/imageView"
+            app:layout_constraintTop_toBottomOf="@+id/textView"
+            tools:ignore="UnusedAttribute" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_door_status"
+            android:layout_width="@dimen/btn_ramp_width"
+            android:layout_height="@dimen/btn_ramp_height"
+            android:layout_marginStart="12dp"
+            android:background="@drawable/btn_outline_green"
+            android:text="MyPalm Mode/MyPalm Mode"
+            android:textColor="@color/color_background_1"
+            app:backgroundTint="@color/color_background_2" />
+    </LinearLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline7"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        app:layout_constraintVertical_bias="0.0">
+
+        <LinearLayout
+            android:id="@+id/layout_conveyor"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/guideline9"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:weightSum="3"
+            >
+            <ImageView
+                android:layout_weight="1"
+                android:id="@+id/img_gear_conveyor_1"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginStart="4dp"
+                android:src="@drawable/gear_conveyor_3_ffb1" />
+            <ImageView
+                android:layout_weight="1"
+                android:id="@+id/img_gear_conveyor_2"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginStart="4dp"
+                android:src="@drawable/gear_conveyor_3_ffb2" />
+            <ImageView
+                android:layout_weight="1"
+                android:id="@+id/img_gear_conveyor_3"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginStart="4dp"
+                android:src="@drawable/gear_conveyor_3_ffb3" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/img_gear_conveyor_5"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/gear_conveyor_3_ffb5"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline10"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/img_gear_conveyor_4"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:paddingVertical="18dp"
+            android:src="@drawable/gear_conveyor_3_ffb4"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/guideline10"
+            app:layout_constraintHorizontal_bias="0.722"
+            app:layout_constraintStart_toEndOf="@+id/layout_conveyor"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.4" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline10"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.6" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.45" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="12dp"
+        android:background="@drawable/bg_layout_auto_feed"
+        android:backgroundTint="@color/black_over_1"
+        android:orientation="vertical"
+        android:weightSum="1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline7"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+
+        <LinearLayout
+            android:id="@+id/layout_ffb_1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".2"
+            android:weightSum="1"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_margin="8dp"
+            android:background="@drawable/btn_outline_green"
+            >
+
+            <TextView
+                android:id="@+id/tv_ffb_title_1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".16"
+                android:paddingVertical="12dp"
+                android:text="@string/ffb_conveyor_2"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:textFontWeight="500"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:ignore="NestedWeights" />
+
+            <View
+                android:id="@+id/view_ffb_1"
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:background="@color/japanese_laurel"
+                android:layout_marginHorizontal="8dp"
+                />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".28"
+                android:weightSum="1"
+                android:padding="8dp"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="@string/speed"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="14sp"
+                    android:layout_weight=".30"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_ffb_speed_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight=".70"
+                    android:background="@drawable/btn_outline_white"
+                    android:backgroundTint="@color/lite_gray"
+                    android:gravity="center"
+                    android:text="0.0 A"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".28"
+                android:weightSum="1"
+                android:padding="8dp"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="@string/status"
+                    android:textColor="@color/white"
+
+                    android:textFontWeight="500"
+                    android:textSize="14sp"
+                    android:layout_weight=".30"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_ffb_status_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight=".70"
+                    android:background="@drawable/btn_outline_white"
+                    android:backgroundTint="@color/lite_gray"
+                    android:gravity="center"
+                    android:text="0.0 A"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".28"
+                android:weightSum="1"
+                android:padding="8dp"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="@string/ffb_mode"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="14sp"
+                    android:layout_weight=".30"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_ffb_mode_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight=".70"
+                    android:background="@drawable/btn_outline_white"
+                    android:backgroundTint="@color/lite_gray"
+                    android:gravity="center"
+                    android:text="0.0 A"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/layout_ffb_2"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".2"
+            android:weightSum="1"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_margin="8dp"
+            android:background="@drawable/btn_outline_green"
+            >
+
+            <TextView
+                android:id="@+id/tv_ffb_title_2"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".16"
+                android:paddingVertical="12dp"
+                android:text="@string/ffb_conveyor_2"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:textFontWeight="500"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:ignore="NestedWeights" />
+
+            <View
+                android:id="@+id/view_ffb_2"
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:background="@color/japanese_laurel"
+                android:layout_marginHorizontal="8dp"
+                />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".28"
+                android:weightSum="1"
+                android:padding="8dp"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="@string/speed"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="14sp"
+                    android:layout_weight=".30"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_ffb_speed_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight=".70"
+                    android:background="@drawable/btn_outline_white"
+                    android:backgroundTint="@color/lite_gray"
+                    android:gravity="center"
+                    android:text="0.0 A"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".28"
+                android:weightSum="1"
+                android:padding="8dp"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="@string/status"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="14sp"
+                    android:layout_weight=".30"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_ffb_status_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight=".70"
+                    android:background="@drawable/btn_outline_white"
+                    android:gravity="center"
+                    android:backgroundTint="@color/lite_gray"
+                    android:text="0.0 A"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".28"
+                android:weightSum="1"
+                android:padding="8dp"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="@string/ffb_mode"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="14sp"
+                    android:layout_weight=".30"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_ffb_mode_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight=".70"
+                    android:background="@drawable/btn_outline_white"
+                    android:backgroundTint="@color/lite_gray"
+                    android:gravity="center"
+                    android:text="0.0 A"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/layout_ffb_3"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".2"
+            android:weightSum="1"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_margin="8dp"
+            android:background="@drawable/btn_outline_green"
+            >
+
+            <TextView
+                android:id="@+id/tv_ffb_title_3"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".16"
+                android:paddingVertical="12dp"
+                android:text="@string/ffb_conveyor_2"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:textFontWeight="500"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:ignore="NestedWeights" />
+
+            <View
+                android:id="@+id/view_ffb_3"
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:background="@color/japanese_laurel"
+                android:layout_marginHorizontal="8dp"
+                />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".28"
+                android:weightSum="1"
+                android:padding="8dp"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="@string/speed"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="14sp"
+                    android:layout_weight=".30"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_ffb_speed_3"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight=".70"
+                    android:background="@drawable/btn_outline_white"
+                    android:backgroundTint="@color/lite_gray"
+                    android:gravity="center"
+                    android:text="0.0 A"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".28"
+                android:weightSum="1"
+                android:padding="8dp"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="@string/status"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="14sp"
+                    android:layout_weight=".30"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_ffb_status_3"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight=".70"
+                    android:background="@drawable/btn_outline_white"
+                    android:gravity="center"
+                    android:backgroundTint="@color/lite_gray"
+                    android:text="0.0 A"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".28"
+                android:weightSum="1"
+                android:padding="8dp"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="@string/ffb_mode"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="14sp"
+                    android:layout_weight=".30"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_ffb_mode_3"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight=".70"
+                    android:background="@drawable/btn_outline_white"
+                    android:backgroundTint="@color/lite_gray"
+                    android:gravity="center"
+                    android:text="0.0 A"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/layout_ffb_4"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".2"
+            android:weightSum="1"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_margin="8dp"
+            android:background="@drawable/btn_outline_green"
+            >
+
+            <TextView
+                android:id="@+id/tv_ffb_title_4"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".16"
+                android:paddingVertical="12dp"
+                android:text="@string/ffb_conveyor_4"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:textFontWeight="500"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:ignore="NestedWeights" />
+
+            <View
+                android:id="@+id/view_ffb_4"
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:background="@color/japanese_laurel"
+                android:layout_marginHorizontal="8dp"
+                />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".28"
+                android:weightSum="1"
+                android:padding="8dp"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="@string/speed"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="14sp"
+                    android:layout_weight=".30"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_ffb_speed_4"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight=".70"
+                    android:background="@drawable/btn_outline_white"
+                    android:backgroundTint="@color/lite_gray"
+                    android:gravity="center"
+                    android:text="0.0 A"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".28"
+                android:weightSum="1"
+                android:padding="8dp"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="@string/status"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="14sp"
+                    android:layout_weight=".30"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_ffb_status_4"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight=".70"
+                    android:background="@drawable/btn_outline_white"
+                    android:gravity="center"
+                    android:backgroundTint="@color/lite_gray"
+                    android:text="0.0 A"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".28"
+                android:weightSum="1"
+                android:padding="8dp"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="@string/ffb_mode"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="14sp"
+                    android:layout_weight=".30"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_ffb_mode_4"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight=".70"
+                    android:background="@drawable/btn_outline_white"
+                    android:backgroundTint="@color/lite_gray"
+                    android:gravity="center"
+                    android:text="0.0 A"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/layout_ffb_5"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".2"
+            android:weightSum="1"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_margin="8dp"
+            android:background="@drawable/btn_outline_green"
+            >
+
+            <TextView
+                android:id="@+id/tv_ffb_title_5"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".16"
+                android:paddingVertical="12dp"
+                android:text="@string/ffb_conveyor_5"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:textFontWeight="500"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:ignore="NestedWeights" />
+
+            <View
+                android:id="@+id/view_ffb_5"
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:background="@color/japanese_laurel"
+                android:layout_marginHorizontal="8dp"
+                />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".28"
+                android:weightSum="1"
+                android:padding="8dp"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="@string/speed"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="14sp"
+                    android:layout_weight=".30"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_ffb_speed_5"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight=".70"
+                    android:background="@drawable/btn_outline_white"
+                    android:backgroundTint="@color/lite_gray"
+                    android:gravity="center"
+                    android:text="0.0 A"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".28"
+                android:weightSum="1"
+                android:padding="8dp"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="@string/status"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="14sp"
+                    android:layout_weight=".30"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_ffb_status_5"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight=".70"
+                    android:background="@drawable/btn_outline_white"
+                    android:gravity="center"
+                    android:backgroundTint="@color/lite_gray"
+                    android:text="0.0 A"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".28"
+                android:weightSum="1"
+                android:padding="8dp"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="@string/ffb_mode"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="14sp"
+                    android:layout_weight=".30"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_ffb_mode_5"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight=".70"
+                    android:background="@drawable/btn_outline_white"
+                    android:backgroundTint="@color/lite_gray"
+                    android:gravity="center"
+                    android:text="0.0 A"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent=".75" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_h3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent=".15" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        android:paddingHorizontal="9dp"
+        android:weightSum="3"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline7"
+        app:layout_constraintTop_toTopOf="@+id/guideline4">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_start"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="9dp"
+            android:layout_marginVertical="18dp"
+            android:layout_weight="1"
+            android:background="@drawable/btn_click_green"
+            android:text="@string/start"
+            android:textSize="28sp"
+            app:backgroundTint="@null"
+            app:rippleColor="@color/lite_white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_stop"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="9dp"
+            android:layout_marginVertical="18dp"
+            android:layout_weight="1"
+            android:background="@drawable/btn_click_red"
+            android:text="@string/stop"
+            android:textSize="28sp"
+            app:backgroundTint="@null"
+            app:rippleColor="@color/lite_white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_emergency_stop"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="9dp"
+            android:layout_marginVertical="18dp"
+            android:layout_weight="1"
+            android:background="@drawable/btn_click_emergency"
+            android:paddingHorizontal="16dp"
+            android:text="@string/emergency_stop"
+            android:textColor="@color/white"
+            android:textSize="28sp"
+            app:backgroundTint="@null"
+            app:rippleColor="@color/lite_white" />
+
+
+
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

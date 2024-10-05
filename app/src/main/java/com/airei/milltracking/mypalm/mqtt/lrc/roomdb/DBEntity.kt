@@ -25,7 +25,6 @@ data class Rtsp(
     @ColumnInfo(name = "password") var password: String
 )
 
-
 class Converters {
     private val gson = Gson()
 

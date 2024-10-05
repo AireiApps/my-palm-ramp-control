@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    tools:context=".ui.DoorsFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout4"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_df_1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="@dimen/icon_img"
+            android:layout_height="0dp"
+            android:src="@drawable/airei_logo"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="@dimen/icon_img"
+            android:layout_height="0dp"
+            android:src="@drawable/my_palm_logo_gray"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_company_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:letterSpacing=".03"
+            android:paddingVertical="4dp"
+            android:text="@string/company_name"
+            android:textColor="@color/white"
+            android:textFontWeight="1000"
+            android:textSize="@dimen/company_name_size"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/imageView2"
+            app:layout_constraintStart_toEndOf="@+id/imageView"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="UnusedAttribute" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:letterSpacing=".02"
+            android:paddingVertical="4dp"
+            android:text="@string/available_doors_title"
+            android:textColor="@color/white"
+            android:textFontWeight="580"
+            android:textSize="@dimen/title_size"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/imageView2"
+            app:layout_constraintStart_toEndOf="@+id/imageView"
+            app:layout_constraintTop_toBottomOf="@+id/tv_company_name" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_df_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent=".15" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_doors"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="18dp"
+        android:layout_marginBottom="12dp"
+        android:foregroundGravity="center_horizontal"
+        android:maxHeight="300dp"
+        android:paddingVertical="9dp"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout4"
+        app:spanCount="8"
+        tools:itemCount="16"
+        tools:listitem="@layout/item_button" />
+
+    <LinearLayout
+        android:id="@+id/layout_btns_2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="18dp"
+        android:orientation="vertical"
+        android:weightSum="2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/rv_doors">
+
+        <LinearLayout
+            android:id="@+id/layout_btns_1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginBottom="9dp"
+            android:layout_marginHorizontal="9dp"
+            android:weightSum="2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rv_doors">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_select_all"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="9dp"
+                android:layout_weight="1"
+                android:background="@drawable/bottom_nav_background"
+                android:backgroundTint="@color/lite_white"
+                android:text="@string/select_all"
+                android:textSize="@dimen/df_btn_text"
+                app:backgroundTint="@null"
+                app:rippleColor="@color/lite_white" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_clear"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="9dp"
+                android:layout_weight="1"
+                android:background="@drawable/bottom_nav_background"
+                android:backgroundTint="@color/flamingo"
+                android:text="@string/clear"
+                android:textSize="@dimen/df_btn_text"
+                app:backgroundTint="@null"
+                app:rippleColor="@color/lite_white" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_save"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginHorizontal="9dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="9dp"
+            android:layout_weight="1"
+            android:background="@drawable/bottom_nav_background"
+            android:backgroundTint="@color/japanese_laurel"
+            android:text="@string/save"
+            android:textSize="@dimen/df_btn_text"
+            app:backgroundTint="@null"
+            app:rippleColor="@color/lite_white" />
+
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

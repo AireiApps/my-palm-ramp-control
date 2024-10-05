@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Define a base style for the TextViews -->
+    <style name="BaseTextViewStyle">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">@dimen/loading_ramp_size</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textFontWeight" tools:targetApi="p">500</item>
+        <item name="android:paddingVertical">8dp</item>
+    </style>
+
+    <!-- Style for the first TextView -->
+    <style name="LevelTextViewStyle" parent="BaseTextViewStyle">
+        <item name="android:drawableEnd">@drawable/ic_go_to_line</item>
+    </style>
+
+    <!-- Style for the second TextView -->
+    <style name="AutoFeedTextViewStyle" parent="BaseTextViewStyle">
+        <item name="android:layout_weight">0.5</item>
+        <item name="android:layout_marginStart">12dp</item>
+        <item name="android:background">@drawable/bg_tv_auto_feed</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:text">0</item>
+    </style>
+</resources>
