@@ -31,6 +31,18 @@
             </intent-filter>
         </activity>
 
+        <service android:name=".mqtt.MqttConnectService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <receiver android:name=".commons.AppBroadcastReceiver"
+            android:exported="true"
+            tools:ignore="ExportedReceiver">
+            <intent-filter>
+                <action android:name="com.airei.milltracking.mypalm.mqtt.MQTT_CONNECTION"/>
+
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

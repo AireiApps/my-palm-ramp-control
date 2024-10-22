@@ -36,6 +36,7 @@ class MqttHandler {
             val connectOptions = MqttConnectOptions().apply {
                 isCleanSession = true
                 connectionTimeout = 10
+                isAutomaticReconnect = true
                 userName = username
                 password = clientPassword.toCharArray()
             }
@@ -110,6 +111,10 @@ class MqttHandler {
 
     fun isConnected(): Boolean {
         return client?.isConnected ?: false
+    }
+
+    fun reconnect() {
+        client?.reconnect()
     }
 
     fun disconnect() {

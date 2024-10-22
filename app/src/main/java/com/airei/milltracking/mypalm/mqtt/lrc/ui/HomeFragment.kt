@@ -1,6 +1,7 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.ui
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -12,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.OptIn
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
@@ -74,7 +76,11 @@ class HomeFragment : Fragment() {
     private var previousLrStarterStatus: String? = null
 
     private lateinit var aiModeHandler: Handler
-    private var aiModeDelay: Long = 30000L
+    private var aiModeDelay: Long = 20000L
+
+    private lateinit var msgBuilder: AlertDialog.Builder
+
+
     private val aiModeRunnable = Runnable {
         // Disable the toggle button after 30 seconds
         Log.d(TAG, "aiModeRunnable: ")
@@ -102,6 +108,7 @@ class HomeFragment : Fragment() {
 
         binding.layoutBtns.visibility = View.INVISIBLE
         aiButtonDisable = false
+        msgBuilder = AlertDialog.Builder(requireContext())
         observeData()
         setupUI()
         doorActionBtn()
@@ -159,8 +166,35 @@ class HomeFragment : Fragment() {
             AvailableDoorsData(availableDoors = availableDoors, mobile = if (state) "1" else "0")
         val jsonString = Gson().toJson(mobileData)
         viewModel.updateAiModeData.postValue(jsonString)
+        showSendDataDialog(AppPreferences.availableDoorsData)
     }
 
+    private fun showSendDataDialog(
+        availableDoors: String,
+        builder: AlertDialog.Builder = msgBuilder
+    ) {
+        // Create AlertDialog builder
+        builder.setTitle("Send Data")
+        builder.setMessage("Available doors: $availableDoors")
+
+        // Add OK button to close the dialog
+        builder.setPositiveButton("OK") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        // Create and show the dialog
+        val dialog = builder.create()
+        dialog.show()
+
+        // Close the dialog after 10 seconds
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (dialog.isShowing) {
+                dialog.dismiss()
+            }
+        }, 10000) // 10000 milliseconds = 10 seconds
+    }
+
+    @SuppressLint("SetTextI18n")
     private fun observeData() {
 
         viewModel.doorsLiveData.observe(viewLifecycleOwner) {
@@ -182,6 +216,7 @@ class HomeFragment : Fragment() {
         }
 
         viewModel.statusData.observe(viewLifecycleOwner) {
+
             if (it != null) {
                 val newMypalmStatus = it.data.mypalmStatus
                 val newLrStarterStatus = it.data.lrStarter
@@ -201,6 +236,13 @@ class HomeFragment : Fragment() {
                     binding.tgMotor.isChecked = newLrStarterStatus == "1"
                     previousLrStarterStatus = newLrStarterStatus
                 }
+                //if (it.data.ffb1Manual == "1"){
+                    binding.tvFfb1.visibility = View.VISIBLE
+                    binding.tvFfb1.text = "FFB 1: ${it.data.ffb1Ma} A"
+                /*}else{
+                    binding.tvFfb1.visibility = View.GONE
+                    binding.tvFfb1.text = "FFB 1: 0.0 A"
+                }*/
 
                 // Uncomment and use this when rampStatus is available
                 /*if (previousRampStatus != newRampStatus) {
@@ -218,6 +260,7 @@ class HomeFragment : Fragment() {
                 binding.btnRampStatus.text = "--"
                 previousMypalmStatus = null
                 previousLrStarterStatus = null
+                binding.tvFfb1.visibility = View.GONE
             }
         }
 
@@ -230,7 +273,7 @@ class HomeFragment : Fragment() {
                 } else {
                     binding.tgAiMode.isChecked = false
                     if (aiStateData.last().toLong() != 0L) {
-                        aiModeDelay = checkTimeDifference(aiStateData.last().toLong())
+                        aiModeDelay = checkTimeDifference(aiStateData.last().toLong(), aiModeDelay)
                         Log.d(TAG, "observeData: aiModeUpdate ${(aiModeDelay)}")
 
                         if (aiModeDelay != 0L) {
@@ -243,7 +286,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun checkTimeDifference(timestamp: Long): Long {
+    private fun checkTimeDifference(timestamp: Long, aiModeDelay: Long): Long {
         // Get the current time in milliseconds
         val currentTime = System.currentTimeMillis()
 
@@ -252,8 +295,8 @@ class HomeFragment : Fragment() {
 
         // Check if the difference is less than or equal to 30 seconds
         Log.i(TAG, "checkTimeDifference = $timeDifference")
-        return if (timeDifference <= 30000) {
-            30000 - timeDifference
+        return if (timeDifference <= aiModeDelay) {
+            aiModeDelay - timeDifference
         } else {
             0L
         }
@@ -479,6 +522,9 @@ class HomeFragment : Fragment() {
         super.onPause()
         stopPlayer()
         aiModeHandler.removeCallbacksAndMessages(aiModeRunnable)
+        if (this::msgBuilder.isInitialized) {
+
+        }
     }
 
     override fun onDestroyView() {

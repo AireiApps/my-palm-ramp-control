@@ -1,15 +1,14 @@
 package com.airei.milltracking.mypalm.mqtt.lrc
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
 import android.content.res.Configuration
 import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -19,8 +18,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
-import android.view.animation.AnimationUtils
-import android.view.animation.BounceInterpolator
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -35,8 +32,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppBroadcastReceiver
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AutoFeedingData
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.BroadcastListener
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.CommandData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.FfbRunningStatus
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.MqttConfig
@@ -51,10 +50,10 @@ import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PUBLISH_TOPIC_STR
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AUTO_FEED_1
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AUTO_FEED_2
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_TOPIC_LR
+import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MqttConnectService
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MqttHandler
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MqttMessageListener
-import com.airei.milltracking.mypalm.mqtt.lrc.ui.HomeFragment
-import com.airei.milltracking.mypalm.mqtt.lrc.ui.HomeFragment.Companion
+import com.airei.milltracking.mypalm.mqtt.lrc.utils.ACTION_BROADCAST_MQTT_CONN
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.hideKeyboard
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.setStatusBar
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
@@ -67,7 +66,7 @@ import kotlinx.coroutines.launch
 import org.eclipse.paho.client.mqttv3.MqttMessage
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), MqttMessageListener {
+class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener {
 
     private var mqttHandler: MqttHandler? = null
     private lateinit var binding: ActivityMainBinding
@@ -76,6 +75,11 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
 
     private var wakeLock: PowerManager.WakeLock? = null
     private lateinit var alertDialog: AlertDialog
+
+    private lateinit var serviceIntent: Intent
+    private lateinit var broadcastReceiver: AppBroadcastReceiver
+
+    private var lastStatus: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,6 +90,8 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
         setupDebugMode()
         observeViewModel()
         updateCommend()
+        serviceIntent = Intent(this, MqttConnectService::class.java)
+        broadcastReceiver = AppBroadcastReceiver(this)
         Log.i(TAG, "onCreate: ")
         val orientation = resources.configuration.orientation
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -165,9 +171,11 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
     }
 
     private fun updateMqttButton(isConnected: Boolean, button: MaterialButton) {
-        if (isConnected) {
+        val lastStatus = button.text.toString()
+        runOnUiThread {
+            if (isConnected && lastStatus != getString(R.string.connect)) {
             // Update to connected status
-            button.text = button.context.getString(R.string.connect)
+                button.text = getString(R.string.connect)
             button.setIconResource(R.drawable.ic_circle) // Set icon to circle
             button.setIconTintResource(R.color.japanese_laurel) // Icon color to japanese_laurel
             button.setTextColor(
@@ -176,9 +184,9 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
                     R.color.japanese_laurel
                 )
             ) // Text color
-        } else {
+            } else if (!isConnected && lastStatus != getString(R.string.reconnect)) {
             // Update to disconnected status
-            button.text = button.context.getString(R.string.reconnect)
+                button.text = getString(R.string.reconnect)
             button.setIconResource(R.drawable.ic_refresh) // Set icon to retry
             button.setIconTintResource(R.color.flamingo) // Icon color to flamingo
             button.setTextColor(
@@ -187,8 +195,8 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
                     R.color.flamingo
                 )
             ) // Text color
+            }
         }
-
         // Disable button click (clickable set to false)
         button.isClickable = !isConnected
     }
@@ -311,12 +319,10 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
                         //if (ffb.ffb3Run == "1" && lastFfb.ffb3Run != "1") msgString.add("FFB3")
                         //if (ffb.ffb4Run == "1" && lastFfb.ffb4Run != "1") msgString.add("FFB4")
                         //if (ffb.ffb5Run == "1" && lastFfb.ffb5Run != "1") msgString.add("FFB5")
-                        //viewModel.ffbLastStatus = ffb
                         Log.i(TAG, "showAlert: msgString = $msgString")
                         showAlert(msgString.joinToString(", "),(msgString.size != 1))
                     }
                 } else {
-                    //viewModel.ffbLastStatus = ffb
                     val msgString: ArrayList<String> = arrayListOf()
                     if (ffb.ffb1Run == "1") msgString.add("FFB1")
                     //if (ffb.ffb2Run == "1") msgString.add("FFB2")
@@ -364,9 +370,22 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
         mqttHandler?.publish(topic, message, 0)
     }
 
+    override fun onPause() {
+        super.onPause()
+        stopService(serviceIntent)
+        unregisterReceiver(broadcastReceiver)
+    }
+
     override fun onResume() {
         super.onResume()
         acquireWakeLock()
+        startService(serviceIntent)
+        val intentFilter = IntentFilter(ACTION_BROADCAST_MQTT_CONN)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(broadcastReceiver, intentFilter, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(broadcastReceiver, intentFilter)
+        }
     }
 
     override fun onDestroy() {
@@ -391,7 +410,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
     private val destinationChangedListener =
         NavController.OnDestinationChangedListener { _, destination, _ ->
             val destinationFragment = destination.label
-            //Log.d(TAG, "destinationChangedListener destinationFragment: $destinationFragment")
+            Log.d(TAG, "destinationChangedListener destinationFragment: $destinationFragment")
             setBottomView(destinationFragment)
             runOnUiThread {
                 when (destinationFragment) {
@@ -470,6 +489,9 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
             "fragment_sfb_conveyor" -> {
                 selectButton(binding.btnSfb)
             }
+            "fragment_doors" -> {
+                selectButton(binding.btnDoor)
+            }
 
             "fragment_auto_feeding" -> {
                 selectButton(binding.btnAutoFeeding)
@@ -506,8 +528,34 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
 
             MQTT_SUBSCRIBE_TOPIC_LR -> {
                 try {
+
                     val statusData = message.toStatusData()
+
                     viewModel.statusData.postValue(statusData)
+                    if (lastStatus.isEmpty()) {
+                        runOnUiThread {
+                            Toast.makeText(
+                                this@MainActivity,
+                                "starter moter: ${lastStatus}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        Log.i(TAG, "onReceiveMessage: starter moter: ${lastStatus}")
+                        lastStatus = statusData.data.lrStarter
+                    }else{
+                        if (lastStatus != statusData.data.lrStarter){
+                            runOnUiThread {
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "starter moter: ${lastStatus}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            Log.i(TAG, "onReceiveMessage: starter moter: ${lastStatus}")
+                            lastStatus = statusData.data.lrStarter
+                        }
+                    }
+
                 } catch (e: Exception) {
                     viewModel.statusData.postValue(null)
                     Log.e(TAG, "onReceiveMessage: ", e)
@@ -579,6 +627,21 @@ class MainActivity : AppCompatActivity(), MqttMessageListener {
             }
         }
         return super.dispatchTouchEvent(event)
+    }
+
+    private fun checkMqttConnection() {
+        //Log.i(TAG, "checkMqttConnection: Mqtt connection ${mqttHandler?.isConnected()}")
+        val conn = mqttHandler?.isConnected()
+        if (conn != null) {
+            updateMqttButton(conn, binding.btnMqttStatus)
+            if (!conn){
+                mqttHandler?.reconnect()
+            }
+        }
+    }
+
+    override fun onBroadcastReceived() {
+        checkMqttConnection()
     }
 
 }

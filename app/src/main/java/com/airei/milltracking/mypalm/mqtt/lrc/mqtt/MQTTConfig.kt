@@ -39,7 +39,5 @@ val CMD_SFB_START = "Conveyor:SFBSys_StartCmd"
 val CMD_SFB_STOP = "Conveyor:SFBSys_StopCmd"
 val CMD_SFB_EME_STOP = "Conveyor:SFBSys_EStopCmd"
 
-
-
 val OFF = 0
 val ON = 1
