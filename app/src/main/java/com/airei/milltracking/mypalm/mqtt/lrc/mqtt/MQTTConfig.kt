@@ -1,7 +1,7 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.mqtt
 
 val MQTT_PUBLISH_TOPIC_LR = "cmd/MinsawiLR"
-val MQTT_PUBLISH_TOPIC_STR = "cmd/MinsawiLR"
+val MQTT_PUBLISH_TOPIC_STR = "cmd/MinsawiLR1"
 val MQTT_PUBLISH_AI = "AI/mobile"
 
 val MQTT_SUBSCRIBE_TOPIC_LR = "data/MinsawiLR"

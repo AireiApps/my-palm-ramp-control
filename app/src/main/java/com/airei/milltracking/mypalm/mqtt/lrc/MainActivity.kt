@@ -1,5 +1,6 @@
 package com.airei.milltracking.mypalm.mqtt.lrc
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -10,9 +11,11 @@ import android.content.res.Configuration
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
+import android.os.Process
 import android.os.StrictMode
 import android.util.Log
 import android.view.LayoutInflater
@@ -21,6 +24,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -64,6 +68,13 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.eclipse.paho.client.mqttv3.MqttMessage
+import java.io.File
+import java.io.FileWriter
+import java.io.PrintWriter
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import kotlin.system.exitProcess
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener {
@@ -79,6 +90,11 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
     private lateinit var serviceIntent: Intent
     private lateinit var broadcastReceiver: AppBroadcastReceiver
 
+    private var permissions = arrayOf(
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    )
+
     private var lastStatus: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,6 +102,10 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
         if (isActivityLaunched()) {
             return
         }
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            handleUncaughtException(thread, throwable)
+        }
+        permissionRequest.launch(permissions)
         setupView()
         setupDebugMode()
         observeViewModel()
@@ -98,6 +118,67 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
             Handler(Looper.getMainLooper()).postDelayed({ setMqttService() }, 200)
             navController.navigate(R.id.splashFragment)
             //navigateBasedOnMqttConfig()
+        }
+    }
+
+    private fun handleUncaughtException(thread: Thread, throwable: Throwable) {
+        // Save the crash details to a local file
+        saveCrashLog(throwable)
+        // Restart the app after the crash
+        /*val intent = Intent(this, MainActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        startActivity(intent)*/
+
+        // Kill the current process
+        Process.killProcess(Process.myPid())
+        exitProcess(0)
+    }
+
+    private val permissionRequest =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val granted = permissions.entries.all {
+                it.value
+            }
+            permissions.entries.forEach {
+                Log.e(TAG, "${it.key} = ${it.value}")
+            }
+            if (granted) {
+                Log.i(TAG, "permissionRequest: granted")
+
+            } else {
+                Log.i(TAG, "permissionRequest: denied")
+            }
+        }
+
+
+    private fun saveCrashLog(throwable: Throwable) {
+        try {
+            // Get the internal storage directory
+            //val crashLogDir = File(filesDir, "crash_logs")
+            val crashLogDir = File(getExternalFilesDir(null), "crash_logs")
+            if (!crashLogDir.exists()) {
+                val isCreated = crashLogDir.mkdirs()
+                Log.i(TAG, "saveCrashLog: Directory created: $isCreated")
+            } else {
+                Log.i(TAG, "saveCrashLog: Directory already exists")
+            }
+            //Log.i(TAG, "saveCrashLog: Directory created: ${crashLogDir.absolutePath}")
+            //val crashLogDir = File(Environment.getExternalStorageDirectory(), "crash_logs")
+            if (!crashLogDir.exists()) {
+                crashLogDir.mkdirs() // Create the directory if it doesn't exist
+            }
+            // Create a crash log file with a timestamp
+            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val crashLogFile = File(crashLogDir, "crash_log_$timeStamp.txt")
+            // Write the crash details to the file
+            FileWriter(crashLogFile).use { writer ->
+                writer.write("Crash occurred at: $timeStamp\n")
+                writer.write("Thread: ${Thread.currentThread().name}\n")
+                writer.write("Exception: ${throwable.localizedMessage}\n\n")
+                throwable.printStackTrace(PrintWriter(writer))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace() // Handle any exceptions that occur while saving the crash log
         }
     }
 
@@ -433,8 +514,6 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
             }
         }
 
-
-
     private fun showAlert(msgString: String, isMultiple: Boolean = false) {
         runOnUiThread {
             if (msgString.isNotEmpty()) {
@@ -507,6 +586,16 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
         private const val TAG = "MainActivity"
     }
 
+    fun reSubscribe(){
+        if (mqttHandler != null){
+            if (mqttConnectionCheck()){
+                mqttHandler?.subscribe(MQTT_SUBSCRIBE_TOPIC_LR)
+                mqttHandler?.subscribe(MQTT_SUBSCRIBE_AUTO_FEED_1)
+                mqttHandler?.subscribe(MQTT_SUBSCRIBE_AUTO_FEED_2)
+            }
+        }
+    }
+
     // MQTT Callbacks
     override fun onConnection(isConnect: Boolean) {
         Log.i(TAG, "onConnection: isConnect = $isConnect")
@@ -531,17 +620,20 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
                     val statusData = message.toStatusData()
 
-                    viewModel.statusData.postValue(statusData)
-                    if (lastStatus.isEmpty()) {
-                        runOnUiThread {
-                            Toast.makeText(
-                                this@MainActivity,
-                                "starter moter: ${lastStatus}",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                        Log.i(TAG, "onReceiveMessage: starter moter: ${lastStatus}")
-                        lastStatus = statusData.data.lrStarter
+                    Log.i(TAG, "onReceiveMessage: statusData : $statusData")
+                    if (statusData.data != null){
+
+                        viewModel.statusData.postValue(statusData)
+                        if (lastStatus.isEmpty()) {
+                            runOnUiThread {
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "starter moter: ${lastStatus}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            lastStatus = statusData.data.lrStarter
+                    }
                     }else{
                         if (lastStatus != statusData.data.lrStarter){
                             runOnUiThread {
@@ -558,6 +650,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
                 } catch (e: Exception) {
                     viewModel.statusData.postValue(null)
+                    lastStatus = ""
                     Log.e(TAG, "onReceiveMessage: ", e)
                 }
 

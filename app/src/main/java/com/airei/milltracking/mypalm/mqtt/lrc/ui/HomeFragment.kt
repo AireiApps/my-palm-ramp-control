@@ -1,7 +1,6 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.ui
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -143,7 +142,6 @@ class HomeFragment : Fragment() {
             } else {
                 if ((activity as MainActivity).mqttConnectionCheck()) {
                     val aiState = binding.tgAiMode.isChecked
-
                     if (AppPreferences.availableDoorsData.isNotEmpty()) {
                         viewModel.aiModeUpdate.postValue("${aiState}:${System.currentTimeMillis()}")
                         updateAiMode(aiState)
@@ -236,24 +234,22 @@ class HomeFragment : Fragment() {
                     binding.tgMotor.isChecked = newLrStarterStatus == "1"
                     previousLrStarterStatus = newLrStarterStatus
                 }
-                //if (it.data.ffb1Manual == "1"){
-                    binding.tvFfb1.visibility = View.VISIBLE
-                    binding.tvFfb1.text = "FFB 1: ${it.data.ffb1Ma} A"
-                /*}else{
-                    binding.tvFfb1.visibility = View.GONE
-                    binding.tvFfb1.text = "FFB 1: 0.0 A"
-                }*/
 
-                // Uncomment and use this when rampStatus is available
-                /*if (previousRampStatus != newRampStatus) {
-                    binding.btnRampStatus.text = when (newRampStatus) {
-                        "0" -> "Auto"
-                        "1" -> "Manual"
-                        else -> "Manual"
+                Log.d(TAG, "observeData: ${it.data.ffb1Run} / $aiButtonDisable ")
+
+                if (it.data.ffb1Run == "0") {
+                    if (binding.tgAiMode.isChecked) {
+                        viewModel.aiModeUpdate.postValue("false::${System.currentTimeMillis()}")
+                        //updateAiMode(false)
                     }
-                    previousRampStatus = newRampStatus
-                }*/
-
+                } else {
+                    if (aiButtonDisable) {
+                        viewModel.aiModeUpdate.postValue("true::${System.currentTimeMillis()}")
+                        aiButtonDisable = false
+                    }
+                }
+                binding.tvFfb1.visibility = View.VISIBLE
+                binding.tvFfb1.text = "FFB 1: ${it.data.ffb1Ma} A"
             } else {
                 // If data is null, reset the UI and previous values
                 binding.btnDoorStatus.text = "--"
@@ -344,7 +340,7 @@ class HomeFragment : Fragment() {
     @kotlin.OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("ClickableViewAccessibility")
     private fun doorActionBtn() {
-        fun handleButtonTouch(doorStateValue: Boolean) = View.OnTouchListener { v, event ->
+        fun handleButtonTouch(doorStateValue: Boolean) = View.OnTouchListener { _, event ->
             if ((activity as MainActivity).mqttConnectionCheck()) {
 
                 Log.i(TAG, "handleButtonTouch: ${event.action}")
@@ -525,6 +521,11 @@ class HomeFragment : Fragment() {
         if (this::msgBuilder.isInitialized) {
 
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as MainActivity).reSubscribe()
     }
 
     override fun onDestroyView() {
