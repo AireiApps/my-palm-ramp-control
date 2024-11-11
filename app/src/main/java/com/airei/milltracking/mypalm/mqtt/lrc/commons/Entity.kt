@@ -320,6 +320,15 @@ data class AutoFeedingData(
     val level3: String
 )
 
+data class TagValue(
+    @SerializedName("tag") val tag: String,
+    @SerializedName("value") val value: Int
+)
+
+data class AiStatusData(
+    @SerializedName("w") val w: List<TagValue>
+)
+
 
 val doorList = listOf(
     DoorData(doorId = "Door1", doorName = "01", openStatus = false, rtspConfig = "rtsp://admin:afg69008@192.168.1.51:554/cam/realmonitor?channel=0&subtype=0"),
@@ -352,12 +361,12 @@ val commendJsonStr = "{\n" +
         "  \"LRStarter\": \"LoadingRamp:LRStarter_Cmd\",\n" +
         "  \"FFB\": {\n" +
         "    \"start\": \"Conveyor:FFBSys_StartCmd\",\n" +
-        "    \"stop\": \"Conveyor:FFBSys_StopCmd\",\n" +
+        "    \"stop\": \"Conveyor:FFBSys_StartCmd\",\n" +
         "    \"emergencyStop\": \"Conveyor:FFBSys_EStopCmd\"\n" +
         "  },\n" +
         "  \"SFB\": {\n" +
         "    \"start\": \"Conveyor:SFBSys_StartCmd\",\n" +
-        "    \"stop\": \"Conveyor:SFBSys_StopCmd\",\n" +
+        "    \"stop\": \"Conveyor:SFBSys_StartCmd\",\n" +
         "    \"emergencyStop\": \"Conveyor:SFBSys_EStopCmd\"\n" +
         "  }\n" +
         "}\n"

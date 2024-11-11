@@ -36,6 +36,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.AiStatusData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppBroadcastReceiver
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AutoFeedingData
@@ -51,6 +52,7 @@ import com.airei.milltracking.mypalm.mqtt.lrc.databinding.AlartFfbBinding
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PUBLISH_AI
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PUBLISH_TOPIC_LR
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PUBLISH_TOPIC_STR
+import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AI_STATUS
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AUTO_FEED_1
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AUTO_FEED_2
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_TOPIC_LR
@@ -592,6 +594,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                 mqttHandler?.subscribe(MQTT_SUBSCRIBE_TOPIC_LR)
                 mqttHandler?.subscribe(MQTT_SUBSCRIBE_AUTO_FEED_1)
                 mqttHandler?.subscribe(MQTT_SUBSCRIBE_AUTO_FEED_2)
+                mqttHandler?.subscribe(MQTT_SUBSCRIBE_AI_STATUS)
             }
         }
     }
@@ -603,6 +606,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
             mqttHandler?.subscribe(MQTT_SUBSCRIBE_TOPIC_LR)
             mqttHandler?.subscribe(MQTT_SUBSCRIBE_AUTO_FEED_1)
             mqttHandler?.subscribe(MQTT_SUBSCRIBE_AUTO_FEED_2)
+            mqttHandler?.subscribe(MQTT_SUBSCRIBE_AI_STATUS)
         }
         runOnUiThread {
             val message = if (isConnect) "Mqtt Connected" else "Mqtt Connection Failed"
@@ -674,6 +678,16 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                     viewModel.autoFeedingData2.postValue(autoFeedingData)
                 }catch (e:Exception){
                     viewModel.autoFeedingData2.postValue(null)
+                    Log.e(TAG, "onReceiveMessage: ", e)
+                }
+            }
+
+            MQTT_SUBSCRIBE_AI_STATUS -> {
+                try {
+                    val aiStatus = Gson().fromJson(message, AiStatusData::class.java)
+                    viewModel.aiStatus.postValue(aiStatus.w.first().value)
+                }catch (e:Exception){
+                    viewModel.aiStatus.postValue(0)
                     Log.e(TAG, "onReceiveMessage: ", e)
                 }
             }

@@ -79,9 +79,20 @@ class FfbConveyorFragment : Fragment() {
                 FFB_START_TAG = it.FFB.start
                 FFB_STOP_TAG = it.FFB.stop
                 FFB_EME_STOP_TAG = it.FFB.emergencyStop
-                binding.btnStart.setOnTouchListener(handleButtonTouch(CMD_FFB_START))
+          /*      binding.btnStart.setOnTouchListener(handleButtonTouch(CMD_FFB_START))
                 binding.btnStop.setOnTouchListener(handleButtonTouch(CMD_FFB_STOP))
-                binding.btnEmergencyStop.setOnTouchListener(handleButtonTouch(CMD_FFB_EME_STOP))
+                binding.btnEmergencyStop.setOnTouchListener(handleButtonTouch(CMD_FFB_EME_STOP))*/
+                with(binding){
+                    btnStart.setOnClickListener {
+                        generateMsg(FFB_START_TAG, 1)
+                    }
+                    btnStop.setOnClickListener {
+                        generateMsg(FFB_STOP_TAG, 1)
+                    }
+                    btnEmergencyStop.setOnClickListener {
+                        generateMsg(FFB_EME_STOP_TAG, 1)
+                    }
+                }
             } else {
                 (activity as MainActivity).updateCommend()
             }

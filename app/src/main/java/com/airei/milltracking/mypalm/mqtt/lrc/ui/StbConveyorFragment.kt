@@ -27,7 +27,6 @@ import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentSfbConveyorBin
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
-import pl.droidsonroids.gif.GifImageView
 
 
 class SfbConveyorFragment : Fragment() {
@@ -78,9 +77,12 @@ class SfbConveyorFragment : Fragment() {
                     TAG,
                     "observeData: SFB_START_TAG $SFB_START_TAG , SFB_STOP_TAG $SFB_STOP_TAG , SFB_EME_STOP_TAG $SFB_EME_STOP_TAG"
                 )
-                binding.btnStart.setOnTouchListener(handleButtonTouch(SFB_START_TAG))
+                binding.btnStart.setOnClickListener { generateMsg(SFB_START_TAG, 1) }
+                binding.btnStop.setOnClickListener { generateMsg(SFB_STOP_TAG, 0) }
+                binding.btnEmergencyStop.setOnClickListener { generateMsg(SFB_EME_STOP_TAG, 1) }
+                /* binding.btnStart.setOnTouchListener(handleButtonTouch(SFB_START_TAG))
                 binding.btnStop.setOnTouchListener(handleButtonTouch(SFB_STOP_TAG))
-                binding.btnEmergencyStop.setOnTouchListener(handleButtonTouch(SFB_EME_STOP_TAG))
+                binding.btnEmergencyStop.setOnTouchListener(handleButtonTouch(SFB_EME_STOP_TAG))*/
             } else {
                 (activity as MainActivity).updateCommend()
             }

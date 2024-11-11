@@ -34,7 +34,7 @@ class AppViewModel @Inject constructor(
 
     val commendData = MutableLiveData<CommandData>()
 
-    var aiModeUpdate = MutableLiveData<String>("")
+    var aiStatus = MutableLiveData<Int>(0)
 
     val updateDoor = MutableLiveData<String>()
     val updateStarter = MutableLiveData<String>()
