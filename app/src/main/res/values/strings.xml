@@ -87,5 +87,12 @@
     <string name="manual">Manual</string>
     <string name="ffb_auto">Auto</string>
     <string name="ffb_manual">Manual</string>
+    <string name="ai_mode_alert_title">Ai-Mode Alert</string>
+    <string name="listening_mode">Minister Mode</string>
+    <string name="initialized_to_turn_off">Initialized to Off</string>
+    <string name="ai_mode_turn_off">Ai Mode Off</string>
+    <string name="ai_mode_turn_on">Ai Mode On</string>
+    <string name="reset_all">Reset All</string>
+    <string name="processing">Processing... Please wait...</string>
 
 </resources>

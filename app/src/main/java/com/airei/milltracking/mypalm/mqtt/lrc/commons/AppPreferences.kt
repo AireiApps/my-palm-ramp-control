@@ -25,6 +25,7 @@ object AppPreferences {
     private val AI_MODE = Pair("ai_mode", 0)
     private val GUIDE_STATUS = Pair("guide_status", true)
     private val AVAILABLE_DOORS = Pair("available_doors", "")
+    private val AI_LISTENING_MODE = Pair("ai_listening_mode", false)
 
     fun init(context: Context = MyPalmApp.instance) {
         preferences = EncryptedSharedPreferences.create(
@@ -63,6 +64,10 @@ object AppPreferences {
     var aiMode: Int
         get() = preferences.getInt(AI_MODE.first, AI_MODE.second)
         set(value) = preferences.edit().putInt(AI_MODE.first, value).apply()
+
+    var aiListeningMode: Boolean
+        get() = preferences.getBoolean(AI_LISTENING_MODE.first, AI_LISTENING_MODE.second)
+        set(value) = preferences.edit().putBoolean(AI_LISTENING_MODE.first, value).apply()
 
     var guideStatus: Boolean
         get() = preferences.getBoolean(GUIDE_STATUS.first, GUIDE_STATUS.second)

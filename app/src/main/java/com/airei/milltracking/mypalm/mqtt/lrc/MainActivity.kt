@@ -11,7 +11,6 @@ import android.content.res.Configuration
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
@@ -50,8 +49,10 @@ import com.airei.milltracking.mypalm.mqtt.lrc.commons.toStatusData
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.ActivityMainBinding
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.AlartFfbBinding
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PUBLISH_AI
+import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PUBLISH_AI_NOTIFY
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PUBLISH_TOPIC_LR
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_PUBLISH_TOPIC_STR
+import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AI_NOTIFY
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AI_STATUS
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AUTO_FEED_1
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AUTO_FEED_2
@@ -59,6 +60,7 @@ import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_TOPIC_LR
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MqttConnectService
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MqttHandler
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MqttMessageListener
+import com.airei.milltracking.mypalm.mqtt.lrc.ui.DoorsFragment.AvailableDoorsData
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.ACTION_BROADCAST_MQTT_CONN
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.hideKeyboard
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.setStatusBar
@@ -117,8 +119,8 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
         Log.i(TAG, "onCreate: ")
         val orientation = resources.configuration.orientation
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            Handler(Looper.getMainLooper()).postDelayed({ setMqttService() }, 200)
             navController.navigate(R.id.splashFragment)
+            //Handler(Looper.getMainLooper()).postDelayed({ setMqttService() }, 200)
             //navigateBasedOnMqttConfig()
         }
     }
@@ -366,9 +368,13 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
             }
         }
         viewModel.updateAiModeData.observe(this) {
-            Log.i(TAG, "observeViewModel: ")
+            Log.i(TAG, "observeViewModel: $it")
             if (!it.isNullOrEmpty()) {
-                publishMessage(topic = MQTT_PUBLISH_AI, message = it)
+                if (AppPreferences.aiListeningMode) {
+                    publishMessage(topic = MQTT_PUBLISH_AI_NOTIFY, message = it)
+                } else {
+                    publishMessage(topic = MQTT_PUBLISH_AI, message = it)
+                }
             }
         }
 
@@ -376,6 +382,19 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
             if (it) {
                 Handler(Looper.getMainLooper()).postDelayed({ setMqttService() }, 300)
                 viewModel.startMqtt.postValue(false)
+            }
+        }
+
+        viewModel.screenWaiting.observe(this) {
+            if (it) {
+                showAlertWaiting()
+            } else {
+                if (this::alertDialog.isInitialized) {
+                    if (alertDialog.isShowing) {
+                        alertDialog.dismiss()
+                    }
+                }
+
             }
         }
 
@@ -557,6 +576,95 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
     }
 
 
+    private fun showAlertAiMode(
+        topMsg: String = getString(R.string.ai_mode_alert_title),
+        msgString: String,
+        animation: Int = R.raw.alart,
+        isMultiple: Boolean = false
+    ) {
+        runOnUiThread {
+            if (msgString.isNotEmpty()) {
+                if (this::alertDialog.isInitialized) {
+                    if (alertDialog.isShowing) {
+                        alertDialog.dismiss()
+                    }
+                }
+
+                val binding = AlartFfbBinding.inflate(LayoutInflater.from(this))
+                val builder = AlertDialog.Builder(this)
+                builder.setView(binding.root)
+                alertDialog = builder.create()
+                // Update the message based on whether it's single or multiple FFBs
+                val message = msgString
+                binding.tvTopic.text = topMsg
+                binding.tvMsg.text = message
+                binding.lottieAnimationView.setAnimation(animation)
+                alertDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+                alertDialog.setCanceledOnTouchOutside(false)
+                binding.btnConfirm.text = "Ok"
+                binding.btnConfirm.setOnClickListener {
+                    applyDismissAnimation(alertDialog.window?.decorView?.findViewById(android.R.id.content)) {
+                        alertDialog.dismiss() // Dismiss after animation
+                    }
+                }
+
+                alertDialog.show()
+
+                // Apply the bounce-in animation
+                val rootView =
+                    alertDialog.window?.decorView?.findViewById<View>(android.R.id.content)
+                rootView?.let {
+                    applyBounceAnimation(it)
+                }
+            }
+        }
+    }
+
+    private fun showAlertWaiting(
+        topMsg: String = getString(R.string.processing),
+        msgString: String = "",
+        animation: Int = R.raw.loading_dots,
+        isMultiple: Boolean = false
+    ) {
+        runOnUiThread {
+            if (this::alertDialog.isInitialized) {
+                if (alertDialog.isShowing) {
+                    alertDialog.dismiss()
+                }
+            }
+
+            val binding = AlartFfbBinding.inflate(LayoutInflater.from(this))
+            val builder = AlertDialog.Builder(this)
+            builder.setView(binding.root)
+            alertDialog = builder.create()
+            // Update the message based on whether it's single or multiple FFBs
+            val message = msgString
+            binding.tvTopic.text = topMsg
+            binding.tvMsg.text = ""
+            binding.lottieAnimationView.setAnimation(animation)
+            alertDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            alertDialog.setCanceledOnTouchOutside(false)
+            binding.btnConfirm.text = "Ok"
+            binding.btnConfirm.visibility = View.GONE
+            binding.tvMsg.visibility = View.GONE
+            binding.btnConfirm.setOnClickListener {
+                applyDismissAnimation(alertDialog.window?.decorView?.findViewById(android.R.id.content)) {
+                    alertDialog.dismiss() // Dismiss after animation
+                }
+            }
+
+            alertDialog.show()
+
+            // Apply the bounce-in animation
+            val rootView = alertDialog.window?.decorView?.findViewById<View>(android.R.id.content)
+            rootView?.let {
+                applyBounceAnimation(it)
+            }
+        }
+    }
+
+
+
     private fun setBottomView(destinationFragment: CharSequence?) {
         when (destinationFragment) {
             "fragment_home" -> {
@@ -588,30 +696,29 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
         private const val TAG = "MainActivity"
     }
 
-    fun reSubscribe(){
-        if (mqttHandler != null){
-            if (mqttConnectionCheck()){
-                mqttHandler?.subscribe(MQTT_SUBSCRIBE_TOPIC_LR)
-                mqttHandler?.subscribe(MQTT_SUBSCRIBE_AUTO_FEED_1)
-                mqttHandler?.subscribe(MQTT_SUBSCRIBE_AUTO_FEED_2)
-                mqttHandler?.subscribe(MQTT_SUBSCRIBE_AI_STATUS)
-            }
-        }
-    }
-
     // MQTT Callbacks
     override fun onConnection(isConnect: Boolean) {
-        Log.i(TAG, "onConnection: isConnect = $isConnect")
+        Log.i(
+            TAG,
+            "onConnection: isConnect = $isConnect ,minister mode = ${AppPreferences.aiListeningMode}"
+        )
         if (isConnect) {
-            mqttHandler?.subscribe(MQTT_SUBSCRIBE_TOPIC_LR)
-            mqttHandler?.subscribe(MQTT_SUBSCRIBE_AUTO_FEED_1)
-            mqttHandler?.subscribe(MQTT_SUBSCRIBE_AUTO_FEED_2)
-            mqttHandler?.subscribe(MQTT_SUBSCRIBE_AI_STATUS)
+            mqttSubscribe()
         }
         runOnUiThread {
             val message = if (isConnect) "Mqtt Connected" else "Mqtt Connection Failed"
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             updateMqttButton(isConnect, binding.btnMqttStatus)
+        }
+    }
+
+    fun mqttSubscribe() {
+        mqttHandler?.subscribe(MQTT_SUBSCRIBE_TOPIC_LR)
+        mqttHandler?.subscribe(MQTT_SUBSCRIBE_AUTO_FEED_1)
+        mqttHandler?.subscribe(MQTT_SUBSCRIBE_AUTO_FEED_2)
+        mqttHandler?.subscribe(MQTT_SUBSCRIBE_AI_STATUS)
+        if (!AppPreferences.aiListeningMode) {
+            mqttHandler?.subscribe(MQTT_SUBSCRIBE_AI_NOTIFY)
         }
     }
 
@@ -692,6 +799,33 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                 }
             }
 
+            MQTT_SUBSCRIBE_AI_NOTIFY -> {
+                try {
+                    val aiStatus = Gson().fromJson(message, AvailableDoorsData::class.java)
+                    Log.i(TAG, "onReceiveMessage: $aiStatus")
+                    when (aiStatus.mobile) {
+                        "0" -> {
+                            showAlertAiMode(
+                                msgString = "AI Mode Off",
+                                isMultiple = false,
+                                animation = R.raw.alart_red
+                            )
+                        }
+
+                        "1" -> {
+                            showAlertAiMode(
+                                msgString = "AI Mode On",
+                                isMultiple = false,
+                                animation = R.raw.alart_green
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                    viewModel.aiStatus.postValue(0)
+                    Log.e(TAG, "onReceiveMessage: ", e)
+                }
+            }
+
             else -> {
                 Log.i(TAG, "onReceiveMessage: $topic: $message")
             }
@@ -737,13 +871,17 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
     }
 
     private fun checkMqttConnection() {
+        lifecycleScope.launch(Dispatchers.IO) {
         //Log.i(TAG, "checkMqttConnection: Mqtt connection ${mqttHandler?.isConnected()}")
         val conn = mqttHandler?.isConnected()
         if (conn != null) {
-            updateMqttButton(conn, binding.btnMqttStatus)
-            if (!conn){
-                mqttHandler?.reconnect()
+            if (!conn) {
+                updateMqttButton(conn, binding.btnMqttStatus)
+                if (!conn) {
+                    mqttHandler?.reconnect()
+                }
             }
+        }
         }
     }
 

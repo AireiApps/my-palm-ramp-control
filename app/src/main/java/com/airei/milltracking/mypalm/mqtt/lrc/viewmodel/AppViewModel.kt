@@ -27,6 +27,8 @@ class AppViewModel @Inject constructor(
 
     val startMqtt = MutableLiveData<Boolean>(false)
 
+    val screenWaiting = MutableLiveData<Boolean>(false)
+
     val statusData = MutableLiveData<StatusData?>(null)
 
     val autoFeedingData1 = MutableLiveData<AutoFeedingData?>(null)

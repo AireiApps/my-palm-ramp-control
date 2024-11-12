@@ -104,7 +104,7 @@ class HomeFragment : Fragment() {
         observeData()
         setupUI()
         doorActionBtn()
-
+        Log.i(TAG, "onViewCreated: minister ${AppPreferences.aiListeningMode}")
     }
 
     private fun setupUI() {
@@ -155,7 +155,9 @@ class HomeFragment : Fragment() {
             AvailableDoorsData(availableDoors = availableDoors, mobile = if (state) "1" else "0")
         val jsonString = Gson().toJson(mobileData)
         viewModel.updateAiModeData.postValue(jsonString)
-        showSendDataDialog(AppPreferences.availableDoorsData)
+        if (!AppPreferences.aiListeningMode){
+            showSendDataDialog(AppPreferences.availableDoorsData)
+        }
     }
 
     private fun showSendDataDialog(
@@ -192,14 +194,17 @@ class HomeFragment : Fragment() {
                 1 -> {
                     binding.tgAiMode.isChecked = true
                     aiButtonDisable = false
+                    binding.btnAiMode.text = getString(R.string.ai_mode_turn_on)
                 }
                 0 -> {
                     binding.tgAiMode.isChecked = false
                     aiButtonDisable = false
+                    binding.btnAiMode.text = getString(R.string.ai_mode_turn_off)
                 }
                 -1 -> {
                     binding.tgAiMode.isChecked = false
                     aiButtonDisable = true
+                    binding.btnAiMode.text = getString(R.string.initialized_to_turn_off)
                 }
             }
         }
@@ -465,7 +470,7 @@ class HomeFragment : Fragment() {
                 stop()
                 release()
             }
-            handler.removeCallbacksAndMessages(null)
+            //handler.removeCallbacksAndMessages(null)
         } catch (e: Exception) {
             Log.e(TAG, "stopPlayer: Error -> ", e)
         }
@@ -473,10 +478,18 @@ class HomeFragment : Fragment() {
     }
 
     private fun retryPlay(rtspConfig: String, doorId: String) {
-        handler.postDelayed({
-            showToast(message = "Retrying to connect...")
-            playExoPlayer(rtspConfig, doorId)
-        }, retryDelayMillis)
+        try {
+            if (this::handler.isInitialized) {
+                handler = Handler(Looper.getMainLooper())
+            }
+            handler.postDelayed({
+                showToast(message = "Retrying to connect...")
+                playExoPlayer(rtspConfig, doorId)
+            }, retryDelayMillis)
+        } catch (e: Exception) {
+            Log.e(TAG, "retryPlay: Error -> ", e)
+        }
+
     }
 
     private fun showToast(message: String) {
@@ -500,12 +513,15 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        (activity as MainActivity).reSubscribe()
+        (activity as MainActivity).mqttSubscribe()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        if (this::handler.isInitialized) {
+            handler.removeCallbacks {  }
+        }
         player?.release()
         player = null
     }

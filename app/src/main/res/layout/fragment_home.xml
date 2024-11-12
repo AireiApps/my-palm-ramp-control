@@ -113,7 +113,7 @@
                     android:text="@string/door_control"
                     android:textColor="@color/white"
                     android:textFontWeight="500"
-                    android:textSize="@dimen/loading_ramp_size"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/imageView2"
                     app:layout_constraintStart_toEndOf="@+id/imageView"
@@ -125,6 +125,7 @@
                     android:layout_width="@dimen/btn_ramp_width"
                     android:layout_height="@dimen/btn_ramp_height"
                     android:layout_marginStart="12dp"
+                    android:textSize="14sp"
                     android:background="@drawable/btn_outline_green"
                     android:text="MyPalm Mode/MyPalm Mode"
                     android:textColor="@color/color_background_1"
@@ -163,7 +164,7 @@
                     android:text="@string/starter_motor"
                     android:textColor="@color/white"
                     android:textFontWeight="500"
-                    android:textSize="@dimen/loading_ramp_size"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/imageView2"
                     app:layout_constraintStart_toEndOf="@+id/imageView"
@@ -178,6 +179,7 @@
                     android:background="@drawable/toggle_button_background"
                     android:text="ToggleButton"
                     android:textAllCaps="false"
+                    android:textSize="14sp"
                     android:textColor="@color/white"
                     android:textOff="Off"
                     android:textOn="On" />
@@ -189,7 +191,7 @@
                     android:text="@string/ai"
                     android:textColor="@color/white"
                     android:textFontWeight="500"
-                    android:textSize="@dimen/loading_ramp_size"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/imageView2"
                     app:layout_constraintStart_toEndOf="@+id/imageView"
@@ -204,10 +206,25 @@
                     android:background="@drawable/toggle_button_background"
                     android:text="ToggleButton"
                     android:textAllCaps="false"
+                    android:textSize="14sp"
                     android:textColor="@color/white"
                     android:textOff="@string/disable"
                     android:textOn="@string/enable" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_ai_mode"
+                    android:layout_width="160dp"
+                    android:layout_height="@dimen/btn_ramp_height"
+                    android:layout_marginStart="12dp"
+                    android:background="@drawable/btn_outline_green"
+                    android:text="@string/initialized_to_turn_off"
+                    android:textSize="14sp"
+                    android:textColor="@color/color_background_1"
+                    app:backgroundTint="@color/color_background_2" />
+
             </LinearLayout>
+
+
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_doors"

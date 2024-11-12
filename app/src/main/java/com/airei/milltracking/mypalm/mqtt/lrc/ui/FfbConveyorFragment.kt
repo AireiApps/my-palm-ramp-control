@@ -30,6 +30,11 @@ import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.CMD_FFB_STOP
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class FfbConveyorFragment : Fragment() {
@@ -87,10 +92,23 @@ class FfbConveyorFragment : Fragment() {
                         generateMsg(FFB_START_TAG, 1)
                     }
                     btnStop.setOnClickListener {
-                        generateMsg(FFB_STOP_TAG, 1)
+                        generateMsg(FFB_STOP_TAG, 0)
                     }
                     btnEmergencyStop.setOnClickListener {
                         generateMsg(FFB_EME_STOP_TAG, 1)
+                    }
+                    binding.btnResetAll.setOnClickListener {
+                        viewModel.screenWaiting.postValue(true)
+                        CoroutineScope(Dispatchers.IO).launch {
+                            generateMsg(FFB_START_TAG, 0)
+                            delay(1000)
+                            generateMsg(FFB_STOP_TAG, 0)
+                            delay(1000)
+                            generateMsg(FFB_EME_STOP_TAG, 0)
+                            withContext(Dispatchers.Main) {
+                                viewModel.screenWaiting.postValue(false)
+                            }
+                        }
                     }
                 }
             } else {

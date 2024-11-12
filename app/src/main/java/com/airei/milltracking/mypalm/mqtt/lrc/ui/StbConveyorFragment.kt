@@ -27,6 +27,11 @@ import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentSfbConveyorBin
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class SfbConveyorFragment : Fragment() {
@@ -80,6 +85,19 @@ class SfbConveyorFragment : Fragment() {
                 binding.btnStart.setOnClickListener { generateMsg(SFB_START_TAG, 1) }
                 binding.btnStop.setOnClickListener { generateMsg(SFB_STOP_TAG, 0) }
                 binding.btnEmergencyStop.setOnClickListener { generateMsg(SFB_EME_STOP_TAG, 1) }
+                binding.btnResetAll.setOnClickListener {
+                    viewModel.screenWaiting.postValue(true)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        generateMsg(SFB_START_TAG, 0)
+                        delay(1000)
+                        generateMsg(SFB_STOP_TAG, 0)
+                        delay(1000)
+                        generateMsg(SFB_EME_STOP_TAG, 0)
+                        withContext(Dispatchers.Main) {
+                            viewModel.screenWaiting.postValue(false)
+                        }
+                    }
+                }
                 /* binding.btnStart.setOnTouchListener(handleButtonTouch(SFB_START_TAG))
                 binding.btnStop.setOnTouchListener(handleButtonTouch(SFB_STOP_TAG))
                 binding.btnEmergencyStop.setOnTouchListener(handleButtonTouch(SFB_EME_STOP_TAG))*/
