@@ -124,7 +124,7 @@
                     android:id="@+id/btn_door_status"
                     android:layout_width="@dimen/btn_ramp_width"
                     android:layout_height="@dimen/btn_ramp_height"
-                    android:layout_marginStart="12dp"
+                    android:layout_marginStart="8dp"
                     android:textSize="14sp"
                     android:background="@drawable/btn_outline_green"
                     android:text="MyPalm Mode/MyPalm Mode"
@@ -160,7 +160,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="26dp"
+                    android:layout_marginStart="12dp"
                     android:text="@string/starter_motor"
                     android:textColor="@color/white"
                     android:textFontWeight="500"
@@ -187,7 +187,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="26dp"
+                    android:layout_marginStart="12dp"
                     android:text="@string/ai"
                     android:textColor="@color/white"
                     android:textFontWeight="500"
@@ -219,8 +219,21 @@
                     android:background="@drawable/btn_outline_green"
                     android:text="@string/initialized_to_turn_off"
                     android:textSize="14sp"
-                    android:textColor="@color/color_background_1"
+                    android:textColor="@color/color_background_2"
                     app:backgroundTint="@color/color_background_2" />
+
+                <TextView
+                    android:id="@+id/tv_ai_count"
+                    android:layout_width="@dimen/btn_ramp_height"
+                    android:layout_height="@dimen/btn_ramp_height"
+                    android:layout_marginStart="12dp"
+                    android:paddingHorizontal="12dp"
+                    android:background="@drawable/toggle_button_background"
+                    android:text="00"
+                    android:gravity="center"
+                    android:textSize="14sp"
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/selective_yellow" />
 
             </LinearLayout>
 

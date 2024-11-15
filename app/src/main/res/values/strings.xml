@@ -40,7 +40,7 @@
     <string name="reset">Reset</string>
     <string name="mqtt_confid">Mqtt Config</string>
     <string name="door_cameras">Door Cameras</string>
-    <string name="door_control">Door Control</string>
+    <string name="door_control">Door Control \t:\t</string>
     <string name="home">Home</string>
     <string name="config">Config</string>
     <string name="auto_feeding">Auto Feeding</string>

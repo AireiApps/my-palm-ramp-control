@@ -2,7 +2,6 @@ package com.airei.milltracking.mypalm.mqtt.lrc
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
@@ -11,6 +10,7 @@ import android.content.res.Configuration
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
@@ -89,15 +89,20 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
     private val viewModel: AppViewModel by viewModels()
 
     private var wakeLock: PowerManager.WakeLock? = null
+    private val tenDaysInMillis = 1 * 24 * 60 * 60 * 1000L
     private lateinit var alertDialog: AlertDialog
 
     private lateinit var serviceIntent: Intent
     private lateinit var broadcastReceiver: AppBroadcastReceiver
 
+    private lateinit var timer: CountDownTimer
+    private val startTimeInMillis: Long = 20000
+
     private var permissions = arrayOf(
         Manifest.permission.WRITE_EXTERNAL_STORAGE,
         Manifest.permission.READ_EXTERNAL_STORAGE
     )
+
 
     private var lastStatus: String = ""
 
@@ -196,8 +201,6 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
     }
 
     private fun setupView() {
-
-
         enableEdgeToEdge()
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -353,7 +356,6 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
     private fun observeViewModel() {
         viewModel.updateDoor.observe(this) {
-
             Log.i(TAG, "observeViewModel: ")
 
             if (!it.isNullOrEmpty()) {
@@ -494,15 +496,17 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
         super.onDestroy()
         releaseWakeLock()
         mqttHandler?.disconnect()
+        if (this::alertDialog.isInitialized) {
+            if (alertDialog.isShowing) {
+                alertDialog.dismiss()
+            }
+        }
+        if (this::timer.isInitialized) {
+            timer.cancel()
+        }
     }
 
-    private fun acquireWakeLock() {
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        wakeLock = powerManager.newWakeLock(
-            PowerManager.SCREEN_DIM_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
-            "MyApp::MyWakeLockTag"
-        ).apply { acquire(10 * 60 * 1000L /* 10 minutes */) }
-    }
+    private fun acquireWakeLock() = wakeLock?.acquire(tenDaysInMillis) //fun acquireWakeLock
 
     private fun releaseWakeLock() {
         wakeLock?.release()
@@ -620,6 +624,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun showAlertWaiting(
         topMsg: String = getString(R.string.processing),
         msgString: String = "",
@@ -638,7 +643,6 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
             builder.setView(binding.root)
             alertDialog = builder.create()
             // Update the message based on whether it's single or multiple FFBs
-            val message = msgString
             binding.tvTopic.text = topMsg
             binding.tvMsg.text = ""
             binding.lottieAnimationView.setAnimation(animation)
@@ -791,8 +795,16 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
             MQTT_SUBSCRIBE_AI_STATUS -> {
                 try {
+                    runOnUiThread {
+                        Toast.makeText(this, "AI Status Received", Toast.LENGTH_SHORT).show()
+                    }
                     val aiStatus = Gson().fromJson(message, AiStatusData::class.java)
                     viewModel.aiStatus.postValue(aiStatus.w.first().value)
+                    if (aiStatus.w.first().value == -1) {
+                        runOnUiThread {
+                            startTimer(startTimeInMillis)
+                        }
+                    }
                 }catch (e:Exception){
                     viewModel.aiStatus.postValue(0)
                     Log.e(TAG, "onReceiveMessage: ", e)
@@ -829,9 +841,19 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
             else -> {
                 Log.i(TAG, "onReceiveMessage: $topic: $message")
             }
-
         }
+    }
 
+    private fun startTimer(timeInMillis: Long) {
+        timer = object : CountDownTimer(timeInMillis, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                val secondsLeft = millisUntilFinished / 1000
+                viewModel.aiCountdown.postValue(secondsLeft)
+            }
+
+            override fun onFinish() {
+            }
+        }.start()
     }
 
     override fun onDeliveryComplete(id: Int, message: MqttMessage, complete: Boolean) {
@@ -877,9 +899,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
         if (conn != null) {
             if (!conn) {
                 updateMqttButton(conn, binding.btnMqttStatus)
-                if (!conn) {
-                    mqttHandler?.reconnect()
-                }
+                mqttHandler?.reconnect()
             }
         }
         }

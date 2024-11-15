@@ -115,6 +115,7 @@ class HomeFragment : Fragment() {
         }
 
         binding.tgAiMode.isChecked = false
+        viewModel.aiStatus.postValue(AppPreferences.aiMode)
 
         binding.tgMotor.setOnClickListener {
             if ((activity as MainActivity).mqttConnectionCheck()) {
@@ -132,6 +133,7 @@ class HomeFragment : Fragment() {
             } else {
                 if ((activity as MainActivity).mqttConnectionCheck()) {
                     val aiState = binding.tgAiMode.isChecked
+                    AppPreferences.aiMode = if (aiState) 1 else 0
                     if (AppPreferences.availableDoorsData.isNotEmpty()) {
                         updateAiMode(aiState)
                     } else {
@@ -187,6 +189,22 @@ class HomeFragment : Fragment() {
 
     @SuppressLint("SetTextI18n")
     private fun observeData() {
+        viewModel.aiCountdown.observe(viewLifecycleOwner) {
+            if (it == 0L){
+                if (binding.tvAiCount.visibility == View.VISIBLE){
+                    binding.tvAiCount.visibility = View.GONE
+                }
+                if (viewModel.aiStatus.value == -1){
+                    viewModel.aiStatus.postValue(0)
+                }
+            }
+            else{
+                if (binding.tvAiCount.visibility == View.GONE){
+                    binding.tvAiCount.visibility = View.VISIBLE
+                }
+                binding.tvAiCount.text = "$it"
+            }
+        }
 
         viewModel.aiStatus.observe(viewLifecycleOwner) {
             AppPreferences.aiMode = it

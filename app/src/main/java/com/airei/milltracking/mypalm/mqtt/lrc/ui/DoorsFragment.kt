@@ -10,11 +10,13 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import com.airei.milltracking.mypalm.mqtt.lrc.adapter.DoorSelectAdapter
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.doorList
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentDoorsBinding
+import com.airei.milltracking.mypalm.mqtt.lrc.ui.HomeFragment.Companion
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorTable
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
@@ -107,6 +109,12 @@ class DoorsFragment : Fragment() {
             }
         })
         val availableDoors = AppPreferences.availableDoorsData
+        val displayMetrics = resources.displayMetrics
+        val screenHeightDp = displayMetrics.heightPixels / displayMetrics.density
+        Log.i(HomeFragment.TAG, "setConveyorList: $screenHeightDp / ${displayMetrics.heightPixels}")
+        val spanCount = if (screenHeightDp < 700) 6 else 8
+        val gridLayoutManager = GridLayoutManager(requireContext(), spanCount)
+        binding.rvDoors.layoutManager = gridLayoutManager
         binding.rvDoors.adapter = adapter
         adapter.selectDoors(availableDoors)
     }

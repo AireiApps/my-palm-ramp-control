@@ -12,7 +12,6 @@ import com.airei.milltracking.mypalm.mqtt.lrc.roomdb.DBRepository
 import com.airei.milltracking.mypalm.mqtt.lrc.roomdb.DoorTable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -37,6 +36,8 @@ class AppViewModel @Inject constructor(
     val commendData = MutableLiveData<CommandData>()
 
     var aiStatus = MutableLiveData<Int>(0)
+
+    val aiCountdown = MutableLiveData<Long>(0)
 
     val updateDoor = MutableLiveData<String>()
     val updateStarter = MutableLiveData<String>()
