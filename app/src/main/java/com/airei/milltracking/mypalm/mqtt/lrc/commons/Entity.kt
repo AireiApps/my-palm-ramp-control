@@ -112,6 +112,8 @@ data class DeviceStatusData(
     @SerializedName("lrdoor14") val lrdoor14: String,
     @SerializedName("lrdoor15") val lrdoor15: String,
     @SerializedName("lrdoor16") val lrdoor16: String,
+    @SerializedName("ffbsys_ready") val ffbsysReady: String,
+    @SerializedName("sfbsys_ready") val sfbsysReady: String,
     @SerializedName("ffbsys_start") val ffbsysStart: String,
     @SerializedName("ffbsys_stop") val ffbsysStop: String,
     @SerializedName("ffbsys_estop") val ffbsysEstop: String,

@@ -95,7 +95,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/mode"
+            android:text="@string/ffb_system"
             android:textColor="@color/white"
             android:textFontWeight="500"
             android:textSize="@dimen/loading_ramp_size"

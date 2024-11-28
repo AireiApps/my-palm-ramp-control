@@ -163,10 +163,10 @@ class SfbConveyorFragment : Fragment() {
             if (it != null) {
                 with(binding) {
                     // Check if the new myPalmStatus is different from the previous one
-                    val newStatus = when (it.data.mypalmStatus) {
-                        "1" -> getString(R.string.my_palm_mode)
-                        "0" -> getString(R.string.scada_mode)
-                        else -> getString(R.string.manual_mode)
+                    val newStatus = when (it.data.sfbsysReady) {
+                        "1" -> getString(R.string.ready)
+                        "0" -> getString(R.string.not_ready)
+                        else -> getString(R.string.not_ready)
                     }
 
                     if (newStatus != previousStatus) {
