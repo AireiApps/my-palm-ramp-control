@@ -42,6 +42,7 @@ import com.airei.milltracking.mypalm.mqtt.lrc.commons.AutoFeedingData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.BroadcastListener
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.CommandData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.FfbRunningStatus
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.HumanDetectionData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.MqttConfig
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.applyBounceAnimation
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.applyDismissAnimation
@@ -56,6 +57,7 @@ import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AI_NOTIFY
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AI_STATUS
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AUTO_FEED_1
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AUTO_FEED_2
+import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_HUMAN_DETECTION
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_TOPIC_LR
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MqttConnectService
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MqttHandler
@@ -98,6 +100,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
     private lateinit var timer: CountDownTimer
     private val startTimeInMillis: Long = 20000
 
+    private var localHumanDetectionData: ArrayList<String> = arrayListOf()
     private var permissions = arrayOf(
         Manifest.permission.WRITE_EXTERNAL_STORAGE,
         Manifest.permission.READ_EXTERNAL_STORAGE
@@ -580,48 +583,53 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
     }
 
 
-    private fun showAlertAiMode(
+    private fun showAlertMsg(
         topMsg: String = getString(R.string.ai_mode_alert_title),
         msgString: String,
         animation: Int = R.raw.alart,
         isMultiple: Boolean = false
     ) {
-        runOnUiThread {
-            if (msgString.isNotEmpty()) {
-                if (this::alertDialog.isInitialized) {
-                    if (alertDialog.isShowing) {
-                        alertDialog.dismiss()
+        try {
+            runOnUiThread {
+                if (msgString.isNotEmpty()) {
+                    if (this::alertDialog.isInitialized) {
+                        if (alertDialog.isShowing) {
+                            alertDialog.dismiss()
+                        }
                     }
-                }
 
-                val binding = AlartFfbBinding.inflate(LayoutInflater.from(this))
-                val builder = AlertDialog.Builder(this)
-                builder.setView(binding.root)
-                alertDialog = builder.create()
-                // Update the message based on whether it's single or multiple FFBs
-                val message = msgString
-                binding.tvTopic.text = topMsg
-                binding.tvMsg.text = message
-                binding.lottieAnimationView.setAnimation(animation)
-                alertDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-                alertDialog.setCanceledOnTouchOutside(false)
-                binding.btnConfirm.text = "Ok"
-                binding.btnConfirm.setOnClickListener {
-                    applyDismissAnimation(alertDialog.window?.decorView?.findViewById(android.R.id.content)) {
-                        alertDialog.dismiss() // Dismiss after animation
+                    val binding = AlartFfbBinding.inflate(LayoutInflater.from(this))
+                    val builder = AlertDialog.Builder(this)
+                    builder.setView(binding.root)
+                    alertDialog = builder.create()
+                    // Update the message based on whether it's single or multiple FFBs
+                    val message = msgString
+                    binding.tvTopic.text = topMsg
+                    binding.tvMsg.text = message
+                    binding.lottieAnimationView.setAnimation(animation)
+                    alertDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+                    alertDialog.setCanceledOnTouchOutside(false)
+                    binding.btnConfirm.text = "Ok"
+                    binding.btnConfirm.setOnClickListener {
+                        applyDismissAnimation(alertDialog.window?.decorView?.findViewById(android.R.id.content)) {
+                            alertDialog.dismiss() // Dismiss after animation
+                        }
                     }
-                }
 
-                alertDialog.show()
+                    alertDialog.show()
 
-                // Apply the bounce-in animation
-                val rootView =
-                    alertDialog.window?.decorView?.findViewById<View>(android.R.id.content)
-                rootView?.let {
-                    applyBounceAnimation(it)
+                    // Apply the bounce-in animation
+                    val rootView =
+                        alertDialog.window?.decorView?.findViewById<View>(android.R.id.content)
+                    rootView?.let {
+                        applyBounceAnimation(it)
+                    }
                 }
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "showAlertMsg: ", e)
         }
+
     }
 
     @SuppressLint("SetTextI18n")
@@ -721,6 +729,9 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
         mqttHandler?.subscribe(MQTT_SUBSCRIBE_AUTO_FEED_1)
         mqttHandler?.subscribe(MQTT_SUBSCRIBE_AUTO_FEED_2)
         mqttHandler?.subscribe(MQTT_SUBSCRIBE_AI_STATUS)
+        MQTT_SUBSCRIBE_HUMAN_DETECTION.forEach {
+            mqttHandler?.subscribe(it)
+        }
         if (!AppPreferences.aiListeningMode) {
             mqttHandler?.subscribe(MQTT_SUBSCRIBE_AI_NOTIFY)
         }
@@ -817,7 +828,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                     Log.i(TAG, "onReceiveMessage: $aiStatus")
                     when (aiStatus.mobile) {
                         "0" -> {
-                            showAlertAiMode(
+                            showAlertMsg(
                                 msgString = "AI Mode Off",
                                 isMultiple = false,
                                 animation = R.raw.alart_red
@@ -825,7 +836,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                         }
 
                         "1" -> {
-                            showAlertAiMode(
+                            showAlertMsg(
                                 msgString = "AI Mode On",
                                 isMultiple = false,
                                 animation = R.raw.alart_green
@@ -835,6 +846,32 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                 } catch (e: Exception) {
                     viewModel.aiStatus.postValue(0)
                     Log.e(TAG, "onReceiveMessage: ", e)
+                }
+            }
+
+            MQTT_SUBSCRIBE_HUMAN_DETECTION.find { it == topic } -> {
+
+                val humanDetectionData = Gson().fromJson(message, HumanDetectionData::class.java)
+
+                if (humanDetectionData != null) {
+                    Log.i(TAG, "onReceiveMessage: $humanDetectionData")
+                    if (humanDetectionData.human == "1") {
+                        if (!localHumanDetectionData.contains(topic)) {
+                            localHumanDetectionData.add(topic)
+                            showAlertMsg(
+                                topMsg = getString(R.string.human_detected_alert_title),
+                                msgString = getString(R.string.human_detected_alert_msg) + " ${
+                                    topic.substringAfterLast(
+                                        "AI/"
+                                    )
+                                }",
+                                isMultiple = false,
+                                animation = R.raw.alart_red
+                            )
+                        }
+                    } else {
+                        localHumanDetectionData.removeIf { it == topic }
+                    }
                 }
             }
 

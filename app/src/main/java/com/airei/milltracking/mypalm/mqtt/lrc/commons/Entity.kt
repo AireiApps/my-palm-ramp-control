@@ -53,6 +53,12 @@ data class TagData(
     val value: Int
 )
 
+data class HumanDetectionData(
+    @SerializedName("dts")val dts: String,
+    @SerializedName("HUMAN")val human: String,
+)
+
+
 data class WData(
     val w: List<TagData>
 )

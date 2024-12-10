@@ -98,5 +98,7 @@
     <string name="not_ready">Not ready</string>
     <string name="ffb_system">FFB System \t:\t</string>
     <string name="sfb_system">SFB System \t:\t</string>
+    <string name="human_detected_alert_title">Human Alert</string>
+    <string name="human_detected_alert_msg">Human detected nearby</string>
 
 </resources>

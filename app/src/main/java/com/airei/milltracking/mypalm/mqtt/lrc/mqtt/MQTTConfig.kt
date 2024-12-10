@@ -10,7 +10,7 @@ val MQTT_SUBSCRIBE_AUTO_FEED_1 = "AI/Autofeeder1"
 val MQTT_SUBSCRIBE_AUTO_FEED_2 = "AI/Autofeeder2"
 val MQTT_SUBSCRIBE_AI_STATUS = "AI/status"
 val MQTT_SUBSCRIBE_AI_NOTIFY = "AI/MobileNotify"
-
+val MQTT_SUBSCRIBE_HUMAN_DETECTION : List<String> = listOf("AI/FFB2", "AI/SFB3", "AI/SFB2")
 
 /*
     topic name : cmd/MinsawiLR
