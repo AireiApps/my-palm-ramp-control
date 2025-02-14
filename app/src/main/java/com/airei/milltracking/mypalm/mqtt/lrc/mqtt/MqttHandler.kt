@@ -36,6 +36,7 @@ class MqttHandler {
             val connectOptions = MqttConnectOptions().apply {
                 isCleanSession = true
                 connectionTimeout = 10
+                isAutomaticReconnect = true
                 userName = username
                 password = clientPassword.toCharArray()
             }
@@ -112,6 +113,10 @@ class MqttHandler {
         return client?.isConnected ?: false
     }
 
+    fun reconnect() {
+        client?.reconnect()
+    }
+
     fun disconnect() {
         try {
             client?.disconnect()
@@ -120,19 +125,26 @@ class MqttHandler {
         }
     }
 
+    private val subscribedTopics = mutableSetOf<String>()
+
     fun subscribe(topic: String) {
         if (client != null && client?.isConnected == true) {
             try {
+                if (subscribedTopics.contains(topic)) {
+                    client?.unsubscribe(topic)
+                    subscribedTopics.remove(topic)
+                    Log.i(TAG, "MqttApp Unsubscribed from topic: $topic")
+                }
                 client?.subscribe(topic)
+                subscribedTopics.add(topic)
                 Log.i(TAG, "MqttApp Subscribed to topic: $topic")
+
             } catch (e: MqttException) {
                 e.printStackTrace()
             }
         } else {
             Log.i(TAG, "MqttApp Client is not connected. Cannot subscribe to topic.")
         }
-
-
     }
 
     fun publish(topic: String, message: String, qos: Int) {

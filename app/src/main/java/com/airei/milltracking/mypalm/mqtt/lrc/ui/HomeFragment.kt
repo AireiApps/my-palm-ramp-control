@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.OptIn
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
@@ -73,13 +74,10 @@ class HomeFragment : Fragment() {
     private var previousMypalmStatus: String? = null
     private var previousLrStarterStatus: String? = null
 
-    private lateinit var aiModeHandler: Handler
-    private var aiModeDelay: Long = 30000L
-    private val aiModeRunnable = Runnable {
-        // Disable the toggle button after 30 seconds
-        Log.d(TAG, "aiModeRunnable: ")
-        aiButtonDisable = false
-    }
+
+    private lateinit var msgBuilder: AlertDialog.Builder
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -102,11 +100,11 @@ class HomeFragment : Fragment() {
 
         binding.layoutBtns.visibility = View.INVISIBLE
         aiButtonDisable = false
+        msgBuilder = AlertDialog.Builder(requireContext())
         observeData()
         setupUI()
         doorActionBtn()
-        handler = Handler(Looper.getMainLooper())
-        aiModeHandler = Handler(Looper.getMainLooper())
+        Log.i(TAG, "onViewCreated: minister ${AppPreferences.aiListeningMode}")
     }
 
     private fun setupUI() {
@@ -116,9 +114,8 @@ class HomeFragment : Fragment() {
             stopPlayer()
         }
 
-        binding.tgAiMode.isChecked = AppPreferences.aiMode.split(":")[0] == "true"
-
-        viewModel.aiModeUpdate.postValue(AppPreferences.aiMode)
+        binding.tgAiMode.isChecked = false
+        viewModel.aiStatus.postValue(AppPreferences.aiMode)
 
         binding.tgMotor.setOnClickListener {
             if ((activity as MainActivity).mqttConnectionCheck()) {
@@ -136,9 +133,8 @@ class HomeFragment : Fragment() {
             } else {
                 if ((activity as MainActivity).mqttConnectionCheck()) {
                     val aiState = binding.tgAiMode.isChecked
-
+                    AppPreferences.aiMode = if (aiState) 1 else 0
                     if (AppPreferences.availableDoorsData.isNotEmpty()) {
-                        viewModel.aiModeUpdate.postValue("${aiState}:${System.currentTimeMillis()}")
                         updateAiMode(aiState)
                     } else {
                         showToast("Please select at least one door.")
@@ -150,6 +146,8 @@ class HomeFragment : Fragment() {
                 }
             }
         }
+
+        viewModel.aiStatus.postValue(AppPreferences.aiMode)
     }
 
     private fun updateAiMode(
@@ -159,9 +157,75 @@ class HomeFragment : Fragment() {
             AvailableDoorsData(availableDoors = availableDoors, mobile = if (state) "1" else "0")
         val jsonString = Gson().toJson(mobileData)
         viewModel.updateAiModeData.postValue(jsonString)
+        if (!AppPreferences.aiListeningMode){
+            showSendDataDialog(AppPreferences.availableDoorsData)
+        }
     }
 
+    private fun showSendDataDialog(
+        availableDoors: String,
+        builder: AlertDialog.Builder = msgBuilder
+    ) {
+        // Create AlertDialog builder
+        builder.setTitle("Send Data")
+        builder.setMessage("Available doors: $availableDoors")
+
+        // Add OK button to close the dialog
+        builder.setPositiveButton("OK") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        // Create and show the dialog
+        val dialog = builder.create()
+        dialog.show()
+
+        // Close the dialog after 10 seconds
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (dialog.isShowing) {
+                dialog.dismiss()
+            }
+        }, 10000) // 10000 milliseconds = 10 seconds
+    }
+
+    @SuppressLint("SetTextI18n")
     private fun observeData() {
+        viewModel.aiCountdown.observe(viewLifecycleOwner) {
+            if (it == 0L){
+                if (binding.tvAiCount.visibility == View.VISIBLE){
+                    binding.tvAiCount.visibility = View.GONE
+                }
+                if (viewModel.aiStatus.value == -1){
+                    viewModel.aiStatus.postValue(0)
+                }
+            }
+            else{
+                if (binding.tvAiCount.visibility == View.GONE){
+                    binding.tvAiCount.visibility = View.VISIBLE
+                }
+                binding.tvAiCount.text = "$it"
+            }
+        }
+
+        viewModel.aiStatus.observe(viewLifecycleOwner) {
+            AppPreferences.aiMode = it
+                when(it){
+                1 -> {
+                    binding.tgAiMode.isChecked = true
+                    aiButtonDisable = false
+                    binding.btnAiMode.text = getString(R.string.ai_mode_turn_on)
+                }
+                0 -> {
+                    binding.tgAiMode.isChecked = false
+                    aiButtonDisable = false
+                    binding.btnAiMode.text = getString(R.string.ai_mode_turn_off)
+                }
+                -1 -> {
+                    binding.tgAiMode.isChecked = false
+                    aiButtonDisable = true
+                    binding.btnAiMode.text = getString(R.string.initialized_to_turn_off)
+                }
+            }
+        }
 
         viewModel.doorsLiveData.observe(viewLifecycleOwner) {
             if (!it.isNullOrEmpty()) {
@@ -182,6 +246,7 @@ class HomeFragment : Fragment() {
         }
 
         viewModel.statusData.observe(viewLifecycleOwner) {
+
             if (it != null) {
                 val newMypalmStatus = it.data.mypalmStatus
                 val newLrStarterStatus = it.data.lrStarter
@@ -202,48 +267,21 @@ class HomeFragment : Fragment() {
                     previousLrStarterStatus = newLrStarterStatus
                 }
 
-                // Uncomment and use this when rampStatus is available
-                /*if (previousRampStatus != newRampStatus) {
-                    binding.btnRampStatus.text = when (newRampStatus) {
-                        "0" -> "Auto"
-                        "1" -> "Manual"
-                        else -> "Manual"
-                    }
-                    previousRampStatus = newRampStatus
-                }*/
 
+                binding.tvFfb1.visibility = View.VISIBLE
+                binding.tvFfb1.text = "FFB 1: ${it.data.ffb1Ma} A"
             } else {
                 // If data is null, reset the UI and previous values
                 binding.btnDoorStatus.text = "--"
                 binding.btnRampStatus.text = "--"
                 previousMypalmStatus = null
                 previousLrStarterStatus = null
-            }
-        }
-
-        viewModel.aiModeUpdate.observe(viewLifecycleOwner) { lastUpdate ->
-            if (lastUpdate.isNotEmpty()) {
-                val aiStateData = lastUpdate.split(":")
-                AppPreferences.aiMode = lastUpdate
-                if (aiStateData.first() == "true") {
-                    binding.tgAiMode.isChecked = true
-                } else {
-                    binding.tgAiMode.isChecked = false
-                    if (aiStateData.last().toLong() != 0L) {
-                        aiModeDelay = checkTimeDifference(aiStateData.last().toLong())
-                        Log.d(TAG, "observeData: aiModeUpdate ${(aiModeDelay)}")
-
-                        if (aiModeDelay != 0L) {
-                            aiButtonDisable = true
-                            aiModeHandler.postDelayed(aiModeRunnable, aiModeDelay)
-                        }
-                    }
-                }
+                binding.tvFfb1.visibility = View.GONE
             }
         }
     }
 
-    private fun checkTimeDifference(timestamp: Long): Long {
+    private fun checkTimeDifference(timestamp: Long, aiModeDelay: Long): Long {
         // Get the current time in milliseconds
         val currentTime = System.currentTimeMillis()
 
@@ -252,8 +290,8 @@ class HomeFragment : Fragment() {
 
         // Check if the difference is less than or equal to 30 seconds
         Log.i(TAG, "checkTimeDifference = $timeDifference")
-        return if (timeDifference <= 30000) {
-            30000 - timeDifference
+        return if (timeDifference <= aiModeDelay) {
+            aiModeDelay - timeDifference
         } else {
             0L
         }
@@ -301,7 +339,7 @@ class HomeFragment : Fragment() {
     @kotlin.OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("ClickableViewAccessibility")
     private fun doorActionBtn() {
-        fun handleButtonTouch(doorStateValue: Boolean) = View.OnTouchListener { v, event ->
+        fun handleButtonTouch(doorStateValue: Boolean) = View.OnTouchListener { _, event ->
             if ((activity as MainActivity).mqttConnectionCheck()) {
 
                 Log.i(TAG, "handleButtonTouch: ${event.action}")
@@ -450,7 +488,7 @@ class HomeFragment : Fragment() {
                 stop()
                 release()
             }
-            handler.removeCallbacksAndMessages(null)
+            //handler.removeCallbacksAndMessages(null)
         } catch (e: Exception) {
             Log.e(TAG, "stopPlayer: Error -> ", e)
         }
@@ -458,10 +496,18 @@ class HomeFragment : Fragment() {
     }
 
     private fun retryPlay(rtspConfig: String, doorId: String) {
-        handler.postDelayed({
-            showToast(message = "Retrying to connect...")
-            playExoPlayer(rtspConfig, doorId)
-        }, retryDelayMillis)
+        try {
+            if (this::handler.isInitialized) {
+                handler = Handler(Looper.getMainLooper())
+            }
+            handler.postDelayed({
+                showToast(message = "Retrying to connect...")
+                playExoPlayer(rtspConfig, doorId)
+            }, retryDelayMillis)
+        } catch (e: Exception) {
+            Log.e(TAG, "retryPlay: Error -> ", e)
+        }
+
     }
 
     private fun showToast(message: String) {
@@ -478,15 +524,24 @@ class HomeFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         stopPlayer()
-        aiModeHandler.removeCallbacksAndMessages(aiModeRunnable)
+        if (this::msgBuilder.isInitialized) {
+
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as MainActivity).mqttSubscribe()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        if (this::handler.isInitialized) {
+            handler.removeCallbacks {  }
+        }
         player?.release()
         player = null
-        handler.removeCallbacksAndMessages(null)
     }
 
     companion object {

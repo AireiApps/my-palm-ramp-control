@@ -9,6 +9,12 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"
+        tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
 
     <application
         android:name=".MyPalmApp"
@@ -31,6 +37,18 @@
             </intent-filter>
         </activity>
 
+        <service android:name=".mqtt.MqttConnectService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <receiver android:name=".commons.AppBroadcastReceiver"
+            android:exported="true"
+            tools:ignore="ExportedReceiver">
+            <intent-filter>
+                <action android:name="com.airei.milltracking.mypalm.mqtt.MQTT_CONNECTION"/>
+
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

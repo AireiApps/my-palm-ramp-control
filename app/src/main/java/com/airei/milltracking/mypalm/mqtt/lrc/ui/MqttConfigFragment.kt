@@ -305,6 +305,7 @@ class MqttConfigFragment : Fragment() {
             etPassword.setText(mqttConfigData.password.ifBlank { MQTT_PASS })
             etRepeat.visibility = View.GONE
             etRepeat.setText(AppPreferences.repeatCnt.toString().trim())
+            sbAiModeMode.isChecked = AppPreferences.aiListeningMode
         }
     }
 
@@ -383,6 +384,7 @@ class MqttConfigFragment : Fragment() {
             AppPreferences.mqttConfig = Gson().toJson(mqttConfigData)
             AppPreferences.mqttClientId = etClientId.text.toString().trim()
             AppPreferences.repeatCnt = etRepeat.text.toString().toInt()
+            AppPreferences.aiListeningMode = sbAiModeMode.isChecked
             Toast.makeText(requireContext(), "Mqtt config updated", Toast.LENGTH_SHORT).show()
         }
     }

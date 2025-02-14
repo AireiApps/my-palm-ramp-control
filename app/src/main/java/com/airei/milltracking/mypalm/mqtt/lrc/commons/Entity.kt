@@ -53,32 +53,38 @@ data class TagData(
     val value: Int
 )
 
+data class HumanDetectionData(
+    @SerializedName("dts")val dts: String,
+    @SerializedName("HUMAN")val human: String,
+)
+
+
 data class WData(
     val w: List<TagData>
 )
 
 data class FfbRunningStatus(
-    var ffb1Run: String = "0",
-    var ffb2Run: String = "0",
-    var ffb3Run: String = "0",
-    var ffb4Run: String = "0",
-    var ffb5Run: String = "0"
+    var ffb1Run: String = "--",
+    var ffb2Run: String = "--",
+    var ffb3Run: String = "--",
+    var ffb4Run: String = "--",
+    var ffb5Run: String = "--"
 )
 
 data class FfbSpeedStatus(
-    var ffb1Ma: String="",
-    var ffb2Ma: String="",
-    var ffb3Ma: String="",
-    var ffb4Ma: String="",
-    var ffb5Ma: String=""
+    var ffb1Ma: String= "0 A",
+    var ffb2Ma: String= "0 A",
+    var ffb3Ma: String= "0 A",
+    var ffb4Ma: String= "0 A",
+    var ffb5Ma: String= "0 A"
 )
 
 data class FfbModeStatus(
-    var ffb1Mode: String="",
-    var ffb2Mode: String="",
-    var ffb3Mode: String="",
-    var ffb4Mode: String="",
-    var ffb5Mode: String=""
+    var ffb1Mode: String="--",
+    var ffb2Mode: String="--",
+    var ffb3Mode: String="--",
+    var ffb4Mode: String="--",
+    var ffb5Mode: String="--"
 )
 
 
@@ -112,6 +118,8 @@ data class DeviceStatusData(
     @SerializedName("lrdoor14") val lrdoor14: String,
     @SerializedName("lrdoor15") val lrdoor15: String,
     @SerializedName("lrdoor16") val lrdoor16: String,
+    @SerializedName("ffbsys_ready") val ffbsysReady: String,
+    @SerializedName("sfbsys_ready") val sfbsysReady: String,
     @SerializedName("ffbsys_start") val ffbsysStart: String,
     @SerializedName("ffbsys_stop") val ffbsysStop: String,
     @SerializedName("ffbsys_estop") val ffbsysEstop: String,
@@ -320,6 +328,15 @@ data class AutoFeedingData(
     val level3: String
 )
 
+data class TagValue(
+    @SerializedName("tag") val tag: String,
+    @SerializedName("value") val value: Int
+)
+
+data class AiStatusData(
+    @SerializedName("w") val w: List<TagValue>
+)
+
 
 val doorList = listOf(
     DoorData(doorId = "Door1", doorName = "01", openStatus = false, rtspConfig = "rtsp://admin:afg69008@192.168.1.51:554/cam/realmonitor?channel=0&subtype=0"),
@@ -352,12 +369,12 @@ val commendJsonStr = "{\n" +
         "  \"LRStarter\": \"LoadingRamp:LRStarter_Cmd\",\n" +
         "  \"FFB\": {\n" +
         "    \"start\": \"Conveyor:FFBSys_StartCmd\",\n" +
-        "    \"stop\": \"Conveyor:FFBSys_StopCmd\",\n" +
+        "    \"stop\": \"Conveyor:FFBSys_StartCmd\",\n" +
         "    \"emergencyStop\": \"Conveyor:FFBSys_EStopCmd\"\n" +
         "  },\n" +
         "  \"SFB\": {\n" +
         "    \"start\": \"Conveyor:SFBSys_StartCmd\",\n" +
-        "    \"stop\": \"Conveyor:SFBSys_StopCmd\",\n" +
+        "    \"stop\": \"Conveyor:SFBSys_StartCmd\",\n" +
         "    \"emergencyStop\": \"Conveyor:SFBSys_EStopCmd\"\n" +
         "  }\n" +
         "}\n"

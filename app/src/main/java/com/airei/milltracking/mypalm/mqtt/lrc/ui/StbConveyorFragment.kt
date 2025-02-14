@@ -27,7 +27,11 @@ import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentSfbConveyorBin
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
-import pl.droidsonroids.gif.GifImageView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class SfbConveyorFragment : Fragment() {
@@ -78,9 +82,37 @@ class SfbConveyorFragment : Fragment() {
                     TAG,
                     "observeData: SFB_START_TAG $SFB_START_TAG , SFB_STOP_TAG $SFB_STOP_TAG , SFB_EME_STOP_TAG $SFB_EME_STOP_TAG"
                 )
-                binding.btnStart.setOnTouchListener(handleButtonTouch(SFB_START_TAG))
+                binding.btnStart.setOnClickListener {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        generateMsg(SFB_EME_STOP_TAG, 0)
+                        delay(1000)
+                        generateMsg(SFB_START_TAG, 1)
+                    }
+                }
+                binding.btnStop.setOnClickListener {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        generateMsg(SFB_EME_STOP_TAG, 0)
+                        delay(1000)
+                        generateMsg(SFB_STOP_TAG, 0)
+                    }
+                }
+                binding.btnEmergencyStop.setOnClickListener { generateMsg(SFB_EME_STOP_TAG, 1) }
+                binding.btnResetAll.setOnClickListener {
+                    viewModel.screenWaiting.postValue(true)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        generateMsg(SFB_START_TAG, 0)
+                        delay(1000)
+                        generateMsg(SFB_STOP_TAG, 0)
+                        delay(1000)
+                        generateMsg(SFB_EME_STOP_TAG, 0)
+                        withContext(Dispatchers.Main) {
+                            viewModel.screenWaiting.postValue(false)
+                        }
+                    }
+                }
+                /* binding.btnStart.setOnTouchListener(handleButtonTouch(SFB_START_TAG))
                 binding.btnStop.setOnTouchListener(handleButtonTouch(SFB_STOP_TAG))
-                binding.btnEmergencyStop.setOnTouchListener(handleButtonTouch(SFB_EME_STOP_TAG))
+                binding.btnEmergencyStop.setOnTouchListener(handleButtonTouch(SFB_EME_STOP_TAG))*/
             } else {
                 (activity as MainActivity).updateCommend()
             }
@@ -143,10 +175,10 @@ class SfbConveyorFragment : Fragment() {
             if (it != null) {
                 with(binding) {
                     // Check if the new myPalmStatus is different from the previous one
-                    val newStatus = when (it.data.mypalmStatus) {
-                        "1" -> getString(R.string.my_palm_mode)
-                        "0" -> getString(R.string.scada_mode)
-                        else -> getString(R.string.manual_mode)
+                    val newStatus = when (it.data.sfbsysReady) {
+                        "1" -> getString(R.string.ready)
+                        "0" -> getString(R.string.not_ready)
+                        else -> getString(R.string.not_ready)
                     }
 
                     if (newStatus != previousStatus) {

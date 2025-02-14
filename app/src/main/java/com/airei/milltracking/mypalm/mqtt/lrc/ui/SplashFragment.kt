@@ -72,6 +72,7 @@ class SplashFragment : Fragment() {
             binding.root.visibility = View.INVISIBLE
             if (AppPreferences.guideStatus){
                 if (!AppPreferences.mqttConfig.isNullOrEmpty() && !AppPreferences.mqttClientId.isNullOrEmpty()) {
+                    viewModel.startMqtt.postValue(true)
                     findNavController().navigate(R.id.homeFragment)
                 } else {
                     findNavController().navigate(R.id.mqttConfigFragment)

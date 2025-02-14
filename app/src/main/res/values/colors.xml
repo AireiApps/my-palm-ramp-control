@@ -17,5 +17,7 @@
     <color name="lite_white">#66F3F3F3</color>
     <color name="selective_yellow">#FFB602</color>
     <color name="selective_yellow_lite">#66FFB602</color>
+    <color name="selective_blue">#007FFF</color>
+    <color name="selective_blue_lite">#66007FFF</color>
     <color name="lite_gray">#66CCCCCC</color>
 </resources>
