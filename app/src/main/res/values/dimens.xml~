@@ -8,7 +8,7 @@
     <dimen name="loading_ramp_size">18sp</dimen>
     <dimen name="btn_draw_width">2dp</dimen>
     <dimen name="btn_draw_radius">14dp</dimen>
-    <dimen name="btn_ramp_width">160dp</dimen>
+    <dimen name="btn_ramp_width">180dp</dimen>
     <dimen name="btn_ramp_height">43dp</dimen>
     <dimen name="icon_padding_1">14dp</dimen>
     <dimen name="df_btn_text">24sp</dimen>

@@ -1,6 +1,5 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.utils
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
@@ -8,7 +7,6 @@ import android.hardware.display.DisplayManager
 import android.os.Build
 import android.util.DisplayMetrics
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
@@ -17,7 +15,6 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity
 import com.airei.milltracking.mypalm.mqtt.lrc.MyPalmApp
 import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AutoFeedingData
@@ -26,6 +23,10 @@ import com.airei.milltracking.mypalm.mqtt.lrc.commons.RtspConfig
 import com.airei.milltracking.mypalm.mqtt.lrc.roomdb.DoorTable
 import com.airei.milltracking.mypalm.mqtt.lrc.roomdb.Rtsp
 import kotlin.math.sqrt
+
+val ACTION_BROADCAST_MQTT_CONN: String = "com.airei.milltracking.mypalm.mqtt.MQTT_CONNECTION"
+val BROADCAST_TOPIC = "mqtt_connection"
+val BROADCAST_MAG = "check_mqtt_status"
 
 fun isOnline(): Boolean {
     try {

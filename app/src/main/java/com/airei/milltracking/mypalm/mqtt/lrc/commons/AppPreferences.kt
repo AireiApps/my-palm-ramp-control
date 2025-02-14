@@ -22,9 +22,10 @@ object AppPreferences {
     private val DOOR_OPEN_CMD = Pair(MyPalmApp.instance.getString(R.string.door_open_cmd), "LoadingRamp:[DOOR_X]_OpenCmd")
     private val DOOR_CLOSE_CMD = Pair(MyPalmApp.instance.getString(R.string.door_close_cmd), "LoadingRamp:[DOOR_X]_CloseCmd")
     private val CMD_JSON = Pair("cmd_json", commendJsonStr)
-    private val AI_MODE = Pair("ai_mode", "false:0")
+    private val AI_MODE = Pair("ai_mode", 0)
     private val GUIDE_STATUS = Pair("guide_status", true)
     private val AVAILABLE_DOORS = Pair("available_doors", "")
+    private val AI_LISTENING_MODE = Pair("ai_listening_mode", false)
 
     fun init(context: Context = MyPalmApp.instance) {
         preferences = EncryptedSharedPreferences.create(
@@ -60,9 +61,13 @@ object AppPreferences {
         get() = preferences.getString(CMD_JSON.first, CMD_JSON.second) ?: CMD_JSON.second
         set(value) = preferences.edit().putString(CMD_JSON.first, value).apply()
 
-    var aiMode: String
-        get() = preferences.getString(AI_MODE.first, AI_MODE.second).toString()
-        set(value) = preferences.edit().putString(AI_MODE.first, value).apply()
+    var aiMode: Int
+        get() = preferences.getInt(AI_MODE.first, AI_MODE.second)
+        set(value) = preferences.edit().putInt(AI_MODE.first, value).apply()
+
+    var aiListeningMode: Boolean
+        get() = preferences.getBoolean(AI_LISTENING_MODE.first, AI_LISTENING_MODE.second)
+        set(value) = preferences.edit().putBoolean(AI_LISTENING_MODE.first, value).apply()
 
     var guideStatus: Boolean
         get() = preferences.getBoolean(GUIDE_STATUS.first, GUIDE_STATUS.second)

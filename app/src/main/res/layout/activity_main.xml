@@ -55,7 +55,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bottom_nav_background"
                 android:text="Home"
-                android:textSize="18sp"
+                android:textSize="@dimen/bottom_nav_text"
                 app:backgroundTint="@null"
                 app:icon="@drawable/ic_menu_home"
                 app:iconSize="28dp" />
@@ -75,7 +75,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bottom_nav_background"
                 android:text="@string/ffb_conveyor_title"
-                android:textSize="18sp"
+                android:textSize="@dimen/bottom_nav_text"
                 app:backgroundTint="@null"
                 app:icon="@drawable/ic_menu_ffb"
                 app:iconSize="28dp" />
@@ -95,7 +95,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bottom_nav_background"
                 android:text="@string/sfb_conveyor_title"
-                android:textSize="18sp"
+                android:textSize="@dimen/bottom_nav_text"
                 app:backgroundTint="@null"
                 app:icon="@drawable/ic_menu_sfb"
                 app:iconSize="28dp" />
@@ -115,7 +115,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bottom_nav_background"
                 android:text="@string/auto_feeding"
-                android:textSize="18sp"
+                android:textSize="@dimen/bottom_nav_text"
                 app:backgroundTint="@null"
                 app:icon="@drawable/ic_menu_auto_feed"
                 app:iconSize="28dp" />
@@ -135,7 +135,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bottom_nav_background"
                 android:text="@string/available_doors"
-                android:textSize="18sp"
+                android:textSize="@dimen/bottom_nav_text"
                 app:backgroundTint="@null"
                 app:icon="@drawable/ic_door"
                 app:iconSize="28dp" />
@@ -155,7 +155,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bottom_nav_background"
                 android:text="@string/config"
-                android:textSize="18sp"
+                android:textSize="@dimen/bottom_nav_text"
                 app:backgroundTint="@null"
                 app:icon="@drawable/ic_menu_settings"
                 app:iconSize="28dp" />
@@ -177,7 +177,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bottom_nav_background"
                 android:text="@string/reconnect"
-                android:textSize="16sp"
+                android:textSize="@dimen/bottom_nav_text"
                 android:textColor="@color/flamingo"
                 app:backgroundTint="@null"
                 app:icon="@drawable/ic_refresh"

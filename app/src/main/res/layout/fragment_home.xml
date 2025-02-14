@@ -85,6 +85,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <View
+                android:id="@+id/view"
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:background="@color/lite_gray"
@@ -112,7 +113,7 @@
                     android:text="@string/door_control"
                     android:textColor="@color/white"
                     android:textFontWeight="500"
-                    android:textSize="@dimen/loading_ramp_size"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/imageView2"
                     app:layout_constraintStart_toEndOf="@+id/imageView"
@@ -123,7 +124,8 @@
                     android:id="@+id/btn_door_status"
                     android:layout_width="@dimen/btn_ramp_width"
                     android:layout_height="@dimen/btn_ramp_height"
-                    android:layout_marginStart="12dp"
+                    android:layout_marginStart="8dp"
+                    android:textSize="14sp"
                     android:background="@drawable/btn_outline_green"
                     android:text="MyPalm Mode/MyPalm Mode"
                     android:textColor="@color/color_background_1"
@@ -158,11 +160,11 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="26dp"
+                    android:layout_marginStart="12dp"
                     android:text="@string/starter_motor"
                     android:textColor="@color/white"
                     android:textFontWeight="500"
-                    android:textSize="@dimen/loading_ramp_size"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/imageView2"
                     app:layout_constraintStart_toEndOf="@+id/imageView"
@@ -177,6 +179,7 @@
                     android:background="@drawable/toggle_button_background"
                     android:text="ToggleButton"
                     android:textAllCaps="false"
+                    android:textSize="14sp"
                     android:textColor="@color/white"
                     android:textOff="Off"
                     android:textOn="On" />
@@ -184,11 +187,11 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="26dp"
+                    android:layout_marginStart="12dp"
                     android:text="@string/ai"
                     android:textColor="@color/white"
                     android:textFontWeight="500"
-                    android:textSize="@dimen/loading_ramp_size"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/imageView2"
                     app:layout_constraintStart_toEndOf="@+id/imageView"
@@ -203,10 +206,38 @@
                     android:background="@drawable/toggle_button_background"
                     android:text="ToggleButton"
                     android:textAllCaps="false"
+                    android:textSize="14sp"
                     android:textColor="@color/white"
                     android:textOff="@string/disable"
                     android:textOn="@string/enable" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_ai_mode"
+                    android:layout_width="160dp"
+                    android:layout_height="@dimen/btn_ramp_height"
+                    android:layout_marginStart="12dp"
+                    android:background="@drawable/btn_outline_green"
+                    android:text="@string/initialized_to_turn_off"
+                    android:textSize="14sp"
+                    android:textColor="@color/color_background_2"
+                    app:backgroundTint="@color/color_background_2" />
+
+                <TextView
+                    android:id="@+id/tv_ai_count"
+                    android:layout_width="@dimen/btn_ramp_height"
+                    android:layout_height="@dimen/btn_ramp_height"
+                    android:layout_marginStart="12dp"
+                    android:paddingHorizontal="12dp"
+                    android:background="@drawable/toggle_button_background"
+                    android:text="00"
+                    android:gravity="center"
+                    android:textSize="14sp"
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/selective_yellow" />
+
             </LinearLayout>
+
+
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_doors"
@@ -277,6 +308,22 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
+                <TextView
+                    android:id="@+id/tv_ffb1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/btn_outline_white"
+                    android:backgroundTint="#9CFFFFFF"
+                    android:paddingHorizontal="20dp"
+                    android:paddingVertical="10dp"
+                    android:layout_margin="16dp"
+                    android:text="FFB 1 : 23.6 A"
+                    android:textColor="@color/black"
+                    android:textSize="18sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
                 <ImageView
                     android:id="@+id/img_close"
                     android:layout_width="40dp"
@@ -302,19 +349,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/rv_doors">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_open"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_marginBottom="18dp"
-                    android:layout_marginTop="9dp"
-                    android:layout_marginHorizontal="9dp"
-                    android:layout_weight=".5"
-                    android:background="@drawable/btn_click_green"
-                    android:text="@string/open"
-                    android:textSize="28sp"
-                    app:backgroundTint="@null"
-                    app:rippleColor="@color/lite_white" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_close"
@@ -329,6 +363,20 @@
                     android:textSize="28sp"
                     app:backgroundTint="@null"
                     app:rippleColor="@color/white" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_open"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginBottom="18dp"
+                    android:layout_marginTop="9dp"
+                    android:layout_marginHorizontal="9dp"
+                    android:layout_weight=".5"
+                    android:background="@drawable/btn_click_green"
+                    android:text="@string/open"
+                    android:textSize="28sp"
+                    app:backgroundTint="@null"
+                    app:rippleColor="@color/lite_white" />
+
             </LinearLayout>
 
 
