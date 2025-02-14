@@ -82,8 +82,20 @@ class SfbConveyorFragment : Fragment() {
                     TAG,
                     "observeData: SFB_START_TAG $SFB_START_TAG , SFB_STOP_TAG $SFB_STOP_TAG , SFB_EME_STOP_TAG $SFB_EME_STOP_TAG"
                 )
-                binding.btnStart.setOnClickListener { generateMsg(SFB_START_TAG, 1) }
-                binding.btnStop.setOnClickListener { generateMsg(SFB_STOP_TAG, 0) }
+                binding.btnStart.setOnClickListener {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        generateMsg(SFB_EME_STOP_TAG, 0)
+                        delay(1000)
+                        generateMsg(SFB_START_TAG, 1)
+                    }
+                }
+                binding.btnStop.setOnClickListener {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        generateMsg(SFB_EME_STOP_TAG, 0)
+                        delay(1000)
+                        generateMsg(SFB_STOP_TAG, 0)
+                    }
+                }
                 binding.btnEmergencyStop.setOnClickListener { generateMsg(SFB_EME_STOP_TAG, 1) }
                 binding.btnResetAll.setOnClickListener {
                     viewModel.screenWaiting.postValue(true)

@@ -24,9 +24,6 @@ import com.airei.milltracking.mypalm.mqtt.lrc.commons.FfbSpeedStatus
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.TagData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.WData
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentFfbConveyorBinding
-import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.CMD_FFB_EME_STOP
-import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.CMD_FFB_START
-import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.CMD_FFB_STOP
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
@@ -89,10 +86,18 @@ class FfbConveyorFragment : Fragment() {
                 binding.btnEmergencyStop.setOnTouchListener(handleButtonTouch(CMD_FFB_EME_STOP))*/
                 with(binding){
                     btnStart.setOnClickListener {
-                        generateMsg(FFB_START_TAG, 1)
+                        CoroutineScope(Dispatchers.IO).launch {
+                            generateMsg(FFB_EME_STOP_TAG, 0)
+                            delay(1000)
+                            generateMsg(FFB_START_TAG, 1)
+                        }
                     }
                     btnStop.setOnClickListener {
-                        generateMsg(FFB_STOP_TAG, 0)
+                        CoroutineScope(Dispatchers.IO).launch {
+                            generateMsg(FFB_EME_STOP_TAG, 0)
+                            delay(1000)
+                            generateMsg(FFB_STOP_TAG, 0)
+                        }
                     }
                     btnEmergencyStop.setOnClickListener {
                         generateMsg(FFB_EME_STOP_TAG, 1)
