@@ -18,6 +18,7 @@ import com.airei.milltracking.mypalm.mqtt.lrc.commons.CommandData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.FFBCommands
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.MqttConfig
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.PmcDoorCommand
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.SFBCommands
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentMqttConfigBinding
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_HOST
@@ -311,8 +312,20 @@ class MqttConfigFragment : Fragment() {
 
     private fun setCommandView(commandData: CommandData = localCommandData) {
         with(binding) {
-            etDoorOpen.setText(commandData.rampDoorOpen)
-            etDoorClose.setText(commandData.rampDoorClose)
+            val openValue = if (commandData.rampDoorOpen.isNullOrEmpty()) {
+                Gson().toJson(PmcDoorCommand(door = "1", mode = "ai", command = "open"))
+            } else {
+                commandData.rampDoorOpen
+            }
+
+            val closeValue = if (commandData.rampDoorClose.isNullOrEmpty()) {
+                Gson().toJson(PmcDoorCommand(door = "1", mode = "ai", command = "close"))
+            } else {
+                commandData.rampDoorClose
+            }
+
+            etDoorOpen.setText(openValue)
+            etDoorClose.setText(closeValue)
             etStarterMotor.setText(commandData.LRStarter)
             etFfbStart.setText(commandData.FFB.start)
             etFfbStop.setText(commandData.FFB.stop)

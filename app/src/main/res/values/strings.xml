@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">MyPalm Controller</string>
-    <string name="company_name">AI-BASED SMART PALM OIL MILL</string>
+    <string name="company_name">PMC</string>
     <string name="title">LOADING RAMP CONTROL</string>
     <string name="loading_ramp">Loading Ramp\t:\t</string>
     <string name="open">Open</string>
@@ -100,5 +100,6 @@
     <string name="sfb_system">SFB System \t:\t</string>
     <string name="human_detected_alert_title">Human Alert</string>
     <string name="human_detected_alert_msg">Human detected nearby</string>
+    <string name="stuck_door">Stuck Door</string>
 
 </resources>

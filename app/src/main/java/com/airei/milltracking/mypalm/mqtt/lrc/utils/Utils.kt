@@ -96,13 +96,16 @@ fun Window.setStatusBar(color: Int = R.color.black) {
 }
 
 // Extension functions for conversion between DoorTable and DoorData
+
 fun DoorTable.toDoorData(): DoorData {
     return DoorData(
         doorId = this.doorId,
         doorName = this.doorName,
         openStatus = this.openStatus,
-        selected = false, // Set to a default value or modify as needed
-        rtspConfig = this.rtsp
+        selected = false,
+        rampDoorRtsp = this.rampDoorRtsp,
+        cageFillRtsp = this.cageFillRtsp,
+        gradingRtsp = this.gradingRtsp
     )
 }
 
@@ -111,7 +114,9 @@ fun DoorData.toDoorTable(): DoorTable {
         doorId = this.doorId,
         doorName = this.doorName,
         openStatus = this.openStatus,
-        rtsp = this.rtspConfig
+        rampDoorRtsp = this.rampDoorRtsp,
+        cageFillRtsp = this.cageFillRtsp,
+        gradingRtsp = this.gradingRtsp
     )
 }
 

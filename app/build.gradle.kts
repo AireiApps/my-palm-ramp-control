@@ -14,7 +14,7 @@ android {
         minSdk = 26
         targetSdk = 34
         versionCode = 1
-        versionName = "0.8.3"
+        versionName = "1.2.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "my_palm_mqtt-($versionName)")
     }
@@ -90,4 +90,6 @@ dependencies {
 
     implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.1.0")
 
+    // VLC
+    implementation(libs.libvlc.all.v3112)
 }

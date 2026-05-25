@@ -5,12 +5,15 @@ val MQTT_PUBLISH_TOPIC_STR = "cmd/MinsawiLR"
 val MQTT_PUBLISH_AI = "AI/mobile"
 val MQTT_PUBLISH_AI_NOTIFY = "AI/MobileNotify"
 
+val MQTT_SUBSCRIBE_TOPIC_PMC = "mill/mobile"
+
 val MQTT_SUBSCRIBE_TOPIC_LR = "data/MinsawiLR"
 val MQTT_SUBSCRIBE_AUTO_FEED_1 = "AI/Autofeeder1"
 val MQTT_SUBSCRIBE_AUTO_FEED_2 = "AI/Autofeeder2"
 val MQTT_SUBSCRIBE_AI_STATUS = "AI/status"
 val MQTT_SUBSCRIBE_AI_NOTIFY = "AI/MobileNotify"
 val MQTT_SUBSCRIBE_HUMAN_DETECTION : List<String> = listOf("AI/FFB2", "AI/SFB3", "AI/SFB2")
+val MQTT_DOOR_SRUCK = "mill/loading_ramp/stuck"
 
 /*
     topic name : cmd/MinsawiLR
@@ -26,10 +29,10 @@ val MQTT_PASS = "4rEpepi#OsaYoPUGewRI"
 */
 
 val MQTT_CLIENT_ID = "mypalm_mobile_123"
-val MQTT_HOST = "mypalm"
+val MQTT_HOST = "172.60.1.30"
 val MQTT_PORT = "1883"
-val MQTT_USER = "admin"
-val MQTT_PASS = "hivemq"
+val MQTT_USER = "airei"
+val MQTT_PASS = "Airei$4321"
 
 val CMD_DOOR_OPEN = "LoadingRamp:[DOOR_X]_OpenCmd"
 val CMD_DOOR_CLOSE = "LoadingRamp:[DOOR_X]_CloseCmd"

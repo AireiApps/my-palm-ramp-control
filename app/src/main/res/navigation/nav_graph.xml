@@ -52,5 +52,15 @@
         android:name="com.airei.milltracking.mypalm.mqtt.lrc.ui.DoorsFragment"
         android:label="fragment_doors"
         tools:layout="@layout/fragment_doors" />
+    <fragment
+        android:id="@+id/stuckDoorFragment"
+        android:name="com.airei.milltracking.mypalm.mqtt.lrc.ui.StuckDoorFragment"
+        android:label="fragment_stuck_door"
+        tools:layout="@layout/fragment_stuck_door" />
+    <fragment
+        android:id="@+id/vlcPlayerFragment"
+        android:name="com.airei.milltracking.mypalm.mqtt.lrc.ui.VlcPlayerFragment"
+        android:label="fragment_vlc_player"
+        tools:layout="@layout/fragment_vlc_player" />
 
 </navigation>

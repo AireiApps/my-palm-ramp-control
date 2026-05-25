@@ -6,7 +6,6 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.airei.milltracking.mypalm.mqtt.lrc.MyPalmApp
 import com.airei.milltracking.mypalm.mqtt.lrc.R
-import java.util.Date
 
 object AppPreferences {
 
@@ -25,6 +24,7 @@ object AppPreferences {
     private val AI_MODE = Pair("ai_mode", 0)
     private val GUIDE_STATUS = Pair("guide_status", true)
     private val AVAILABLE_DOORS = Pair("available_doors", "")
+    private val STUCK_DOORS = Pair("stuck_doors", "")
     private val AI_LISTENING_MODE = Pair("ai_listening_mode", false)
 
     fun init(context: Context = MyPalmApp.instance) {
@@ -76,5 +76,9 @@ object AppPreferences {
     var availableDoorsData: String
         get() = preferences.getString(AVAILABLE_DOORS.first, AVAILABLE_DOORS.second).toString()
         set(value) = preferences.edit().putString(AVAILABLE_DOORS.first, value).apply()
+
+    var stuckDoorsData: String
+        get() = preferences.getString(STUCK_DOORS.first, STUCK_DOORS.second).toString()
+        set(value) = preferences.edit().putString(STUCK_DOORS.first, value).apply()
 
 }

@@ -1,20 +1,28 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.roomdb
 
 import androidx.room.ColumnInfo
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.airei.milltracking.mypalm.mqtt.lrc.commons.RtspConfig
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 
+
+/*@Entity(tableName = "doors")
+data class DoorTable(
+    @PrimaryKey @ColumnInfo(name = "door_id") val doorId: String,
+    @ColumnInfo(name = "door_name") val doorName: String,
+    @ColumnInfo(name = "door_status") val openStatus: Boolean,
+    @ColumnInfo(name = "rtsp_config") var rtsp: String = ""
+)*/
 
 @Entity(tableName = "doors")
 data class DoorTable(
     @PrimaryKey @ColumnInfo(name = "door_id") val doorId: String,
     @ColumnInfo(name = "door_name") val doorName: String,
     @ColumnInfo(name = "door_status") val openStatus: Boolean,
-    @ColumnInfo(name = "rtsp_config") var rtsp: String = ""
+    @ColumnInfo(name = "ramp_door_rtsp") var rampDoorRtsp: String = "",
+    @ColumnInfo(name = "cage_fill_rtsp") var cageFillRtsp: String = "",
+    @ColumnInfo(name = "grading_rtsp") var gradingRtsp: String = ""
 )
 
 data class Rtsp(

@@ -46,7 +46,7 @@ class DoorSelectAdapter(
         val isSelected = selectedDoors.contains(door)
 
         with(holder.binding) {
-            tvConveyorName.text = door.doorName
+            tvConveyorName.text = door.doorId
 
             if (isSelected) {
                 imageView.setImageResource(actionImg)
@@ -116,7 +116,7 @@ class DoorSelectAdapter(
         selectedDoors.clear()
         val doorIdList = availableDoors.split(",")
         val oldDoorList = doorIdList.map { doorId ->
-            doorList.find { it.doorName == doorId }
+            doorList.find { it.doorId == doorId }
         }.filterNotNull()
         Log.d("DoorSelectAdapter", "selectDoors: doorIdList = $doorIdList | doorList = $oldDoorList")
         selectedDoors.addAll(oldDoorList)

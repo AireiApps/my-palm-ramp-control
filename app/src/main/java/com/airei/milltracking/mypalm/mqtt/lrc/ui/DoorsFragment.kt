@@ -61,7 +61,7 @@ class DoorsFragment : Fragment() {
                 adapter.clearAll()
             }
             btnSave.setOnClickListener {
-                val selectedDoors = adapter.getSelectedDoors().map { it.doorName }
+                val selectedDoors = adapter.getSelectedDoors().map { it.doorId }
                 Log.d(TAG, "setButton: btnSave ${selectedDoors.joinToString(",")}")
                 if (selectedDoors.isNotEmpty()) {
                     //updateAiMode(selectedDoors.joinToString(","))
@@ -111,7 +111,7 @@ class DoorsFragment : Fragment() {
         val availableDoors = AppPreferences.availableDoorsData
         val displayMetrics = resources.displayMetrics
         val screenHeightDp = displayMetrics.heightPixels / displayMetrics.density
-        Log.i(HomeFragment.TAG, "setConveyorList: $screenHeightDp / ${displayMetrics.heightPixels}")
+        Log.i(TAG, "setConveyorList: $screenHeightDp / ${displayMetrics.heightPixels}")
         val spanCount = if (screenHeightDp < 700) 6 else 8
         val gridLayoutManager = GridLayoutManager(requireContext(), spanCount)
         binding.rvDoors.layoutManager = gridLayoutManager

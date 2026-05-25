@@ -46,7 +46,7 @@ class DoorAdapter(
         holder.setIsRecyclable(false)
         val door = doorList[position]
         with(holder.binding) {
-            tvConveyorName.text = door.doorName
+            tvConveyorName.text = door.doorId
             //tvConveyorStatus.text = context.getString(R.string.status)+" : "+conveyor.conveyorStatus
             if ( door.selected) {
                 imageView.setImageResource(actionImg)

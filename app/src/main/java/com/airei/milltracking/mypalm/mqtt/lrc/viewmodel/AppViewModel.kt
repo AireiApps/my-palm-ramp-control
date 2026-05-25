@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AutoFeedingData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.CommandData
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorStatusData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.FfbRunningStatus
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.SfbRunningStatus
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.StatusData
@@ -39,9 +40,15 @@ class AppViewModel @Inject constructor(
 
     val aiCountdown = MutableLiveData<Long>(0)
 
+    val updateDoorPmc = MutableLiveData<Pair<String,String>>()
+
+    val stuckDoorsList = MutableLiveData<List<DoorStatusData>>(listOf())
+
     val updateDoor = MutableLiveData<String>()
     val updateStarter = MutableLiveData<String>()
     val updateAiModeData = MutableLiveData<String>()
+
+
 
     // LiveData or other observables for the UI
     val doorsLiveData = doorRepository.getAllDoors()

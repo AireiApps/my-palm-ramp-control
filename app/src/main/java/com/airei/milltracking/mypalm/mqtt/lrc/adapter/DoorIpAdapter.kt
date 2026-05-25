@@ -22,28 +22,115 @@ class DoorIpAdapter(private val list: List<DoorData>) :
     // ViewHolder class that uses View Binding
     inner class DoorViewHolder(private val binding: ItemDoorIpBinding) :
         RecyclerView.ViewHolder(binding.root) {
+
         fun bind(doorData: DoorData) {
-            binding.tvDoorId.text = doorData.doorId
-            binding.etIp.setText(doorData.rtspConfig)
-            // Remove any existing TextWatcher to avoid multiple triggers
-            binding.etIp.removeTextChangedListener(binding.etIp.tag as? TextWatcher)
-            // Create a new TextWatcher
-            val textWatcher = object : TextWatcher {
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                    // No action needed before the text is changed
-                }
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    // Update the doorData.ipAddress when the text is changed
-                }
+
+            binding.doorId.text = doorData.doorId
+
+            binding.etRampRtsp.setText(doorData.rampDoorRtsp)
+            binding.etCageFillRtsp.setText(doorData.cageFillRtsp)
+            binding.etGradingRtsp.setText(doorData.gradingRtsp)
+
+            // Remove old watchers
+            (binding.etRampRtsp.tag as? TextWatcher)?.let {
+                binding.etRampRtsp.removeTextChangedListener(it)
+            }
+
+            (binding.etCageFillRtsp.tag as? TextWatcher)?.let {
+                binding.etCageFillRtsp.removeTextChangedListener(it)
+            }
+
+            (binding.etGradingRtsp.tag as? TextWatcher)?.let {
+                binding.etGradingRtsp.removeTextChangedListener(it)
+            }
+
+            // Ramp Door Watcher
+            val rampWatcher = object : TextWatcher {
+
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+                override fun onTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    before: Int,
+                    count: Int
+                ) {}
+
                 override fun afterTextChanged(s: Editable?) {
-                    // No action needed after the text is changed
-                    doorList.forEach { dd -> if (doorData.doorId == dd.doorId ) {
-                        dd.rtspConfig = s.toString()
-                    } }
+
+                    doorData.rampDoorRtsp = s.toString()
+
+                    doorList.forEach { dd ->
+                        if (doorData.doorId == dd.doorId) {
+                            dd.rampDoorRtsp = s.toString()
+                        }
+                    }
+
                     updateDoor(doorList)
                 }
             }
-            binding.etIp.addTextChangedListener(textWatcher)
+
+            // Cage Fill Watcher
+            val cageWatcher = object : TextWatcher {
+
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+                override fun onTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    before: Int,
+                    count: Int
+                ) {}
+
+                override fun afterTextChanged(s: Editable?) {
+
+                    doorData.cageFillRtsp = s.toString()
+
+                    doorList.forEach { dd ->
+                        if (doorData.doorId == dd.doorId) {
+                            dd.cageFillRtsp = s.toString()
+                        }
+                    }
+
+                    updateDoor(doorList)
+                }
+            }
+
+            // Grading Watcher
+            val gradingWatcher = object : TextWatcher {
+
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+                override fun onTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    before: Int,
+                    count: Int
+                ) {}
+
+                override fun afterTextChanged(s: Editable?) {
+
+                    doorData.gradingRtsp = s.toString()
+
+                    doorList.forEach { dd ->
+                        if (doorData.doorId == dd.doorId) {
+                            dd.gradingRtsp = s.toString()
+                        }
+                    }
+
+                    updateDoor(doorList)
+                }
+            }
+
+            // Add watchers
+            binding.etRampRtsp.addTextChangedListener(rampWatcher)
+            binding.etCageFillRtsp.addTextChangedListener(cageWatcher)
+            binding.etGradingRtsp.addTextChangedListener(gradingWatcher)
+
+            // Save watcher references
+            binding.etRampRtsp.tag = rampWatcher
+            binding.etCageFillRtsp.tag = cageWatcher
+            binding.etGradingRtsp.tag = gradingWatcher
         }
     }
 
