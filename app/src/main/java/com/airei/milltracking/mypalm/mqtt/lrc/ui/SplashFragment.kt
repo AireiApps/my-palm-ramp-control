@@ -12,8 +12,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity
-import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity.Companion
 import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.fadeInByObject
@@ -21,7 +19,6 @@ import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentSplashBinding
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.getAppVersion
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.getScreenSizeInInches
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
-import org.eclipse.paho.android.service.BuildConfig
 
 class SplashFragment : Fragment() {
 

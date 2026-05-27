@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
-import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorStatusData
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.ItemStuckDoorBinding
 
 class StuckDoorAdapter(

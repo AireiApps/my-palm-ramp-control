@@ -1,7 +1,5 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.commons
 
-import android.net.Uri
-import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 

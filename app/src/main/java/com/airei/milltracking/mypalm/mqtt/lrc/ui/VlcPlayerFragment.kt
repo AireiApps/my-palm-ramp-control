@@ -2,14 +2,11 @@ package com.airei.milltracking.mypalm.mqtt.lrc.ui
 
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.net.toUri
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppLogger
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentVlcPlayerBinding
 import kotlinx.coroutines.Dispatchers

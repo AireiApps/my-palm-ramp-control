@@ -1,32 +1,17 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.ui
 
 import android.annotation.SuppressLint
-import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.annotation.OptIn
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackException
-import androidx.media3.common.Player
-import androidx.media3.common.Tracks
-import androidx.media3.common.VideoSize
-import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.DefaultLoadControl
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.rtsp.RtspMediaSource
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.airei.milltracking.mypalm.mqtt.lrc.MainActivity
@@ -34,7 +19,6 @@ import com.airei.milltracking.mypalm.mqtt.lrc.R
 import com.airei.milltracking.mypalm.mqtt.lrc.adapter.DoorAdapter
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppLogger
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
-import com.airei.milltracking.mypalm.mqtt.lrc.commons.CommandData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.PmcDoorCommand
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.TagData
@@ -47,10 +31,6 @@ import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorTable
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 import com.google.gson.Gson
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class HomeFragment : Fragment() {
 

@@ -9,7 +9,6 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Rect
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -17,7 +16,6 @@ import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
-import android.os.Process
 import android.os.StrictMode
 import android.provider.Settings
 import android.util.Log
@@ -27,13 +25,13 @@ import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
@@ -42,7 +40,6 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AiStatusData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppBroadcastReceiver
-import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppLogger
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AutoFeedingData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.BroadcastListener
@@ -84,7 +81,6 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.eclipse.paho.client.mqttv3.MqttMessage
-import androidx.core.net.toUri
 
 interface MessageListener {
 

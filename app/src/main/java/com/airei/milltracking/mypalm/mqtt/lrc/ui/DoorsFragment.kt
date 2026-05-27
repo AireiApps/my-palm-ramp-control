@@ -16,11 +16,9 @@ import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.doorList
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentDoorsBinding
-import com.airei.milltracking.mypalm.mqtt.lrc.ui.HomeFragment.Companion
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorTable
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
-import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 
 class DoorsFragment : Fragment() {

@@ -1,6 +1,5 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.adapter
 
-import android.annotation.SuppressLint
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater

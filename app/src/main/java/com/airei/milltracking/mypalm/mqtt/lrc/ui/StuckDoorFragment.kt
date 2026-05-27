@@ -20,7 +20,6 @@ import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentStuckDoorBindi
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_DOOR_SRUCK
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
 import java.text.SimpleDateFormat
 import java.util.Date

@@ -5,9 +5,9 @@ import android.content.Intent
 import android.os.Handler
 import android.os.IBinder
 import android.util.Log
+import com.airei.milltracking.mypalm.mqtt.lrc.utils.ACTION_BROADCAST_MQTT_CONN
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.BROADCAST_MAG
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.BROADCAST_TOPIC
-import com.airei.milltracking.mypalm.mqtt.lrc.utils.ACTION_BROADCAST_MQTT_CONN
 
 class MqttConnectService : Service() {
 
