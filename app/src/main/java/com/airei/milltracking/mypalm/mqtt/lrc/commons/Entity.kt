@@ -4,10 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 
 data class MqttConfig(
-    var host: String = "",
-    var port: Int = 0,
-    var username: String = "",
-    var password: String = ""
+    var host: String = "", var port: Int = 0, var username: String = "", var password: String = ""
 )
 
 
@@ -46,26 +43,21 @@ data class CommandData(
 )
 
 data class FFBCommands(
-    val start: String,
-    val stop: String,
-    val emergencyStop: String
+    val start: String, val stop: String, val emergencyStop: String
 )
 
 data class SFBCommands(
-    val start: String,
-    val stop: String,
-    val emergencyStop: String
+    val start: String, val stop: String, val emergencyStop: String
 )
 
 
 data class TagData(
-    val tag: String,
-    val value: Int
+    val tag: String, val value: Int
 )
 
 data class HumanDetectionData(
-    @SerializedName("dts")val dts: String,
-    @SerializedName("HUMAN")val human: String,
+    @SerializedName("dts") val dts: String,
+    @SerializedName("HUMAN") val human: String,
 )
 
 
@@ -82,36 +74,33 @@ data class FfbRunningStatus(
 )
 
 data class FfbSpeedStatus(
-    var ffb1Ma: String= "0 A",
-    var ffb2Ma: String= "0 A",
-    var ffb3Ma: String= "0 A",
-    var ffb4Ma: String= "0 A",
-    var ffb5Ma: String= "0 A"
+    var ffb1Ma: String = "0 A",
+    var ffb2Ma: String = "0 A",
+    var ffb3Ma: String = "0 A",
+    var ffb4Ma: String = "0 A",
+    var ffb5Ma: String = "0 A"
 )
 
 data class FfbModeStatus(
-    var ffb1Mode: String="--",
-    var ffb2Mode: String="--",
-    var ffb3Mode: String="--",
-    var ffb4Mode: String="--",
-    var ffb5Mode: String="--"
+    var ffb1Mode: String = "--",
+    var ffb2Mode: String = "--",
+    var ffb3Mode: String = "--",
+    var ffb4Mode: String = "--",
+    var ffb5Mode: String = "--"
 )
 
 
 data class SfbRunningStatus(
-    var sfb1Run: String = "0",
-    var sfb2Run: String = "0",
-    var sfb3Run: String = "0"
+    var sfb1Run: String = "0", var sfb2Run: String = "0", var sfb3Run: String = "0"
 )
 
 data class StatusData(
-    @SerializedName("dts") val dts: String,
-    @SerializedName("data") val data: DeviceStatusData
+    @SerializedName("dts") val dts: String, @SerializedName("data") val data: DeviceStatusData
 )
 
 data class PmcStatusData(
     @SerializedName("MOBILE") val mobile: String,
-    @SerializedName("AVAILABLE_DOORS") val availableDoors : String
+    @SerializedName("AVAILABLE_DOORS") val availableDoors: String
 )
 
 data class DoorStatusData(
@@ -339,19 +328,14 @@ data class DeviceStatusData(
 )
 
 data class AutoFeedingData(
-    @SerializedName("dts")
-    val dts: String,
-    @SerializedName("LEVEL 1")
-    val level1: String,
-    @SerializedName("LEVEL 2")
-    val level2: String,
-    @SerializedName("LEVEL 3")
-    val level3: String
+    @SerializedName("dts") val dts: String,
+    @SerializedName("LEVEL 1") val level1: String,
+    @SerializedName("LEVEL 2") val level2: String,
+    @SerializedName("LEVEL 3") val level3: String
 )
 
 data class TagValue(
-    @SerializedName("tag") val tag: String,
-    @SerializedName("value") val value: Int
+    @SerializedName("tag") val tag: String, @SerializedName("value") val value: Int
 )
 
 data class AiStatusData(
@@ -365,162 +349,160 @@ val doorList = listOf(
         doorId = "1",
         doorName = "Door 1",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.77:554/cam/realmonitor?channel=1&subtype=26",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.87:554/cam/realmonitor?channel=1&subtype=36",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.51:554/cam/realmonitor?channel=1&subtype=0"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.77:554/cam/realmonitor?channel=1&subtype=26",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.87:554/cam/realmonitor?channel=1&subtype=36",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.51:554/cam/realmonitor?channel=1&subtype=0"
     ),
 
     DoorData(
         doorId = "2",
         doorName = "Door 2",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.77:554/cam/realmonitor?channel=1&subtype=26",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.87:554/cam/realmonitor?channel=1&subtype=36",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.51:554/cam/realmonitor?channel=1&subtype=0"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.77:554/cam/realmonitor?channel=1&subtype=26",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.87:554/cam/realmonitor?channel=1&subtype=36",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.51:554/cam/realmonitor?channel=1&subtype=0"
     ),
 
     DoorData(
         doorId = "3",
         doorName = "Door 3",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.78:554/cam/realmonitor?channel=1&subtype=27",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.88:554/cam/realmonitor?channel=1&subtype=37",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.52:554/cam/realmonitor?channel=1&subtype=1"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.78:554/cam/realmonitor?channel=1&subtype=27",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.88:554/cam/realmonitor?channel=1&subtype=37",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.52:554/cam/realmonitor?channel=1&subtype=1"
     ),
 
     DoorData(
         doorId = "4",
         doorName = "Door 4",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.79:554/cam/realmonitor?channel=1&subtype=28",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.89:554/cam/realmonitor?channel=1&subtype=38",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.53:554/cam/realmonitor?channel=1&subtype=2"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.79:554/cam/realmonitor?channel=1&subtype=28",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.89:554/cam/realmonitor?channel=1&subtype=38",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.53:554/cam/realmonitor?channel=1&subtype=2"
     ),
 
     DoorData(
         doorId = "5",
         doorName = "Door 5",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.79:554/cam/realmonitor?channel=1&subtype=28",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.89:554/cam/realmonitor?channel=1&subtype=38",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.53:554/cam/realmonitor?channel=1&subtype=2"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.79:554/cam/realmonitor?channel=1&subtype=28",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.89:554/cam/realmonitor?channel=1&subtype=38",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.53:554/cam/realmonitor?channel=1&subtype=2"
     ),
 
     DoorData(
         doorId = "6",
         doorName = "Door 6",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.80:554/cam/realmonitor?channel=1&subtype=29",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.90:554/cam/realmonitor?channel=1&subtype=39",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.54:554/cam/realmonitor?channel=1&subtype=3"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.80:554/cam/realmonitor?channel=1&subtype=29",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.90:554/cam/realmonitor?channel=1&subtype=39",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.54:554/cam/realmonitor?channel=1&subtype=3"
     ),
 
     DoorData(
         doorId = "7",
         doorName = "Door 7",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.80:554/cam/realmonitor?channel=1&subtype=29",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.90:554/cam/realmonitor?channel=1&subtype=39",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.54:554/cam/realmonitor?channel=1&subtype=3"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.80:554/cam/realmonitor?channel=1&subtype=29",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.90:554/cam/realmonitor?channel=1&subtype=39",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.54:554/cam/realmonitor?channel=1&subtype=3"
     ),
 
     DoorData(
         doorId = "8",
         doorName = "Door 8",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.81:554/cam/realmonitor?channel=1&subtype=30",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.91:554/cam/realmonitor?channel=1&subtype=40",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.55:554/cam/realmonitor?channel=1&subtype=4"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.81:554/cam/realmonitor?channel=1&subtype=30",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.91:554/cam/realmonitor?channel=1&subtype=40",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.55:554/cam/realmonitor?channel=1&subtype=4"
     ),
 
     DoorData(
         doorId = "9",
         doorName = "Door 9",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.81:554/cam/realmonitor?channel=1&subtype=30",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.91:554/cam/realmonitor?channel=1&subtype=40",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.55:554/cam/realmonitor?channel=1&subtype=4"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.81:554/cam/realmonitor?channel=1&subtype=30",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.91:554/cam/realmonitor?channel=1&subtype=40",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.55:554/cam/realmonitor?channel=1&subtype=4"
     ),
 
     DoorData(
         doorId = "10",
         doorName = "Door 10",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.82:554/cam/realmonitor?channel=1&subtype=31",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.92:554/cam/realmonitor?channel=1&subtype=41",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.56:554/cam/realmonitor?channel=1&subtype=5"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.82:554/cam/realmonitor?channel=1&subtype=31",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.92:554/cam/realmonitor?channel=1&subtype=41",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.56:554/cam/realmonitor?channel=1&subtype=5"
     ),
-
     DoorData(
         doorId = "11",
         doorName = "Door 11",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.82:554/cam/realmonitor?channel=1&subtype=31",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.92:554/cam/realmonitor?channel=1&subtype=41",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.56:554/cam/realmonitor?channel=1&subtype=5"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.82:554/cam/realmonitor?channel=1&subtype=31",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.92:554/cam/realmonitor?channel=1&subtype=41",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.56:554/cam/realmonitor?channel=1&subtype=5"
     ),
-
     DoorData(
         doorId = "12",
         doorName = "Door 12",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.83:554/cam/realmonitor?channel=1&subtype=32",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.93:554/cam/realmonitor?channel=1&subtype=42",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.57:554/cam/realmonitor?channel=1&subtype=6"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.83:554/cam/realmonitor?channel=1&subtype=32",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.93:554/cam/realmonitor?channel=1&subtype=42",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.57:554/cam/realmonitor?channel=1&subtype=6"
     ),
 
     DoorData(
         doorId = "13",
         doorName = "Door 13",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.84:554/cam/realmonitor?channel=1&subtype=33",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.94:554/cam/realmonitor?channel=1&subtype=43",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.58:554/cam/realmonitor?channel=1&subtype=7"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.84:554/cam/realmonitor?channel=1&subtype=33",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.94:554/cam/realmonitor?channel=1&subtype=43",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.58:554/cam/realmonitor?channel=1&subtype=7"
     ),
 
     DoorData(
         doorId = "14",
         doorName = "Door 14",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.84:554/cam/realmonitor?channel=1&subtype=33",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.94:554/cam/realmonitor?channel=1&subtype=43",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.58:554/cam/realmonitor?channel=1&subtype=7"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.84:554/cam/realmonitor?channel=1&subtype=33",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.94:554/cam/realmonitor?channel=1&subtype=43",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.58:554/cam/realmonitor?channel=1&subtype=7"
     ),
 
     DoorData(
         doorId = "15",
         doorName = "Door 15",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.85:554/cam/realmonitor?channel=1&subtype=34",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.95:554/cam/realmonitor?channel=1&subtype=44",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.59:554/cam/realmonitor?channel=1&subtype=8"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.85:554/cam/realmonitor?channel=1&subtype=34",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.95:554/cam/realmonitor?channel=1&subtype=44",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.59:554/cam/realmonitor?channel=1&subtype=8"
     ),
 
     DoorData(
         doorId = "16",
         doorName = "Door 16",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.85:554/cam/realmonitor?channel=1&subtype=34",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.95:554/cam/realmonitor?channel=1&subtype=44",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.59:554/cam/realmonitor?channel=1&subtype=8"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.85:554/cam/realmonitor?channel=1&subtype=34",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.95:554/cam/realmonitor?channel=1&subtype=44",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.59:554/cam/realmonitor?channel=1&subtype=8"
     ),
 
     DoorData(
         doorId = "17",
         doorName = "Door 17",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.86:554/cam/realmonitor?channel=1&subtype=35",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.96:554/cam/realmonitor?channel=1&subtype=45",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.60:554/cam/realmonitor?channel=1&subtype=9"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.86:554/cam/realmonitor?channel=1&subtype=35",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.96:554/cam/realmonitor?channel=1&subtype=45",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.60:554/cam/realmonitor?channel=1&subtype=9"
     ),
 
     DoorData(
         doorId = "18",
         doorName = "Door 18",
         openStatus = false,
-        rampDoorRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.86:554/cam/realmonitor?channel=1&subtype=35",
-        cageFillRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.96:554/cam/realmonitor?channel=1&subtype=45",
-        gradingRtsp = "rtsp://admin:@dm1nPMC!!@172.60.1.60:554/cam/realmonitor?channel=1&subtype=9"
+        rampDoorRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.86:554/cam/realmonitor?channel=1&subtype=35",
+        cageFillRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.96:554/cam/realmonitor?channel=1&subtype=45",
+        gradingRtsp = "rtsp://admin:%40dm1nPMC%21%21@172.60.1.60:554/cam/realmonitor?channel=1&subtype=9"
     )
 )
 
@@ -536,18 +518,5 @@ data class PmcDoorCommand(
 )
 
 
-const val commendJsonStr = "{\n" +
-        "  \"rampDoorOpen\": \"{\\\"command\\\":\\\"open\\\",\\\"door\\\":1,\\\"mode\\\":\\\"ai\\\"}\",\n" +
-        "  \"rampDoorClose\": \"{\\\"command\\\":\\\"close\\\",\\\"door\\\":1,\\\"mode\\\":\\\"ai\\\"}\",\n" +
-        "  \"LRStarter\": \"LoadingRamp:LRStarter_Cmd\",\n" +
-        "  \"FFB\": {\n" +
-        "    \"start\": \"Conveyor:FFBSys_StartCmd\",\n" +
-        "    \"stop\": \"Conveyor:FFBSys_StartCmd\",\n" +
-        "    \"emergencyStop\": \"Conveyor:FFBSys_EStopCmd\"\n" +
-        "  },\n" +
-        "  \"SFB\": {\n" +
-        "    \"start\": \"Conveyor:SFBSys_StartCmd\",\n" +
-        "    \"stop\": \"Conveyor:SFBSys_StartCmd\",\n" +
-        "    \"emergencyStop\": \"Conveyor:SFBSys_EStopCmd\"\n" +
-        "  }\n" +
-        "}"
+const val commendJsonStr =
+    "{\n" + "  \"rampDoorOpen\": \"{\\\"command\\\":\\\"open\\\",\\\"door\\\":1,\\\"mode\\\":\\\"ai\\\"}\",\n" + "  \"rampDoorClose\": \"{\\\"command\\\":\\\"close\\\",\\\"door\\\":1,\\\"mode\\\":\\\"ai\\\"}\",\n" + "  \"LRStarter\": \"LoadingRamp:LRStarter_Cmd\",\n" + "  \"FFB\": {\n" + "    \"start\": \"Conveyor:FFBSys_StartCmd\",\n" + "    \"stop\": \"Conveyor:FFBSys_StartCmd\",\n" + "    \"emergencyStop\": \"Conveyor:FFBSys_EStopCmd\"\n" + "  },\n" + "  \"SFB\": {\n" + "    \"start\": \"Conveyor:SFBSys_StartCmd\",\n" + "    \"stop\": \"Conveyor:SFBSys_StartCmd\",\n" + "    \"emergencyStop\": \"Conveyor:SFBSys_EStopCmd\"\n" + "  }\n" + "}"

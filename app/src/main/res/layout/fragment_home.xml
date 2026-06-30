@@ -356,7 +356,7 @@
                         android:layout_height="match_parent">
 
                         <org.videolan.libvlc.util.VLCVideoLayout
-                            android:id="@+id/vlc_view_1"
+                            android:id="@+id/vlc_view_l"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent" />
 
@@ -422,6 +422,18 @@
                                 android:textColor="#DDFFFFFF"
                                 android:textSize="12sp" />
 
+                            <Button
+                                android:id="@+id/btn_retry_left"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="16dp"
+                                android:text="Retry"
+                                android:textAllCaps="false"
+                                android:paddingHorizontal="24dp"
+                                android:backgroundTint="#FF3B30"
+                                android:textColor="@android:color/white"
+                                android:visibility="gone"/>
+
                         </LinearLayout>
 
                     </FrameLayout>
@@ -454,7 +466,7 @@
                         android:layout_height="match_parent">
 
                         <org.videolan.libvlc.util.VLCVideoLayout
-                            android:id="@+id/vlc_view_2"
+                            android:id="@+id/vlc_view_r"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent" />
 
@@ -519,6 +531,18 @@
                                 android:text=""
                                 android:textColor="#DDFFFFFF"
                                 android:textSize="12sp" />
+
+                            <Button
+                                android:id="@+id/btn_retry_right"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="16dp"
+                                android:text="Retry"
+                                android:textAllCaps="false"
+                                android:paddingHorizontal="24dp"
+                                android:backgroundTint="#FF3B30"
+                                android:textColor="@android:color/white"
+                                android:visibility="gone"/>
 
                         </LinearLayout>
 

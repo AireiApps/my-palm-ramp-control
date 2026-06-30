@@ -22,7 +22,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -40,6 +42,7 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AiStatusData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppBroadcastReceiver
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppLogger
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AutoFeedingData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.BroadcastListener
@@ -75,6 +78,7 @@ import com.airei.milltracking.mypalm.mqtt.lrc.utils.hideKeyboard
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.setStatusBar
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -140,12 +144,9 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
     private fun showStoragePermissionDialog() {
 
-        AlertDialog.Builder(this)
-            .setTitle("Storage Permission Required")
-            .setMessage(
-                "This app needs storage permission to access files. Please allow permission."
-            )
-            .setCancelable(false)
+        AlertDialog.Builder(this).setTitle("Storage Permission Required").setMessage(
+            "This app needs storage permission to access files. Please allow permission."
+        ).setCancelable(false)
 
             .setPositiveButton("Allow") { _, _ ->
 
@@ -162,12 +163,10 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
                     // Android 10 and below
                     ActivityCompat.requestPermissions(
-                        this,
-                        arrayOf(
+                        this, arrayOf(
                             Manifest.permission.READ_EXTERNAL_STORAGE,
                             Manifest.permission.WRITE_EXTERNAL_STORAGE
-                        ),
-                        1001
+                        ), 1001
                     )
                 }
             }
@@ -215,21 +214,16 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
             Environment.isExternalStorageManager()
         } else {
             ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                this, Manifest.permission.WRITE_EXTERNAL_STORAGE
             ) == PackageManager.PERMISSION_GRANTED
         }
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(
-            requestCode,
-            permissions,
-            grantResults
+            requestCode, permissions, grantResults
         )
 
         if (requestCode == 1001) {
@@ -242,9 +236,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                 recreate()
             } else {
                 Toast.makeText(
-                    this,
-                    "Storage permission denied",
-                    Toast.LENGTH_SHORT
+                    this, "Storage permission denied", Toast.LENGTH_SHORT
                 ).show()
             }
         }
@@ -319,27 +311,25 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
         val lastStatus = button.text.toString()
         runOnUiThread {
             if (isConnected && lastStatus != getString(R.string.connect)) {
-            // Update to connected status
+                // Update to connected status
                 button.text = getString(R.string.connect)
-            button.setIconResource(R.drawable.ic_circle) // Set icon to circle
-            button.setIconTintResource(R.color.japanese_laurel) // Icon color to japanese_laurel
-            button.setTextColor(
-                ContextCompat.getColor(
-                    button.context,
-                    R.color.japanese_laurel
-                )
-            ) // Text color
+                button.setIconResource(R.drawable.ic_circle) // Set icon to circle
+                button.setIconTintResource(R.color.japanese_laurel) // Icon color to japanese_laurel
+                button.setTextColor(
+                    ContextCompat.getColor(
+                        button.context, R.color.japanese_laurel
+                    )
+                ) // Text color
             } else if (!isConnected && lastStatus != getString(R.string.reconnect)) {
-            // Update to disconnected status
+                // Update to disconnected status
                 button.text = getString(R.string.reconnect)
-            button.setIconResource(R.drawable.ic_refresh) // Set icon to retry
-            button.setIconTintResource(R.color.flamingo) // Icon color to flamingo
-            button.setTextColor(
-                ContextCompat.getColor(
-                    button.context,
-                    R.color.flamingo
-                )
-            ) // Text color
+                button.setIconResource(R.drawable.ic_refresh) // Set icon to retry
+                button.setIconTintResource(R.color.flamingo) // Icon color to flamingo
+                button.setTextColor(
+                    ContextCompat.getColor(
+                        button.context, R.color.flamingo
+                    )
+                ) // Text color
             }
         }
         // Disable button click (clickable set to false)
@@ -353,7 +343,8 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
     private fun selectButton(selectedButton: MaterialButton) {
         val buttons = listOf(
-            binding.btnHome, binding.btnStuckDoor,
+            binding.btnHome,
+            binding.btnStuckDoor,
             binding.btnFfb,
             binding.btnSfb,
             binding.btnAutoFeeding,
@@ -368,7 +359,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                 button.backgroundTintList =
                     ContextCompat.getColorStateList(this, R.color.ic_launcher_background)
                 button.text = when (button) {
-                    binding.btnHome ->getString(R.string.home)
+                    binding.btnHome -> getString(R.string.home)
                     binding.btnStuckDoor -> getString(R.string.stuck_door)
                     binding.btnFfb -> getString(R.string.ffb_conveyor)
                     binding.btnSfb -> getString(R.string.sfb_conveyor)
@@ -392,16 +383,10 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
     private fun setupDebugMode() {
         if ((applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
             StrictMode.setThreadPolicy(
-                StrictMode.ThreadPolicy.Builder()
-                    .detectAll()
-                    .penaltyLog()
-                    .build()
+                StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build()
             )
             StrictMode.setVmPolicy(
-                StrictMode.VmPolicy.Builder()
-                    .detectAll()
-                    .penaltyLog()
-                    .build()
+                StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build()
             )
         }
     }
@@ -493,7 +478,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                         //if (ffb.ffb4Run == "1" && lastFfb.ffb4Run != "1") msgString.add("FFB4")
                         //if (ffb.ffb5Run == "1" && lastFfb.ffb5Run != "1") msgString.add("FFB5")
                         Log.i(TAG, "showAlert: msgString = $msgString")
-                        showAlert(msgString.joinToString(", "),(msgString.size != 1))
+                        showAlert(msgString.joinToString(", "), (msgString.size != 1))
                     }
                 } else {
                     val msgString: ArrayList<String> = arrayListOf()
@@ -502,7 +487,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                     //if (ffb.ffb3Run == "1") msgString.add("FFB3")
                     //if (ffb.ffb4Run == "1") msgString.add("FFB4")
                     //if (ffb.ffb5Run == "1") msgString.add("FFB5")
-                    showAlert(msgString.joinToString(", "),(msgString.size != 1))
+                    showAlert(msgString.joinToString(", "), (msgString.size != 1))
                 }
             }
         }
@@ -513,7 +498,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
         lifecycleScope.launch(Dispatchers.IO) {
 
             try {
-            Log.d(TAG, "setMqttService: Starting MQTT Service")
+                Log.d(TAG, "setMqttService: Starting MQTT Service")
                 if (mqttHandler != null) {
                     if (mqttHandler?.isConnected() == true) {
                         mqttHandler!!.disconnect()
@@ -521,16 +506,13 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
                 }
 
-            mqttHandler = MqttHandler().apply { setListener(this@MainActivity) }
-            val clientId = AppPreferences.mqttClientId
+                mqttHandler = MqttHandler().apply { setListener(this@MainActivity) }
+                val clientId = AppPreferences.mqttClientId
 
                 val config = Gson().fromJson(AppPreferences.mqttConfig, MqttConfig::class.java)
                 clientId?.let {
                     mqttHandler?.connect(
-                        "tcp://${config.host}:${config.port}",
-                        it,
-                        config.username,
-                        config.password
+                        "tcp://${config.host}:${config.port}", it, config.username, config.password
                     )
                 }
             } catch (e: Exception) {
@@ -573,10 +555,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
             val intentFilter = IntentFilter(ACTION_BROADCAST_MQTT_CONN)
 
             ContextCompat.registerReceiver(
-                this,
-                broadcastReceiver,
-                intentFilter,
-                ContextCompat.RECEIVER_NOT_EXPORTED
+                this, broadcastReceiver, intentFilter, ContextCompat.RECEIVER_NOT_EXPORTED
             )
         }
     }
@@ -609,15 +588,14 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
             setBottomView(destinationFragment)
             runOnUiThread {
                 when (destinationFragment) {
-                    navController.findDestination(R.id.mqttConfigFragment)?.label
-                    -> {
+                    navController.findDestination(R.id.mqttConfigFragment)?.label -> {
                         binding.bnNavigation.visibility = View.GONE
                         binding.navHostFragment.visibility = View.VISIBLE
                     }
 
-                    navController.findDestination(R.id.splashFragment)?.label,
-                    navController.findDestination(R.id.guideFragment)?.label
-                    -> {
+                    navController.findDestination(R.id.splashFragment)?.label, navController.findDestination(
+                        R.id.guideFragment
+                    )?.label -> {
                         binding.bnNavigation.visibility = View.GONE
                     }
 
@@ -660,7 +638,8 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                 alertDialog.show()
 
                 // Apply the bounce-in animation
-                val rootView = alertDialog.window?.decorView?.findViewById<View>(android.R.id.content)
+                val rootView =
+                    alertDialog.window?.decorView?.findViewById<View>(android.R.id.content)
                 rootView?.let {
                     applyBounceAnimation(it)
                 }
@@ -762,7 +741,6 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
     }
 
 
-
     private fun setBottomView(destinationFragment: CharSequence?) {
         when (destinationFragment) {
             "fragment_home" -> {
@@ -780,6 +758,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
             "fragment_sfb_conveyor" -> {
                 selectButton(binding.btnSfb)
             }
+
             "fragment_doors" -> {
                 selectButton(binding.btnDoor)
             }
@@ -864,56 +843,95 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                 )
 
                 try {
-
                     val stuckDoorData = Gson().fromJson(
                         message, DoorStatusData::class.java
                     )
-
                     val doorId = stuckDoorData.door.toString()
-
                     val currentList =
                         AppPreferences.stuckDoorsData.split(",").filter { it.isNotEmpty() }
                             .toMutableList()
-
                     if (stuckDoorData.stuck == 1) {
 
                         if (!currentList.contains(doorId)) {
 
                             currentList.add(doorId)
 
-                            AppPreferences.stuckDoorsData = currentList.joinToString(",")
-
-
+                            AppPreferences.stuckDoorsData =
+                                currentList.sortedBy { it.toIntOrNull() ?: Int.MAX_VALUE }
+                                    .joinToString(",")
                         }
 
                     } else {
 
                         currentList.remove(doorId)
 
-                        AppPreferences.stuckDoorsData = currentList.joinToString(",")
-
-
+                        AppPreferences.stuckDoorsData =
+                            currentList.sortedBy { it.toIntOrNull() ?: Int.MAX_VALUE }
+                                .joinToString(",")
                     }
                     runOnUiThread {
 
-                        if (stuckDoorData.stuck == 1) {
-                            // Check dialog already showing
-                            if (stuckDoorDialog != null && stuckDoorDialog?.isShowing == true) {
-                                return@runOnUiThread
+                        if (
+                            stuckDoorData.stuck == 1 &&
+                            AppPreferences.stuckDoorsData.isNotEmpty()
+                        ) {
+
+                            // Close old dialog if already showing
+                            if (stuckDoorDialog?.isShowing == true) {
+
+                                stuckDoorDialog?.dismiss()
+
+                                stuckDoorDialog = null
                             }
 
-                            stuckDoorDialog = AlertDialog.Builder(this).setTitle("Door Stuck Alert")
-                                .setMessage("Door No : $doorId is stuck").setCancelable(false)
-                                .setPositiveButton("View") { dialog, _ ->
-                                    selectButton(binding.btnStuckDoor)
-                                    nextFragment(R.id.stuckDoorFragment)
-                                    dialog.dismiss()
-                                }.setNegativeButton("Close") { dialog, _ ->
+                            val doorList = AppPreferences.stuckDoorsData
+                                .split(",")
+                                .filter { it.isNotBlank() }
+                                .joinToString(", ") {
+                                    "Door $it"
+                                }
 
-                                    dialog.dismiss()
-                                }.create()
+                            val dialogView = layoutInflater.inflate(
+                                R.layout.dialog_stuck_door,
+                                null
+                            )
+
+                            dialogView.findViewById<TextView>(
+                                R.id.txtDoors
+                            ).text = doorList
+
+                            stuckDoorDialog = MaterialAlertDialogBuilder(this)
+                                .setView(dialogView)
+                                .setCancelable(false)
+                                .create()
 
                             stuckDoorDialog?.show()
+
+                            dialogView.findViewById<Button>(
+                                R.id.btnView
+                            ).setOnClickListener {
+
+                                selectButton(
+                                    binding.btnStuckDoor
+                                )
+
+                                nextFragment(
+                                    R.id.stuckDoorFragment
+                                )
+
+                                stuckDoorDialog?.dismiss()
+
+                                stuckDoorDialog = null
+                            }
+
+                            dialogView.findViewById<Button>(
+                                R.id.btnClose
+                            ).setOnClickListener {
+
+                                stuckDoorDialog?.dismiss()
+
+                                stuckDoorDialog = null
+                            }
                         }
                     }
 
@@ -932,7 +950,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                     val statusData = message.toStatusData()
 
                     Log.i(TAG, "onReceiveMessage: statusData : $statusData")
-                    if (statusData.data != null){
+                    if (statusData.data != null) {
 
                         viewModel.statusData.postValue(statusData)
                         if (lastStatus.isEmpty()) {
@@ -944,9 +962,9 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                                 ).show()
                             }
                             lastStatus = statusData.data.lrStarter
-                    }
-                    }else{
-                        if (lastStatus != statusData.data.lrStarter){
+                        }
+                    } else {
+                        if (lastStatus != statusData.data.lrStarter) {
                             runOnUiThread {
                                 Toast.makeText(
                                     this@MainActivity,
@@ -972,7 +990,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                     val autoFeedingData = Gson().fromJson(message, AutoFeedingData::class.java)
                     Log.d(TAG, "onReceiveMessage: AutoFeed1: $autoFeedingData ")
                     viewModel.autoFeedingData1.postValue(autoFeedingData)
-                }catch (e:Exception){
+                } catch (e: Exception) {
                     viewModel.autoFeedingData1.postValue(null)
                     Log.e(TAG, "onReceiveMessage: ", e)
                 }
@@ -983,7 +1001,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                     val autoFeedingData = Gson().fromJson(message, AutoFeedingData::class.java)
                     Log.d(TAG, "onReceiveMessage: AutoFeed2: $autoFeedingData ")
                     viewModel.autoFeedingData2.postValue(autoFeedingData)
-                }catch (e:Exception){
+                } catch (e: Exception) {
                     viewModel.autoFeedingData2.postValue(null)
                     Log.e(TAG, "onReceiveMessage: ", e)
                 }
@@ -991,21 +1009,29 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
             MQTT_SUBSCRIBE_AI_STATUS -> {
                 try {
+                    AppLogger.log(TAG, "AI Status Raw Message : $message")
                     val aiStatus = Gson().fromJson(message, AiStatusData::class.java)
-                    viewModel.aiStatus.postValue(aiStatus.w.first().value)
-                    if (aiStatus.w.first().value == -1) {
+                    val statusValue = aiStatus.w.first().value
+                    AppLogger.log(TAG, "AI Status Received : $statusValue")
+                    viewModel.aiStatus.postValue(statusValue)
+                    if (statusValue == -1) {
+                        AppLogger.log(TAG, "AI Status -> AI Processing Completed")
                         runOnUiThread {
                             Toast.makeText(this, "AI Status Received", Toast.LENGTH_SHORT).show()
+                            AppLogger.log(TAG, "Starting Timer : $startTimeInMillis")
                             startTimer(startTimeInMillis)
                         }
-                    }else if(aiStatus.w.first().value == -2){
+                    } else if (statusValue == -2) {
+                        AppLogger.log(TAG, "AI Status -> No Cages Available")
                         runOnUiThread {
-                            Toast.makeText(this,"No Cages Available", Toast.LENGTH_LONG).show()
+                            Toast.makeText(this, "No Cages Available", Toast.LENGTH_LONG).show()
+                            AppLogger.log(TAG, "Starting Timer : $startTimeInMillis")
                             startTimer(startTimeInMillis)
                         }
                     }
-                }catch (e:Exception){
+                } catch (e: Exception) {
                     viewModel.aiStatus.postValue(0)
+                    AppLogger.log(TAG, "AI Status Exception : ${e.message}")
                     Log.e(TAG, "onReceiveMessage: ", e)
                 }
             }
@@ -1074,8 +1100,8 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
     ) {
 
         AlertDialog.Builder(this@MainActivity).setTitle("Door Alert").setMessage(
-                "Door $doorId is STUCK.\n\nDo you want to see?"
-            ).setCancelable(false)
+            "Door $doorId is STUCK.\n\nDo you want to see?"
+        ).setCancelable(false)
 
             // Open screen/class
             .setPositiveButton("Open") { _, _ ->
@@ -1087,13 +1113,15 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
     }
 
     private fun startTimer(timeInMillis: Long) {
+        AppLogger.log(TAG, "Timer Started : ${timeInMillis / 1000}s")
         timer = object : CountDownTimer(timeInMillis, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val secondsLeft = millisUntilFinished / 1000
+                AppLogger.log(TAG, "Timer Tick : ${secondsLeft}s left")
                 viewModel.aiCountdown.postValue(secondsLeft)
             }
-
             override fun onFinish() {
+                AppLogger.log(TAG, "Timer Finished")
             }
         }.start()
     }
@@ -1114,8 +1142,8 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
         return mqttHandler?.isConnected() ?: false
     }
 
-    fun updateCommend(){
-        val cmdData : CommandData = Gson().fromJson(AppPreferences.cmdJson, CommandData::class.java)
+    fun updateCommend() {
+        val cmdData: CommandData = Gson().fromJson(AppPreferences.cmdJson, CommandData::class.java)
         viewModel.commendData.postValue(cmdData)
     }
 
@@ -1127,7 +1155,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                 view.getGlobalVisibleRect(outRect)
                 if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
                     view.clearFocus()
-                    hideKeyboard(activity = this )
+                    hideKeyboard(activity = this)
                 }
             }
         }
@@ -1136,14 +1164,14 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
     private fun checkMqttConnection() {
         lifecycleScope.launch(Dispatchers.IO) {
-        //Log.i(TAG, "checkMqttConnection: Mqtt connection ${mqttHandler?.isConnected()}")
-        val conn = mqttHandler?.isConnected()
-        if (conn != null) {
-            if (!conn) {
-                updateMqttButton(conn, binding.btnMqttStatus)
-                mqttHandler?.reconnect()
+            //Log.i(TAG, "checkMqttConnection: Mqtt connection ${mqttHandler?.isConnected()}")
+            val conn = mqttHandler?.isConnected()
+            if (conn != null) {
+                if (!conn) {
+                    updateMqttButton(conn, binding.btnMqttStatus)
+                    mqttHandler?.reconnect()
+                }
             }
-        }
         }
     }
 
