@@ -1,10 +1,8 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.mqtt
 
-import android.util.Log
-import org.eclipse.paho.client.mqttv3.IMqttActionListener
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppLogger
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
-import org.eclipse.paho.client.mqttv3.IMqttToken
-import org.eclipse.paho.client.mqttv3.MqttCallback
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended
 import org.eclipse.paho.client.mqttv3.MqttClient
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 import org.eclipse.paho.client.mqttv3.MqttException
@@ -13,6 +11,7 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence
 
 class MqttHandler {
 
+    @Volatile
     private var client: MqttClient? = null
 
     private var listener: MqttMessageListener? = null
@@ -42,14 +41,20 @@ class MqttHandler {
             }
 
             // Set the callback for handling messages
-            client?.setCallback(object : MqttCallback {
-                override fun connectionLost(cause: Throwable) {
-                    Log.i(TAG, "MqttApp Connection lost: ${cause.message}")
-                    listener?.isConnectionLost(cause)
+            client?.setCallback(object : MqttCallbackExtended {
+                override fun connectComplete(reconnect: Boolean, serverURI: String?) {
+                    AppLogger.log(TAG, "MqttApp Connection complete: reconnect=$reconnect, uri=$serverURI")
+                    listener?.onConnection(true)
+                }
+
+                override fun connectionLost(cause: Throwable?) {
+                    AppLogger.log(TAG, "MqttApp Connection lost: ${cause?.message}")
+                    listener?.isConnectionLost(cause ?: Throwable("Unknown connection loss"))
+                    listener?.onConnection(false)
                 }
 
                 override fun messageArrived(topic: String, message: MqttMessage) {
-                    Log.i(
+                    AppLogger.log(
                         TAG,
                         "MqttApp Message arrived from topic $topic: ${String(message.payload)}"
                     )
@@ -57,54 +62,25 @@ class MqttHandler {
                 }
 
                 override fun deliveryComplete(token: IMqttDeliveryToken) {
-                    Log.i(TAG, "MqttApp Delivery complete for message with id: ${token.messageId}")
+                    AppLogger.log(TAG, "MqttApp Delivery complete for message with id: ${token.messageId}")
                     listener?.onDeliveryComplete(token.messageId, token.message, token.isComplete)
                 }
             })
 
             try {
-                // Use connectWithResult to establish the connection
-                val result = client?.connectWithResult(connectOptions)
-
-                // Check if the result is null
-                result?.let {
-                    // Set the action callback listener
-                    it.actionCallback = object : IMqttActionListener {
-                        override fun onSuccess(asyncActionToken: IMqttToken?) {
-                            Log.d(TAG, "Connected successfully")
-                            listener?.onConnection(true)
-                        }
-
-                        override fun onFailure(
-                            asyncActionToken: IMqttToken?,
-                            exception: Throwable?
-                        ) {
-                            Log.e(TAG, "Failed to connect", exception)
-                            listener?.onConnection(false)
-                        }
-                    }
-
-                    // Check if the connection was completed
-                    if (it.isComplete) {
-                        Log.d(TAG, "Connection process completed")
-                        if (client?.isConnected == true){
-                            listener?.onConnection(true)
-                        }else{
-                            listener?.onConnection(false)
-                        }
-                    } else {
-                        Log.d(TAG, "Connection process is still ongoing")
-                        listener?.onConnection(false)
-                    }
-                }
+                // Establish the connection
+                client?.connect(connectOptions)
+                // Note: With MqttCallbackExtended, connectComplete will be triggered
+                // upon successful connection (both initial and automatic reconnect).
+                AppLogger.log(TAG, "Connect call returned")
 
             } catch (ex: Exception) {
-                Log.e(TAG, "MqttApp Error connecting to broker: $ex")
+                AppLogger.log(TAG, "MqttApp Error connecting to broker: $ex")
                 listener?.onConnection(false)
             }
 
         } catch (e: MqttException) {
-            Log.e(TAG, "MqttApp Connection failed: ${e.message}")
+            AppLogger.log(TAG, "MqttApp Connection failed: ${e.message}")
             listener?.onConnection(false)
         }
     }
@@ -133,17 +109,17 @@ class MqttHandler {
                 if (subscribedTopics.contains(topic)) {
                     client?.unsubscribe(topic)
                     subscribedTopics.remove(topic)
-                    Log.i(TAG, "MqttApp Unsubscribed from topic: $topic")
+                    AppLogger.log(TAG, "MqttApp Unsubscribed from topic: $topic")
                 }
                 client?.subscribe(topic)
                 subscribedTopics.add(topic)
-                Log.i(TAG, "MqttApp Subscribed to topic: $topic")
+                AppLogger.log(TAG, "MqttApp Subscribed to topic: $topic")
 
             } catch (e: MqttException) {
-                e.printStackTrace()
+                AppLogger.logError(TAG, e,)
             }
         } else {
-            Log.i(TAG, "MqttApp Client is not connected. Cannot subscribe to topic.")
+            AppLogger.log(TAG, "MqttApp Client is not connected. Cannot subscribe to topic.")
         }
     }
 
@@ -154,12 +130,12 @@ class MqttHandler {
                     this.qos = qos
                 }
                 client?.publish(topic, mqttMessage)
-                Log.i(TAG, "MqttApp Published message to topic: $topic")
+                AppLogger.log(TAG, "MqttApp Published message to topic: $topic")
             } catch (e: MqttException) {
-                e.printStackTrace()
+                AppLogger.logError(TAG, e,)
             }
         } else {
-            Log.i(TAG, "MqttApp Client is not connected. Cannot publish message.")
+            AppLogger.log(TAG, "MqttApp Client is not connected. Cannot publish message.")
         }
     }
 

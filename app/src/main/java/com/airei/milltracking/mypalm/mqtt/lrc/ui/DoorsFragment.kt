@@ -1,7 +1,7 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.ui
 
 import android.os.Bundle
-import android.util.Log
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppLogger
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -51,16 +51,16 @@ class DoorsFragment : Fragment() {
     private fun setButton() {
         with(binding) {
             btnSelectAll.setOnClickListener {
-                Log.d(TAG, "setButton: btnSelect")
+                AppLogger.log(TAG, "Select All Doors clicked")
                 adapter.selectAll()
             }
             btnClear.setOnClickListener {
-                Log.d(TAG, "setButton: btnClear")
+                AppLogger.log(TAG, "Clear All Doors clicked")
                 adapter.clearAll()
             }
             btnSave.setOnClickListener {
                 val selectedDoors = adapter.getSelectedDoors().map { it.doorId }
-                Log.d(TAG, "setButton: btnSave ${selectedDoors.joinToString(",")}")
+                AppLogger.log(TAG, "Save Doors clicked: ${selectedDoors.joinToString(",")}")
                 if (selectedDoors.isNotEmpty()) {
                     //updateAiMode(selectedDoors.joinToString(","))
                     AppPreferences.availableDoorsData = selectedDoors.joinToString(",")
@@ -103,13 +103,13 @@ class DoorsFragment : Fragment() {
     private fun setDoorsAdapterList(doorList: List<DoorData>) {
         adapter = DoorSelectAdapter(doorList, object : DoorSelectAdapter.ActionClickListener {
             override fun onActionClick(data: DoorData) {
-                Log.d(TAG, "onActionClick: $data")
+                AppLogger.log(TAG, "Door clicked in selection: ${data.doorId}")
             }
         })
         val availableDoors = AppPreferences.availableDoorsData
         val displayMetrics = resources.displayMetrics
         val screenHeightDp = displayMetrics.heightPixels / displayMetrics.density
-        Log.i(TAG, "setConveyorList: $screenHeightDp / ${displayMetrics.heightPixels}")
+        AppLogger.log(TAG, "setConveyorList: screenHeightDp=$screenHeightDp, heightPixels=${displayMetrics.heightPixels}")
         val spanCount = if (screenHeightDp < 700) 6 else 8
         val gridLayoutManager = GridLayoutManager(requireContext(), spanCount)
         binding.rvDoors.layoutManager = gridLayoutManager

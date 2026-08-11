@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.util.Log
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppLogger
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -62,7 +62,6 @@ class SplashFragment : Fragment() {
     private val timer: CountDownTimer = object : CountDownTimer(DELAY, 1000) {
 
         override fun onTick(millisUntilFinished: Long) {
-            Log.i(TAG, "onTick: ")
         }
 
         override fun onFinish() {

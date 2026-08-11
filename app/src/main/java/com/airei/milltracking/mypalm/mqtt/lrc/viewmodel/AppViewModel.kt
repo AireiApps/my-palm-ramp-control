@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AutoFeedingData
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.CageFillData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.CommandData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorStatusData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.FfbRunningStatus
@@ -33,6 +34,8 @@ class AppViewModel @Inject constructor(
 
     val autoFeedingData1 = MutableLiveData<AutoFeedingData?>(null)
     val autoFeedingData2 = MutableLiveData<AutoFeedingData?>(null)
+
+    val cageFillData = MutableLiveData<CageFillData?>(null)
 
     val commendData = MutableLiveData<CommandData>()
 

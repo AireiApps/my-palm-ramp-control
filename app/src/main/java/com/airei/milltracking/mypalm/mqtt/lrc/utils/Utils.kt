@@ -4,9 +4,11 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.DisplayMetrics
-import android.util.Log
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppLogger
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
@@ -35,9 +37,30 @@ fun isOnline(): Boolean {
         val returnVal = p1.waitFor()
         return returnVal == 0
     } catch (e: Exception) {
-        Log.e("isOnline", "isOnline: ", e)
+        AppLogger.logError("isOnline", e,)
     }
     return false
+}
+
+fun isNetworkAvailable(context: Context): Boolean {
+    val connectivityManager =
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val nw = connectivityManager.activeNetwork ?: return false
+        val actNw = connectivityManager.getNetworkCapabilities(nw) ?: return false
+        return when {
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
+            else -> false
+        }
+    } else {
+        @Suppress("DEPRECATION")
+        val nwInfo = connectivityManager.activeNetworkInfo ?: return false
+        @Suppress("DEPRECATION")
+        return nwInfo.isConnected
+    }
 }
 
 fun hideKeyboard(activity: Activity) {
@@ -69,7 +92,7 @@ fun Window.hideKeyboard() {
             )
         }
     } catch (e: Exception) {
-        e.printStackTrace()
+        AppLogger.logError("hideKeyboard", e,)
     }
 }
 

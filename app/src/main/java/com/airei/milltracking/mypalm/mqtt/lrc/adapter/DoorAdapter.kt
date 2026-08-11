@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.airei.milltracking.mypalm.mqtt.lrc.MyPalmApp
 import com.airei.milltracking.mypalm.mqtt.lrc.R
@@ -11,11 +13,8 @@ import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.ItemButtonBinding
 
 class DoorAdapter(
-    private val list: List<DoorData>,
     private val listener: ActionClickListener,
-): RecyclerView.Adapter<DoorAdapter.ConveyorViewHolder>() {
-
-    private var doorList:List<DoorData> = list
+): ListAdapter<DoorData, DoorAdapter.ConveyorViewHolder>(DoorDiffCallback()) {
 
     private var actionImg = R.drawable.ic_garage_white
 
@@ -36,61 +35,77 @@ class DoorAdapter(
         )
     }
 
-    override fun getItemCount(): Int {
-        return doorList.size
+    override fun getItemId(position: Int): Long {
+        return getItem(position).doorId.toLongOrNull() ?: position.toLong()
     }
 
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ConveyorViewHolder, position: Int) {
-        holder.setIsRecyclable(false)
-        val door = doorList[position]
-        with(holder.binding) {
-            tvConveyorName.text = door.doorId
-            //tvConveyorStatus.text = context.getString(R.string.status)+" : "+conveyor.conveyorStatus
-            if ( door.selected) {
-                imageView.setImageResource(actionImg)
-//                imageView.setColorFilter(ContextCompat.getColor(MyPalmApp.instance, R.color.white), PorterDuff.Mode.SRC_IN)
-                tvDoor.setTextColor(ContextCompat.getColor(MyPalmApp.instance, R.color.white))
-                tvConveyorName.setTextColor(ContextCompat.getColor(MyPalmApp.instance, R.color.white))
-                layoutDoor.setBackgroundColor(ContextCompat.getColor(MyPalmApp.instance, R.color.muesli))
-            }else{
-                imageView.setImageResource(R.drawable.ic_garage)
-                //imageView.setColorFilter(ContextCompat.getColor(MyPalmApp.instance, R.color.black), PorterDuff.Mode.SRC_IN)
-                tvDoor.setTextColor(ContextCompat.getColor(MyPalmApp.instance, R.color.black))
-                tvConveyorName.setTextColor(ContextCompat.getColor(MyPalmApp.instance, R.color.black))
-                layoutDoor.setBackgroundColor(ContextCompat.getColor(MyPalmApp.instance,R.color.color_background_2))
-            }
-            layoutDoor.setOnClickListener { v ->
-                listener.onActionClick(door)
-            }
+        bind(holder, getItem(position))
+    }
 
+    override fun onBindViewHolder(holder: ConveyorViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (payloads.isEmpty()) {
+            super.onBindViewHolder(holder, position, payloads)
+        } else {
+            bind(holder, getItem(position))
         }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    fun updateDoor(newList: List<DoorData>) {
-        doorList = newList
-        notifyDataSetChanged()
+    private fun bind(holder: ConveyorViewHolder, door: DoorData) {
+        with(holder.binding) {
+            tvConveyorName.text = door.doorId
+            if (door.selected) {
+                imageView.setImageResource(actionImg)
+                tvDoor.setTextColor(ContextCompat.getColor(MyPalmApp.instance, R.color.white))
+                tvConveyorName.setTextColor(ContextCompat.getColor(MyPalmApp.instance, R.color.white))
+                layoutDoor.setBackgroundColor(ContextCompat.getColor(MyPalmApp.instance, R.color.muesli))
+            } else if (door.isFull) {
+                imageView.setImageResource(R.drawable.ic_garage_white)
+                tvDoor.setTextColor(ContextCompat.getColor(MyPalmApp.instance, R.color.white))
+                tvConveyorName.setTextColor(ContextCompat.getColor(MyPalmApp.instance, R.color.white))
+                layoutDoor.setBackgroundColor(ContextCompat.getColor(MyPalmApp.instance, R.color.japanese_laurel))
+            } else {
+                imageView.setImageResource(R.drawable.ic_garage)
+                tvDoor.setTextColor(ContextCompat.getColor(MyPalmApp.instance, R.color.black))
+                tvConveyorName.setTextColor(ContextCompat.getColor(MyPalmApp.instance, R.color.black))
+                layoutDoor.setBackgroundColor(ContextCompat.getColor(MyPalmApp.instance, R.color.color_background_2))
+            }
+            layoutDoor.setOnClickListener {
+                listener.onActionClick(door)
+            }
+        }
     }
 
-    fun getList(): List<DoorData> = doorList
-
-    @SuppressLint("NotifyDataSetChanged")
-    fun clickListener(clickAction : Int, newList: List<DoorData> = doorList) {
-        // 0 - ideal
-        // 1 - open
-        // 2 - close
-        actionImg = when (clickAction){
+    fun updateActionImage(clickAction: Int) {
+        actionImg = when (clickAction) {
             1 -> R.drawable.ic_garage_open
             2 -> R.drawable.ic_garage_close
             else -> R.drawable.ic_garage_white
         }
-        doorList = newList
-        notifyDataSetChanged()
+        notifyItemRangeChanged(0, itemCount, "action_image")
     }
 
     interface ActionClickListener {
         fun onActionClick(data: DoorData)
+    }
+
+    class DoorDiffCallback : DiffUtil.ItemCallback<DoorData>() {
+        override fun areItemsTheSame(oldItem: DoorData, newItem: DoorData): Boolean {
+            return oldItem.doorId == newItem.doorId
+        }
+
+        override fun areContentsTheSame(oldItem: DoorData, newItem: DoorData): Boolean {
+            return oldItem == newItem
+        }
+
+        override fun getChangePayload(oldItem: DoorData, newItem: DoorData): Any? {
+            return if (oldItem.isFull != newItem.isFull || oldItem.selected != newItem.selected) {
+                "update"
+            } else {
+                null
+            }
+        }
     }
 
     companion object {

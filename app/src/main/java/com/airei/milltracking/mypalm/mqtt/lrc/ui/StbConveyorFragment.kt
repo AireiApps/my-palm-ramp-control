@@ -5,7 +5,7 @@ import android.content.res.ColorStateList
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppLogger
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -78,9 +78,9 @@ class SfbConveyorFragment : Fragment() {
                 SFB_STOP_TAG = it.SFB.stop
                 SFB_EME_STOP_TAG = it.SFB.emergencyStop
 
-                Log.i(
+                AppLogger.log(
                     TAG,
-                    "observeData: SFB_START_TAG $SFB_START_TAG , SFB_STOP_TAG $SFB_STOP_TAG , SFB_EME_STOP_TAG $SFB_EME_STOP_TAG"
+                    "SFB Tags: START=$SFB_START_TAG, STOP=$SFB_STOP_TAG, EME=$SFB_EME_STOP_TAG"
                 )
                 binding.btnStart.setOnClickListener {
                     CoroutineScope(Dispatchers.IO).launch {
@@ -318,7 +318,7 @@ class SfbConveyorFragment : Fragment() {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 generateMsg(actionTag, 1)
-                Log.i(TAG, "handleButtonTouch: actionTag = $actionTag")
+                AppLogger.log(TAG, "handleButtonTouch: actionTag = $actionTag")
                 false // Return true to indicate the event was handled
             }
 

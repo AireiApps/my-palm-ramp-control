@@ -1,7 +1,7 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.ui
 
 import android.os.Bundle
-import android.util.Log
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppLogger
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -71,7 +71,7 @@ class GuideFragment : Fragment() {
 
         // Button Click listeners
         binding.btnNext.setOnClickListener {
-            Log.d(TAG, "onViewCreated: ${binding.viewPager.currentItem} | ${images.size}")
+            AppLogger.log(TAG, "Next clicked: page ${binding.viewPager.currentItem + 1} of ${images.size}")
             if (binding.viewPager.currentItem < images.size - 1) {
                 binding.viewPager.currentItem += 1
             }

@@ -45,6 +45,7 @@ import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppBroadcastReceiver
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppLogger
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppPreferences
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.AutoFeedingData
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.CageFillData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.BroadcastListener
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.CommandData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.DoorStatusData
@@ -66,6 +67,7 @@ import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AI_NOTIFY
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AI_STATUS
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AUTO_FEED_1
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_AUTO_FEED_2
+import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_CAGE_FILL
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_HUMAN_DETECTION
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_TOPIC_LR
 import com.airei.milltracking.mypalm.mqtt.lrc.mqtt.MQTT_SUBSCRIBE_TOPIC_PMC
@@ -80,10 +82,12 @@ import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
+import com.google.gson.JsonObject
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.concurrent.CopyOnWriteArrayList
 import org.eclipse.paho.client.mqttv3.MqttMessage
 
 interface MessageListener {
@@ -111,9 +115,18 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
     private lateinit var timer: CountDownTimer
     private val startTimeInMillis: Long = 20000
 
-    private var localHumanDetectionData: ArrayList<String> = arrayListOf()
+    private var localHumanDetectionData: MutableList<String> = CopyOnWriteArrayList()
 
     private var stuckDoorDialog: AlertDialog? = null
+
+    private var lastAiStatusMessageTime: Long = 0
+    private val aiMonitoringHandler = Handler(Looper.getMainLooper())
+    private val aiMonitoringRunnable = object : Runnable {
+        override fun run() {
+            checkAiStatusTimeout()
+            aiMonitoringHandler.postDelayed(this, 10000) // Check every 10 seconds
+        }
+    }
 
     //----------------------
     private var messageListener: MessageListener? = null
@@ -199,7 +212,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
         serviceIntent = Intent(this, MqttConnectService::class.java)
         broadcastReceiver = AppBroadcastReceiver(this)
 
-        Log.i(TAG, "onCreate: ")
+        AppLogger.log(TAG, "MainActivity onCreate")
 
         val orientation = resources.configuration.orientation
 
@@ -403,29 +416,37 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
 
         viewModel.updateDoorPmc.observe(this) {
-            Log.i(TAG, "observeViewModel (updateDoorPmc): $it")
+            AppLogger.log(TAG, "observeViewModel (updateDoorPmc): $it")
             if (it.first.isNotEmpty() && it.second.isNotEmpty()) {
                 publishMessage(topic = it.first, message = it.second)
             }
         }
 
         viewModel.updateDoor.observe(this) {
-            Log.i(TAG, "observeViewModel: ")
-
             if (!it.isNullOrEmpty()) {
                 publishMessage(topic = MQTT_PUBLISH_TOPIC_LR, message = it)
             }
         }
         viewModel.updateStarter.observe(this) {
-
-            Log.i(TAG, "observeViewModel: ")
             if (!it.isNullOrEmpty()) {
                 publishMessage(topic = MQTT_PUBLISH_TOPIC_STR, message = it)
             }
         }
         viewModel.updateAiModeData.observe(this) {
-            Log.i(TAG, "observeViewModel: $it")
+            AppLogger.log(TAG, "observeViewModel (updateAiModeData): $it")
             if (!it.isNullOrEmpty()) {
+                try {
+                    val data = Gson().fromJson(it, AvailableDoorsData::class.java)
+                    if (data.mobile == "1") {
+                        lastAiStatusMessageTime = System.currentTimeMillis()
+                        startAiMonitoring()
+                    } else {
+                        stopAiMonitoring()
+                    }
+                } catch (e: Exception) {
+                    AppLogger.logError(TAG, e)
+                }
+
                 if (AppPreferences.aiListeningMode) {
                     publishMessage(topic = MQTT_PUBLISH_AI_NOTIFY, message = it)
                 } else {
@@ -477,7 +498,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                         //if (ffb.ffb3Run == "1" && lastFfb.ffb3Run != "1") msgString.add("FFB3")
                         //if (ffb.ffb4Run == "1" && lastFfb.ffb4Run != "1") msgString.add("FFB4")
                         //if (ffb.ffb5Run == "1" && lastFfb.ffb5Run != "1") msgString.add("FFB5")
-                        Log.i(TAG, "showAlert: msgString = $msgString")
+                        AppLogger.log(TAG, "showAlert: msgString = $msgString")
                         showAlert(msgString.joinToString(", "), (msgString.size != 1))
                     }
                 } else {
@@ -498,7 +519,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
         lifecycleScope.launch(Dispatchers.IO) {
 
             try {
-                Log.d(TAG, "setMqttService: Starting MQTT Service")
+                AppLogger.log(TAG, "setMqttService: Starting MQTT Service")
                 if (mqttHandler != null) {
                     if (mqttHandler?.isConnected() == true) {
                         mqttHandler!!.disconnect()
@@ -508,27 +529,36 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
                 mqttHandler = MqttHandler().apply { setListener(this@MainActivity) }
                 val clientId = AppPreferences.mqttClientId
+                val configStr = AppPreferences.mqttConfig
 
-                val config = Gson().fromJson(AppPreferences.mqttConfig, MqttConfig::class.java)
-                clientId?.let {
-                    mqttHandler?.connect(
-                        "tcp://${config.host}:${config.port}", it, config.username, config.password
-                    )
+                if (configStr.isNullOrEmpty()) {
+                    AppLogger.log(TAG, "setMqttService: MQTT config is empty")
+                    return@launch
                 }
+
+                val config = Gson().fromJson(configStr, MqttConfig::class.java)
+                if (config == null || clientId.isNullOrEmpty()) {
+                    AppLogger.log(TAG, "setMqttService: MQTT config or client ID is invalid")
+                    return@launch
+                }
+
+                mqttHandler?.connect(
+                    "tcp://${config.host}:${config.port}", clientId, config.username, config.password
+                )
             } catch (e: Exception) {
-                Log.e(TAG, "setMqttService: Error connecting to MQTT", e)
+                AppLogger.logError(TAG, e,)
             }
         }
     }
 
     private fun publishMessage(topic: String, message: String) {
-        Log.d(TAG, "publishMessage: topic=$topic | message=${message}")
+        AppLogger.log(TAG, "publishMessage: topic=$topic | message=${message}")
         mqttHandler?.publish(topic, message, 0)
     }
 
     override fun onPause() {
         super.onPause()
-
+        stopAiMonitoring()
         if (::serviceIntent.isInitialized) {
             stopService(serviceIntent)
         }
@@ -549,6 +579,11 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
         if (::serviceIntent.isInitialized) {
             startService(serviceIntent)
+        }
+
+        if (AppPreferences.aiMode == 1) {
+            lastAiStatusMessageTime = System.currentTimeMillis()
+            startAiMonitoring()
         }
 
         if (::broadcastReceiver.isInitialized) {
@@ -584,7 +619,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
     private val destinationChangedListener =
         NavController.OnDestinationChangedListener { _, destination, _ ->
             val destinationFragment = destination.label
-            Log.d(TAG, "destinationChangedListener destinationFragment: $destinationFragment")
+            AppLogger.log(TAG, "destinationChangedListener destinationFragment: $destinationFragment")
             setBottomView(destinationFragment)
             runOnUiThread {
                 when (destinationFragment) {
@@ -608,6 +643,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
     private fun showAlert(msgString: String, isMultiple: Boolean = false) {
         runOnUiThread {
+            if (isFinishing || isDestroyed) return@runOnUiThread
             if (msgString.isNotEmpty()) {
                 if (this::alertDialog.isInitialized) {
                     if (alertDialog.isShowing) {
@@ -656,6 +692,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
     ) {
         try {
             runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
                 if (msgString.isNotEmpty()) {
                     if (this::alertDialog.isInitialized) {
                         if (alertDialog.isShowing) {
@@ -692,7 +729,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "showAlertMsg: ", e)
+            AppLogger.logError(TAG, e,)
         }
 
     }
@@ -705,6 +742,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
         isMultiple: Boolean = false
     ) {
         runOnUiThread {
+            if (isFinishing || isDestroyed) return@runOnUiThread
             if (this::alertDialog.isInitialized) {
                 if (alertDialog.isShowing) {
                     alertDialog.dismiss()
@@ -772,6 +810,47 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
             }
         }
     }
+    private fun startAiMonitoring() {
+        AppLogger.log(TAG, "Starting AI Status Monitoring")
+        aiMonitoringHandler.removeCallbacks(aiMonitoringRunnable)
+        aiMonitoringHandler.post(aiMonitoringRunnable)
+    }
+
+    private fun stopAiMonitoring() {
+        AppLogger.log(TAG, "Stopping AI Status Monitoring")
+        aiMonitoringHandler.removeCallbacks(aiMonitoringRunnable)
+    }
+
+    private fun checkAiStatusTimeout() {
+        if (AppPreferences.aiMode == 1) {
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastAiStatusMessageTime > 120000) { // 2 minutes timeout
+                if (mqttHandler?.isConnected() == true) {
+                    AppLogger.log(TAG, "AI Status timeout: turning AI mode OFF")
+                    turnOffAiMode()
+                } else {
+                    AppLogger.log(TAG, "AI Status timeout: MQTT not connected, waiting...")
+                }
+            }
+        } else {
+            stopAiMonitoring()
+        }
+    }
+
+    private fun turnOffAiMode() {
+        val availableDoors = AppPreferences.availableDoorsData
+        val mobileData = AvailableDoorsData(availableDoors = availableDoors, mobile = "0")
+        val jsonString = Gson().toJson(mobileData)
+
+        viewModel.updateAiModeData.postValue(jsonString)
+        viewModel.aiStatus.postValue(0)
+        AppPreferences.aiMode = 0
+
+        runOnUiThread {
+            if (isFinishing || isDestroyed) return@runOnUiThread
+            Toast.makeText(this, "AI mode turned off due to inactivity", Toast.LENGTH_LONG).show()
+        }
+    }
 
     companion object {
         private const val TAG = "MainActivity"
@@ -779,7 +858,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
     // MQTT Callbacks
     override fun onConnection(isConnect: Boolean) {
-        Log.i(
+        AppLogger.log(
             TAG,
             "onConnection: isConnect = $isConnect ,minister mode = ${AppPreferences.aiListeningMode}"
         )
@@ -787,6 +866,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
             mqttSubscribe()
         }
         runOnUiThread {
+            if (isFinishing || isDestroyed) return@runOnUiThread
             val message = if (isConnect) "Mqtt Connected" else "Mqtt Connection Failed"
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             updateMqttButton(isConnect, binding.btnMqttStatus)
@@ -804,6 +884,9 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
         MQTT_SUBSCRIBE_HUMAN_DETECTION.forEach {
             mqttHandler?.subscribe(it)
         }
+        MQTT_SUBSCRIBE_CAGE_FILL.forEach {
+            mqttHandler?.subscribe(it)
+        }
         if (!AppPreferences.aiListeningMode) {
             mqttHandler?.subscribe(MQTT_SUBSCRIBE_AI_NOTIFY)
         }
@@ -811,7 +894,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
 
     override fun onReceiveMessage(topic: String, message: String) {
-        Log.i(TAG, "onReceiveMessage: $topic: $message")
+        AppLogger.log(TAG, "onReceiveMessage: $topic: $message")
         when (topic) {
 
             MQTT_SUBSCRIBE_TOPIC_PMC -> {
@@ -825,16 +908,16 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                     }
 
                     runOnUiThread {
+                        if (isFinishing || isDestroyed) return@runOnUiThread
                         Toast.makeText(
                             this@MainActivity, statusMessage, Toast.LENGTH_SHORT
                         ).show()
                     }
 
                 } catch (e: Exception) {
-                    Log.e(TAG, "Parse error: ${e.message}")
+                    AppLogger.logError(TAG, e,)
                 }
             }
-
 
             MQTT_DOOR_SRUCK -> {
 
@@ -870,6 +953,8 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                                 .joinToString(",")
                     }
                     runOnUiThread {
+
+                        if (isFinishing || isDestroyed) return@runOnUiThread
 
                         if (
                             stuckDoorData.stuck == 1 &&
@@ -937,79 +1022,68 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
                 } catch (e: Exception) {
 
-                    Log.e(
-                        TAG, "Parse error: ${e.message}", e
-                    )
+                    AppLogger.logError(TAG, e,)
                 }
             }
 
-
             MQTT_SUBSCRIBE_TOPIC_LR -> {
                 try {
-
                     val statusData = message.toStatusData()
+                    AppLogger.log(TAG, "onReceiveMessage: statusData : $statusData")
 
-                    Log.i(TAG, "onReceiveMessage: statusData : $statusData")
-                    if (statusData.data != null) {
-
-                        viewModel.statusData.postValue(statusData)
-                        if (lastStatus.isEmpty()) {
-                            runOnUiThread {
-                                Toast.makeText(
-                                    this@MainActivity,
-                                    "starter moter: ${lastStatus}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                    statusData.data?.let { data ->
+                        if (viewModel.statusData.value != statusData) {
+                            viewModel.statusData.postValue(statusData)
+                            if (lastStatus != data.lrStarter) {
+                                runOnUiThread {
+                                    Toast.makeText(
+                                        this@MainActivity,
+                                        "starter motor: ${data.lrStarter}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                                AppLogger.log(TAG, "onReceiveMessage: starter motor: ${data.lrStarter}")
+                                lastStatus = data.lrStarter
                             }
-                            lastStatus = statusData.data.lrStarter
-                        }
-                    } else {
-                        if (lastStatus != statusData.data.lrStarter) {
-                            runOnUiThread {
-                                Toast.makeText(
-                                    this@MainActivity,
-                                    "starter moter: ${lastStatus}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                            Log.i(TAG, "onReceiveMessage: starter moter: ${lastStatus}")
-                            lastStatus = statusData.data.lrStarter
                         }
                     }
-
                 } catch (e: Exception) {
                     viewModel.statusData.postValue(null)
                     lastStatus = ""
-                    Log.e(TAG, "onReceiveMessage: ", e)
+                    AppLogger.logError(TAG, e,)
                 }
-
             }
 
             MQTT_SUBSCRIBE_AUTO_FEED_1 -> {
                 try {
                     val autoFeedingData = Gson().fromJson(message, AutoFeedingData::class.java)
-                    Log.d(TAG, "onReceiveMessage: AutoFeed1: $autoFeedingData ")
-                    viewModel.autoFeedingData1.postValue(autoFeedingData)
+                    if (viewModel.autoFeedingData1.value != autoFeedingData) {
+                        AppLogger.log(TAG, "onReceiveMessage: AutoFeed1: $autoFeedingData ")
+                        viewModel.autoFeedingData1.postValue(autoFeedingData)
+                    }
                 } catch (e: Exception) {
                     viewModel.autoFeedingData1.postValue(null)
-                    Log.e(TAG, "onReceiveMessage: ", e)
+                    AppLogger.logError(TAG, e,)
                 }
             }
 
             MQTT_SUBSCRIBE_AUTO_FEED_2 -> {
                 try {
                     val autoFeedingData = Gson().fromJson(message, AutoFeedingData::class.java)
-                    Log.d(TAG, "onReceiveMessage: AutoFeed2: $autoFeedingData ")
-                    viewModel.autoFeedingData2.postValue(autoFeedingData)
+                    if (viewModel.autoFeedingData2.value != autoFeedingData) {
+                        AppLogger.log(TAG, "onReceiveMessage: AutoFeed2: $autoFeedingData ")
+                        viewModel.autoFeedingData2.postValue(autoFeedingData)
+                    }
                 } catch (e: Exception) {
                     viewModel.autoFeedingData2.postValue(null)
-                    Log.e(TAG, "onReceiveMessage: ", e)
+                    AppLogger.logError(TAG, e,)
                 }
             }
 
             MQTT_SUBSCRIBE_AI_STATUS -> {
                 try {
                     AppLogger.log(TAG, "AI Status Raw Message : $message")
+                    lastAiStatusMessageTime = System.currentTimeMillis()
                     val aiStatus = Gson().fromJson(message, AiStatusData::class.java)
                     val statusValue = aiStatus.w.first().value
                     AppLogger.log(TAG, "AI Status Received : $statusValue")
@@ -1017,6 +1091,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                     if (statusValue == -1) {
                         AppLogger.log(TAG, "AI Status -> AI Processing Completed")
                         runOnUiThread {
+                            if (isFinishing || isDestroyed) return@runOnUiThread
                             Toast.makeText(this, "AI Status Received", Toast.LENGTH_SHORT).show()
                             AppLogger.log(TAG, "Starting Timer : $startTimeInMillis")
                             startTimer(startTimeInMillis)
@@ -1024,6 +1099,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                     } else if (statusValue == -2) {
                         AppLogger.log(TAG, "AI Status -> No Cages Available")
                         runOnUiThread {
+                            if (isFinishing || isDestroyed) return@runOnUiThread
                             Toast.makeText(this, "No Cages Available", Toast.LENGTH_LONG).show()
                             AppLogger.log(TAG, "Starting Timer : $startTimeInMillis")
                             startTimer(startTimeInMillis)
@@ -1031,15 +1107,14 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                     }
                 } catch (e: Exception) {
                     viewModel.aiStatus.postValue(0)
-                    AppLogger.log(TAG, "AI Status Exception : ${e.message}")
-                    Log.e(TAG, "onReceiveMessage: ", e)
+                    AppLogger.logError(TAG, e,)
                 }
             }
 
             MQTT_SUBSCRIBE_AI_NOTIFY -> {
                 try {
                     val aiStatus = Gson().fromJson(message, AvailableDoorsData::class.java)
-                    Log.i(TAG, "onReceiveMessage: $aiStatus")
+                    AppLogger.log(TAG, "onReceiveMessage (AI_NOTIFY): $aiStatus")
                     when (aiStatus.mobile) {
                         "0" -> {
                             showAlertMsg(
@@ -1059,7 +1134,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                     }
                 } catch (e: Exception) {
                     viewModel.aiStatus.postValue(0)
-                    Log.e(TAG, "onReceiveMessage: ", e)
+                    AppLogger.logError(TAG, e,)
                 }
             }
 
@@ -1068,7 +1143,7 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                 val humanDetectionData = Gson().fromJson(message, HumanDetectionData::class.java)
 
                 if (humanDetectionData != null) {
-                    Log.i(TAG, "onReceiveMessage: $humanDetectionData")
+                    AppLogger.log(TAG, "onReceiveMessage (HUMAN_DETECTION): $humanDetectionData")
                     if (humanDetectionData.human == "1") {
                         if (!localHumanDetectionData.contains(topic)) {
                             localHumanDetectionData.add(topic)
@@ -1089,8 +1164,65 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
                 }
             }
 
+            MQTT_SUBSCRIBE_CAGE_FILL.find { it == topic } -> {
+                AppLogger.log(TAG, "Cage Fill Message Received from topic: $topic")
+                AppLogger.log(TAG, "Cage Fill Data: $message")
+
+                try {
+                    val gson = Gson()
+                    val currentData = viewModel.cageFillData.value
+
+                    if (currentData == null) {
+                        val cageData = gson.fromJson(message, CageFillData::class.java)
+                        viewModel.cageFillData.postValue(cageData)
+                        return
+                    }
+
+                    val currentJson = gson.toJsonTree(currentData).asJsonObject
+                    val newJson = gson.fromJson(message, JsonObject::class.java)
+
+                    var hasChanged = false
+
+                    newJson.entrySet().forEach { (key, newValue) ->
+
+                        // Skip null values
+                        if (newValue == null || newValue.isJsonNull) return@forEach
+
+                        val currentValue = currentJson.get(key)
+
+                        // Skip if value is same
+                        if (currentValue != null &&
+                            !currentValue.isJsonNull &&
+                            currentValue == newValue
+                        ) {
+                            return@forEach
+                        }
+
+                        // Update only when value changed
+                        currentJson.add(key, newValue)
+                        hasChanged = true
+
+                        AppLogger.log(
+                            TAG,
+                            "Updated $key : ${currentValue ?: "null"} -> $newValue"
+                        )
+                    }
+
+                    if (hasChanged) {
+                        val mergedData = gson.fromJson(currentJson, CageFillData::class.java)
+                        viewModel.cageFillData.postValue(mergedData)
+                        AppLogger.log(TAG, "Cage Fill LiveData Updated")
+                    } else {
+                        AppLogger.log(TAG, "No changes detected")
+                    }
+
+                } catch (e: Exception) {
+                    AppLogger.logError(TAG, e,)
+                }
+            }
+
             else -> {
-                Log.i(TAG, "onReceiveMessage: $topic: $message")
+                AppLogger.log(TAG, "onReceiveMessage (UNKNOWN): $topic: $message")
             }
         }
     }
@@ -1098,6 +1230,8 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
     private fun showDoorStuckDialog(
         doorId: Int
     ) {
+
+        if (isFinishing || isDestroyed) return
 
         AlertDialog.Builder(this@MainActivity).setTitle("Door Alert").setMessage(
             "Door $doorId is STUCK.\n\nDo you want to see?"
@@ -1127,15 +1261,17 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
     }
 
     override fun onDeliveryComplete(id: Int, message: MqttMessage, complete: Boolean) {
-        Log.i(TAG, "onDeliveryComplete: id = $id: message = ${message.toString()}")
+        AppLogger.log(TAG, "onDeliveryComplete: id = $id: message = $message")
         runOnUiThread {
+            if (isFinishing || isDestroyed) return@runOnUiThread
             val status = if (complete) "Delivery Complete" else "Delivery Failed"
             Toast.makeText(this, status, Toast.LENGTH_SHORT).show()
         }
     }
 
     override fun isConnectionLost(error: Throwable) {
-        Log.e(TAG, "isConnectionLost: ", error)
+        AppLogger.log(TAG, "isConnectionLost: ${error.message}")
+        AppLogger.log(TAG, Log.getStackTraceString(error))
     }
 
     fun mqttConnectionCheck(): Boolean {
@@ -1164,7 +1300,6 @@ class MainActivity : AppCompatActivity(), MqttMessageListener, BroadcastListener
 
     private fun checkMqttConnection() {
         lifecycleScope.launch(Dispatchers.IO) {
-            //Log.i(TAG, "checkMqttConnection: Mqtt connection ${mqttHandler?.isConnected()}")
             val conn = mqttHandler?.isConnected()
             if (conn != null) {
                 if (!conn) {

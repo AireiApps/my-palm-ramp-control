@@ -2,7 +2,7 @@ package com.airei.milltracking.mypalm.mqtt.lrc.ui
 
 import android.app.AlertDialog
 import android.os.Bundle
-import android.util.Log
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppLogger
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -57,7 +57,7 @@ class StuckDoorFragment : Fragment(), MessageListener {
             inflater, container, false
         )
 
-        Log.d(TAG, "📄 onCreateView")
+        AppLogger.log(TAG, "StuckDoorFragment onCreateView")
 
         return binding.root
     }
@@ -70,7 +70,7 @@ class StuckDoorFragment : Fragment(), MessageListener {
             view, savedInstanceState
         )
 
-        Log.d(TAG, "📄 onViewCreated")
+        AppLogger.log(TAG, "StuckDoorFragment onViewCreated")
 
         setupRecyclerView()
 
@@ -84,7 +84,7 @@ class StuckDoorFragment : Fragment(), MessageListener {
     private fun observeDoors() {
 
         stuckDoorList.observe(viewLifecycleOwner) { list ->
-            Log.d(TAG, "stuck Door List")
+            AppLogger.log(TAG, "Stuck door list updated in UI")
             adapter.updateData(
                 allDoors, list
             )
@@ -94,8 +94,8 @@ class StuckDoorFragment : Fragment(), MessageListener {
             viewLifecycleOwner
         ) { list ->
 
-            Log.d(
-                TAG, "🚪 Doors Size : ${list?.size ?: 0}"
+            AppLogger.log(
+                TAG, "Doors size: ${list?.size ?: 0}"
             )
 
             allDoors.apply {
@@ -116,8 +116,8 @@ class StuckDoorFragment : Fragment(), MessageListener {
             allDoors, AppPreferences.stuckDoorsData.split(",")
         )
 
-        Log.d(
-            TAG, "✅ Adapter Updated"
+        AppLogger.log(
+            TAG, "Adapter updated"
         )
     }
 
@@ -132,9 +132,9 @@ class StuckDoorFragment : Fragment(), MessageListener {
             mutableListOf()
         ) { door, isStuck ->
 
-            Log.d(
+            AppLogger.log(
                 TAG,
-                "🚪 Door : ${door.doorName} | Stuck : $isStuck"
+                "Door clicked: ${door.doorName}, current stuck status: $isStuck"
             )
             // Already stuck -> ask confirmation to clear
             if (isStuck){
@@ -188,8 +188,8 @@ class StuckDoorFragment : Fragment(), MessageListener {
             adapter = this@StuckDoorFragment.adapter
         }
 
-        Log.d(
-            TAG, "📐 Span Count : $spanCount"
+        AppLogger.log(
+            TAG, "Span Count: $spanCount"
         )
     }
 
@@ -211,8 +211,8 @@ class StuckDoorFragment : Fragment(), MessageListener {
 
         val json = Gson().toJson(data)
 
-        Log.d(
-            TAG, "📤 MQTT : $json"
+        AppLogger.log(
+            TAG, "Sending door status MQTT: $json"
         )
 
         viewModel.updateDoorPmc.postValue(
@@ -240,8 +240,8 @@ class StuckDoorFragment : Fragment(), MessageListener {
             val alreadyStuckDoors =
                 AppPreferences.stuckDoorsData.split(",").filter { it.isNotEmpty() }.toMutableList()
 
-            Log.e(
-                TAG, "Before : $alreadyStuckDoors"
+            AppLogger.log(
+                TAG, "Already stuck doors: $alreadyStuckDoors"
             )
 
             if (stuckDoorData.stuck == 1) {
@@ -251,8 +251,8 @@ class StuckDoorFragment : Fragment(), MessageListener {
 
                     alreadyStuckDoors.add(doorId)
 
-                    Log.e(
-                        TAG, "Added Door : $doorId"
+                    AppLogger.log(
+                        TAG, "Added stuck door: $doorId"
                     )
                 }
 
@@ -261,15 +261,15 @@ class StuckDoorFragment : Fragment(), MessageListener {
                 // Remove if exists
                 alreadyStuckDoors.remove(doorId)
 
-                Log.e(
-                    TAG, "Removed Door : $doorId"
+                AppLogger.log(
+                    TAG, "Removed stuck door: $doorId"
                 )
             }
 
             AppPreferences.stuckDoorsData = alreadyStuckDoors.joinToString(",")
 
-            Log.e(
-                TAG, "After : ${AppPreferences.stuckDoorsData}"
+            AppLogger.log(
+                TAG, "Final stuck doors: ${AppPreferences.stuckDoorsData}"
             )
 
             activity?.runOnUiThread {
@@ -279,8 +279,8 @@ class StuckDoorFragment : Fragment(), MessageListener {
 
         } catch (e: Exception) {
 
-            Log.e(
-                TAG, "Parse error : ${e.message}", e
+            AppLogger.logError(
+                TAG, e,
             )
         }
     }
@@ -317,6 +317,6 @@ class StuckDoorFragment : Fragment(), MessageListener {
 
         super.onDestroyView()
 
-        Log.d(TAG, "🗑️ onDestroyView")
+        AppLogger.log(TAG, "StuckDoorFragment onDestroyView")
     }
 }
