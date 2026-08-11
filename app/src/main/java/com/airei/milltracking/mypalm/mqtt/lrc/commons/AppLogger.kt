@@ -18,6 +18,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileWriter
@@ -54,7 +56,38 @@ object AppLogger {
             Dispatchers.IO + SupervisorJob()
         )
 
+    private val fileMutex = Mutex()
+
     private var lastCleanupTime = 0L
+
+
+    // =========================================================
+    // INITIALIZATION
+    // =========================================================
+
+    fun init(context: Context) {
+        setupCrashHandler()
+    }
+
+    private fun setupCrashHandler() {
+        val oldHandler = Thread.getDefaultUncaughtExceptionHandler()
+
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            logCrash(thread, throwable)
+            oldHandler?.uncaughtException(thread, throwable)
+        }
+    }
+
+    private fun logCrash(thread: Thread, throwable: Throwable) {
+        val crashLog = buildString {
+            append("CRASH OCCURRED\n")
+            append("Thread: ${thread.name} (id: ${thread.id})\n")
+            append("Exception: ${throwable.javaClass.simpleName}: ${throwable.message}\n")
+            append("Stack Trace:\n")
+            append(Log.getStackTraceString(throwable))
+        }
+        log("CRASH", crashLog)
+    }
 
 
     // =========================================================
@@ -177,18 +210,14 @@ object AppLogger {
 
     fun logError(
         tag: String,
-        exception: Exception
+        exception: Exception? = null,
+        throwable: Throwable? = null
     ) {
-
-        log(
-            tag = tag,
-            message = "ERROR : ${exception.message}"
-        )
-
-        log(
-            tag = tag,
-            message = Log.getStackTraceString(exception)
-        )
+        val error = throwable ?: exception
+        error?.let {
+            log(tag, "ERROR : ${it.message}")
+            log(tag, Log.getStackTraceString(it))
+        }
     }
 
 
@@ -540,14 +569,20 @@ object AppLogger {
     // APPEND LOG TO FILE
     // =========================================================
 
-    private fun appendLogToFile(
+    private suspend fun appendLogToFile(
         file: File,
         logMessage: String
     ) {
-
-        FileWriter(file, true).use { writer ->
-
-            writer.append(logMessage)
+        fileMutex.withLock {
+            withContext(Dispatchers.IO) {
+                try {
+                    FileWriter(file, true).use { writer ->
+                        writer.append(logMessage)
+                    }
+                } catch (e: Exception) {
+                    Log.e("APP_LOGGER", "appendLogToFile Error", e)
+                }
+            }
         }
     }
 

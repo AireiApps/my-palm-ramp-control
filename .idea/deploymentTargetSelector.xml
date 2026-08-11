@@ -76,10 +76,10 @@
       </SelectionState>
       <SelectionState runConfigName="androidTest">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-05-14T07:20:56.209198200Z">
+        <DropdownSelection timestamp="2026-07-17T12:54:03.815269400Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\arun.k\.android\avd\Medium_Tablet.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Ranjith R\.android\avd\Medium_Tablet.avd" />
             </handle>
           </Target>
         </DropdownSelection>

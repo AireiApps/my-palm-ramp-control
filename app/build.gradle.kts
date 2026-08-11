@@ -1,8 +1,11 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+}
+
+base {
+    archivesName = "my_palm_mqtt-(1.2.5)"
 }
 
 android {
@@ -14,9 +17,8 @@ android {
         minSdk = 26
         targetSdk = 34
         versionCode = 1
-        versionName = "1.2.1"
+        versionName = "1.2.5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        setProperty("archivesBaseName", "my_palm_mqtt-($versionName)")
     }
 
     buildTypes {
@@ -32,11 +34,8 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-    viewBinding{
-        enable = true
+    buildFeatures {
+        viewBinding = true
     }
 }
 
@@ -87,8 +86,6 @@ dependencies {
     implementation (libs.glide)
     implementation (libs.gifdecoder)
     implementation (libs.android.gif.drawable)
-
-    implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.1.0")
 
     // VLC
     implementation(libs.libvlc.all.v3112)

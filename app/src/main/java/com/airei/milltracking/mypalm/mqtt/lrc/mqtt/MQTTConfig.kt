@@ -13,6 +13,18 @@ val MQTT_SUBSCRIBE_AUTO_FEED_2 = "AI/Autofeeder2"
 val MQTT_SUBSCRIBE_AI_STATUS = "AI/status"
 val MQTT_SUBSCRIBE_AI_NOTIFY = "AI/MobileNotify"
 val MQTT_SUBSCRIBE_HUMAN_DETECTION : List<String> = listOf("AI/FFB2", "AI/SFB3", "AI/SFB2")
+val MQTT_SUBSCRIBE_CAGE_FILL: List<String> = listOf(
+    "PMC/Ramp/Cages/RampDoor1&2CageFill",
+    "PMC/Ramp/Cages/RampDoor3CageFill",
+    "PMC/Ramp/Cages/RampDoor4&5CageFill",
+    "PMC/Ramp/Cages/RampDoor6&7CageFill",
+    "PMC/Ramp/Cages/RampDoor8&9CageFill",
+    "PMC/Ramp/Cages/RampDoor10CageFill",
+    "PMC/Ramp/Cages/RampDoor11&12CageFill",
+    "PMC/Ramp/Cages/RampDoor13&14CageFill",
+    "PMC/Ramp/Cages/RampDoor15&16CageFill",
+    "PMC/Ramp/Cages/RampDoor17&18CageFill"
+)
 val MQTT_DOOR_SRUCK = "mill/loading_ramp/stuck"
 
 /*

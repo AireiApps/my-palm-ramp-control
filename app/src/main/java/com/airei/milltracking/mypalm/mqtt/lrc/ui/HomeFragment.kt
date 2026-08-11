@@ -27,12 +27,20 @@ import com.airei.milltracking.mypalm.mqtt.lrc.commons.WData
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.doorList
 import com.airei.milltracking.mypalm.mqtt.lrc.databinding.FragmentHomeBinding
 import com.airei.milltracking.mypalm.mqtt.lrc.ui.DoorsFragment.AvailableDoorsData
+import com.airei.milltracking.mypalm.mqtt.lrc.utils.isNetworkAvailable
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorData
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.toDoorTable
 import com.airei.milltracking.mypalm.mqtt.lrc.viewmodel.AppViewModel
 import com.google.gson.Gson
 import androidx.core.view.isVisible
 import com.airei.milltracking.mypalm.mqtt.lrc.commons.PlayerStatusViews
+import android.os.Handler
+import android.os.Looper
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 class HomeFragment : Fragment() {
 
@@ -69,6 +77,8 @@ class HomeFragment : Fragment() {
     private var previousLrStarterStatus: String? = null
 
     private lateinit var msgBuilder: AlertDialog.Builder
+
+    private var doorActionJob: Job? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -112,11 +122,14 @@ class HomeFragment : Fragment() {
 
         initVlcHelpers()
 
+        setupRecyclerView()
+
         observeData()
 
         setupUI()
 
         doorActionBtnPmc()
+
 
         AppLogger.log(
             tag = TAG, message = "AI Listening Mode : ${AppPreferences.aiListeningMode}"
@@ -347,7 +360,7 @@ class HomeFragment : Fragment() {
         }
 
         binding.btnRetryLeft.setOnClickListener {
-
+            if (!isInternetAvailable()) return@setOnClickListener
             leftRtsp?.let {
 
                 AppLogger.log(
@@ -363,7 +376,7 @@ class HomeFragment : Fragment() {
         }
 
         binding.btnRetryRight.setOnClickListener {
-
+            if (!isInternetAvailable()) return@setOnClickListener
             rightRtsp?.let {
 
                 AppLogger.log(
@@ -390,6 +403,10 @@ class HomeFragment : Fragment() {
         viewModel.aiStatus.postValue(AppPreferences.aiMode)
 
         binding.tgMotor.setOnClickListener {
+            if (!isInternetAvailable()) {
+                binding.tgMotor.isChecked = !binding.tgMotor.isChecked
+                return@setOnClickListener
+            }
             if ((activity as MainActivity).mqttConnectionCheck()) {
                 updateMotor(state = binding.tgMotor.isChecked)
             } else {
@@ -399,6 +416,11 @@ class HomeFragment : Fragment() {
         }
 
         binding.tgAiMode.setOnClickListener {
+
+            if (!isInternetAvailable()) {
+                binding.tgAiMode.isChecked = !binding.tgAiMode.isChecked
+                return@setOnClickListener
+            }
 
             if (aiButtonDisable) {
                 binding.tgAiMode.isChecked = !binding.tgAiMode.isChecked
@@ -491,8 +513,8 @@ class HomeFragment : Fragment() {
 
         dialog.show()
 
-        android.os.Handler(
-            android.os.Looper.getMainLooper()
+        Handler(
+            Looper.getMainLooper()
         ).postDelayed(
             {
                 if (dialog.isShowing) {
@@ -634,9 +656,11 @@ class HomeFragment : Fragment() {
                     previousLrStarterStatus = newLrStarterStatus
                 }
 
+                val ffbText = "FFB 1: ${it.data.ffb1Ma} A"
+                if (binding.tvFfb1.text.toString() != ffbText) {
+                    binding.tvFfb1.text = ffbText
+                }
                 binding.tvFfb1.visibility = View.VISIBLE
-
-                binding.tvFfb1.text = "FFB 1: ${it.data.ffb1Ma} A"
 
             } else {
 
@@ -645,6 +669,47 @@ class HomeFragment : Fragment() {
                 previousMypalmStatus = null
                 previousLrStarterStatus = null
                 binding.tvFfb1.visibility = View.GONE
+            }
+        }
+
+        viewModel.cageFillData.observe(viewLifecycleOwner) { cageData ->
+            if (cageData != null && ::adapter.isInitialized) {
+                val currentList = adapter.currentList
+                var hasChanged = false
+                val newList = currentList.map { door ->
+                    val fillValue = when (door.doorId) {
+                        "1" -> cageData.rd1Fill
+                        "2" -> cageData.rd2Fill
+                        "3" -> cageData.rd3Fill
+                        "4" -> cageData.rd4Fill
+                        "5" -> cageData.rd5Fill
+                        "6" -> cageData.rd6Fill
+                        "7" -> cageData.rd7Fill
+                        "8" -> cageData.rd8Fill
+                        "9" -> cageData.rd9Fill
+                        "10" -> cageData.rd10Fill
+                        "11" -> cageData.rd11Fill
+                        "12" -> cageData.rd12Fill
+                        "13" -> cageData.rd13Fill
+                        "14" -> cageData.rd14Fill
+                        "15" -> cageData.rd15Fill
+                        "16" -> cageData.rd16Fill
+                        "17" -> cageData.rd17Fill
+                        "18" -> cageData.rd18Fill
+                        else -> null
+                    }
+
+                    val isFull = (fillValue?.toDoubleOrNull() ?: 0.0) > 90.0
+                    if (door.isFull != isFull) {
+                        hasChanged = true
+                        door.copy(isFull = isFull)
+                    } else {
+                        door
+                    }
+                }
+                if (hasChanged) {
+                    adapter.submitList(newList)
+                }
             }
         }
     }
@@ -658,78 +723,50 @@ class HomeFragment : Fragment() {
         viewModel.insertAllDoors(doorTable)
     }
 
+    private fun setupRecyclerView() {
+        adapter = DoorAdapter(object : DoorAdapter.ActionClickListener {
+            override fun onActionClick(data: DoorData) {
+                if (!isInternetAvailable() || playView) return
+
+                val newSelected = !data.selected
+                val currentList = adapter.currentList
+                
+                val newList = currentList.map { 
+                    it.copy(selected = it.doorId == data.doorId && newSelected)
+                }
+
+                if (newSelected) {
+                    val selectedData = newList.firstOrNull { it.doorId == data.doorId } ?: data
+                    AppLogger.log(tag = TAG, message = "Door Selected : ${selectedData.doorId}")
+                    startRtspView(selectedData)
+                    selectDoor = selectedData
+                } else {
+                    AppLogger.log(tag = TAG, message = "Door Unselected : ${data.doorId}")
+                    selectDoor = null
+                }
+
+                adapter.submitList(newList)
+            }
+        })
+
+        val displayMetrics = resources.displayMetrics
+        val screenHeightDp = displayMetrics.heightPixels / displayMetrics.density
+        AppLogger.log(tag = TAG, message = "Screen Height DP : $screenHeightDp")
+
+        val spanCount = if (screenHeightDp < 700) 6 else 8
+        binding.rvDoors.layoutManager = GridLayoutManager(requireContext(), spanCount)
+        binding.rvDoors.adapter = adapter
+    }
+
     private fun setConveyorList(
         list: List<DoorData>
     ) {
-
-        selectDoor = null
-
-        adapter = DoorAdapter(
-            list, object : DoorAdapter.ActionClickListener {
-
-                override fun onActionClick(
-                    data: DoorData
-                ) {
-
-                    val newSelected = !data.selected
-
-                    val temp = adapter.getList()
-
-                    temp.forEach {
-                        it.selected = it.doorId == data.doorId && newSelected
-                    }
-
-                    if (newSelected) {
-
-                        val selectedData = temp.firstOrNull { it.doorId == data.doorId } ?: data
-
-                        AppLogger.log(
-                            tag = TAG, message = "Door Selected : ${selectedData.doorId}"
-                        )
-
-                        startRtspView(
-                            selectedData
-                        )
-
-                        selectDoor = selectedData
-
-                    } else {
-
-                        AppLogger.log(
-                            tag = TAG, message = "Door Unselected : ${data.doorId}"
-                        )
-
-                        selectDoor = null
-                    }
-
-                    adapter.updateDoor(
-                        temp
-                    )
-                }
-            })
-
-        val displayMetrics = resources.displayMetrics
-
-        val screenHeightDp = displayMetrics.heightPixels / displayMetrics.density
-
-        AppLogger.log(
-            tag = TAG, message = "Screen Height DP : $screenHeightDp"
-        )
-
-        val spanCount = if (screenHeightDp < 700) {
-            6
-        } else {
-            8
+        val currentSelectedId = selectDoor?.doorId
+        val newList = list.map { door ->
+            door.copy(selected = door.doorId == currentSelectedId)
         }
-
-        val gridLayoutManager = GridLayoutManager(
-            requireContext(), spanCount
-        )
-
-        binding.rvDoors.layoutManager = gridLayoutManager
-
-        binding.rvDoors.adapter = adapter
-
+        
+        adapter.submitList(newList)
         binding.layoutBtns.visibility = View.VISIBLE
     }
 
@@ -792,7 +829,7 @@ class HomeFragment : Fragment() {
 
             AppLogger.logError(
                 TAG,
-                e
+                e,
             )
         }
     }
@@ -815,6 +852,14 @@ class HomeFragment : Fragment() {
         }
 
         binding.btnOpen.setOnTouchListener { view, event ->
+
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                if (!isInternetAvailable()) return@setOnTouchListener true
+                if (!(activity as MainActivity).mqttConnectionCheck()) {
+                    showToast("Mqtt connection not available. Please check mqtt connection.")
+                    return@setOnTouchListener true
+                }
+            }
 
             AppLogger.log(
                 tag = TAG, message = "Open Touch : selectDoor=$selectDoor"
@@ -843,9 +888,16 @@ class HomeFragment : Fragment() {
                         tag = TAG, message = "Open Button Pressed"
                     )
 
-                    mqttTopicAndMsg(
-                        doorNo = doorId, command = "open"
-                    )
+                    doorActionJob?.cancel()
+                    doorActionJob = lifecycleScope.launch {
+                        mqttTopicAndMsg(
+                            doorNo = doorId, command = "stop"
+                        )
+                        delay(300.milliseconds)
+                        mqttTopicAndMsg(
+                            doorNo = doorId, command = "open"
+                        )
+                    }
                 }
 
                 MotionEvent.ACTION_UP -> {
@@ -860,6 +912,7 @@ class HomeFragment : Fragment() {
                         tag = TAG, message = "Open Button Released"
                     )
 
+                    doorActionJob?.cancel()
                     mqttTopicAndMsg(
                         doorNo = doorId, command = "stop"
                     )
@@ -875,6 +928,7 @@ class HomeFragment : Fragment() {
                         tag = TAG, message = "Open Button Cancelled"
                     )
 
+                    doorActionJob?.cancel()
                     mqttTopicAndMsg(
                         doorNo = doorId, command = "stop"
                     )
@@ -885,6 +939,14 @@ class HomeFragment : Fragment() {
         }
 
         binding.btnClose.setOnTouchListener { view, event ->
+
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                if (!isInternetAvailable()) return@setOnTouchListener true
+                if (!(activity as MainActivity).mqttConnectionCheck()) {
+                    showToast("Mqtt connection not available. Please check mqtt connection.")
+                    return@setOnTouchListener true
+                }
+            }
 
             AppLogger.log(
                 tag = TAG, message = "Close Touch : selectDoor=$selectDoor"
@@ -913,9 +975,16 @@ class HomeFragment : Fragment() {
                         tag = TAG, message = "Close Button Pressed"
                     )
 
-                    mqttTopicAndMsg(
-                        doorNo = doorId, command = "close"
-                    )
+                    doorActionJob?.cancel()
+                    doorActionJob = lifecycleScope.launch {
+                        mqttTopicAndMsg(
+                            doorNo = doorId, command = "stop"
+                        )
+                        delay(300.milliseconds)
+                        mqttTopicAndMsg(
+                            doorNo = doorId, command = "close"
+                        )
+                    }
                 }
 
                 MotionEvent.ACTION_UP -> {
@@ -930,6 +999,7 @@ class HomeFragment : Fragment() {
                         tag = TAG, message = "Close Button Released"
                     )
 
+                    doorActionJob?.cancel()
                     mqttTopicAndMsg(
                         doorNo = doorId, command = "stop"
                     )
@@ -945,6 +1015,7 @@ class HomeFragment : Fragment() {
                         tag = TAG, message = "Close Button Cancelled"
                     )
 
+                    doorActionJob?.cancel()
                     mqttTopicAndMsg(
                         doorNo = doorId, command = "stop"
                     )
@@ -990,7 +1061,8 @@ class HomeFragment : Fragment() {
         } catch (e: Exception) {
 
             AppLogger.logError(
-                tag = TAG, exception = e
+                tag = TAG, exception = e,
+                throwable = TODO()
             )
         }
     }
@@ -1028,6 +1100,31 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun isInternetAvailable(): Boolean {
+        return if (isNetworkAvailable(requireContext())) {
+            true
+        } else {
+            showNoInternetDialog()
+            false
+        }
+    }
+
+    private fun showNoInternetDialog() {
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle("No Internet Connection")
+            .setMessage("Please check your internet connection and try again.")
+            .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+            .create()
+
+        dialog.show()
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (dialog.isShowing) {
+                dialog.dismiss()
+            }
+        }, 3000)
+    }
+
     override fun onPause() {
         super.onPause()
 
@@ -1052,7 +1149,6 @@ class HomeFragment : Fragment() {
             tag = TAG, message = "HomeFragment onDestroyView"
         )
         _binding = null
-
         vlcHelperL?.release()
         vlcHelperR?.release()
 

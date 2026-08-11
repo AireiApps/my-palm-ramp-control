@@ -4,7 +4,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.Handler
 import android.os.IBinder
-import android.util.Log
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppLogger
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.ACTION_BROADCAST_MQTT_CONN
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.BROADCAST_MAG
 import com.airei.milltracking.mypalm.mqtt.lrc.utils.BROADCAST_TOPIC
@@ -24,7 +24,7 @@ class MqttConnectService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "Service started")
+        AppLogger.log(TAG, "Service started")
         handler = Handler(mainLooper)
         taskRunnable = object : Runnable {
             override fun run() {
@@ -39,7 +39,7 @@ class MqttConnectService : Service() {
     }
 
     private fun performBackgroundTask() {
-        Log.d(TAG, "Background task running")
+        AppLogger.log(TAG, "Background task running")
         sendLocalBroadcast()
     }
 
@@ -51,6 +51,9 @@ class MqttConnectService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG, "Service destroyed")
+        if (::handler.isInitialized && ::taskRunnable.isInitialized) {
+            handler.removeCallbacks(taskRunnable)
+        }
+        AppLogger.log(TAG, "Service destroyed")
     }
 }

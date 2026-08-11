@@ -1,7 +1,7 @@
 package com.airei.milltracking.mypalm.mqtt.lrc.adapter
 
 import android.annotation.SuppressLint
-import android.util.Log
+import com.airei.milltracking.mypalm.mqtt.lrc.commons.AppLogger
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -118,7 +118,7 @@ class DoorSelectAdapter(
         val oldDoorList = doorIdList.map { doorId ->
             doorList.find { it.doorId == doorId }
         }.filterNotNull()
-        Log.d("DoorSelectAdapter", "selectDoors: doorIdList = $doorIdList | doorList = $oldDoorList")
+        AppLogger.log("DoorSelectAdapter", "selectDoors: doorIdList = $doorIdList")
         selectedDoors.addAll(oldDoorList)
         notifyDataSetChanged()
     }
